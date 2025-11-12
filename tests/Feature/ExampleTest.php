@@ -1,7 +1,7 @@
 <?php
 
-it('returns a successful response', function () {
+it('home page redirects to language chat', function () {
     $response = $this->get('/');
 
-    $response->assertStatus(200);
+    $response->assertRedirect(route('language-chat.index'));
 });

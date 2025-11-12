@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 
 const form = useForm({
-    name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     password: '',
     password_confirmation: '',
@@ -38,21 +39,39 @@ const submit = () => {
                 </div>
 
                 <form @submit.prevent="submit" class="space-y-5">
-                    <div class="space-y-2">
-                        <Label for="name">Full Name</Label>
-                        <Input
-                            id="name"
-                            type="text"
-                            v-model="form.name"
-                            placeholder="John Doe"
-                            required
-                            autofocus
-                            autocomplete="name"
-                            :class="{ 'border-red-500': form.errors.name }"
-                        />
-                        <p v-if="form.errors.name" class="text-sm text-red-600">
-                            {{ form.errors.name }}
-                        </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <Label for="first_name">First Name</Label>
+                            <Input
+                                id="first_name"
+                                type="text"
+                                v-model="form.first_name"
+                                placeholder="John"
+                                required
+                                autofocus
+                                autocomplete="given-name"
+                                :class="{ 'border-red-500': form.errors.first_name }"
+                            />
+                            <p v-if="form.errors.first_name" class="text-sm text-red-600">
+                                {{ form.errors.first_name }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="last_name">Last Name</Label>
+                            <Input
+                                id="last_name"
+                                type="text"
+                                v-model="form.last_name"
+                                placeholder="Doe"
+                                required
+                                autocomplete="family-name"
+                                :class="{ 'border-red-500': form.errors.last_name }"
+                            />
+                            <p v-if="form.errors.last_name" class="text-sm text-red-600">
+                                {{ form.errors.last_name }}
+                            </p>
+                        </div>
                     </div>
 
                     <div class="space-y-2">

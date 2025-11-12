@@ -15,7 +15,8 @@ class DatabaseSeeder extends Seeder
     {
         // Create main user
         User::factory()->create([
-            'name' => 'Brandon Maynard',
+            'first_name' => 'Brandon',
+            'last_name' => 'Maynard',
             'email' => 'bmmaynard87@gmail.com',
             'password' => bcrypt('MySecurePass2025!'),
             'native_language' => 'English',
@@ -25,27 +26,32 @@ class DatabaseSeeder extends Seeder
 
         // Create test users with different proficiency levels
         User::factory()->create([
-            'name' => 'Test User',
+            'first_name' => 'Test',
+            'last_name' => 'User',
             'email' => 'test@example.com',
         ]);
 
         User::factory()->create([
-            'name' => 'Alice Johnson',
+            'first_name' => 'Alice',
+            'last_name' => 'Johnson',
             'email' => 'alice@example.com',
         ]);
 
         User::factory()->create([
-            'name' => 'Bob Smith',
+            'first_name' => 'Bob',
+            'last_name' => 'Smith',
             'email' => 'bob@example.com',
         ]);
 
         User::factory()->create([
-            'name' => 'Carlos García',
+            'first_name' => 'Carlos',
+            'last_name' => 'García',
             'email' => 'carlos@example.com',
         ]);
 
         User::factory()->create([
-            'name' => 'Diana Wong',
+            'first_name' => 'Diana',
+            'last_name' => 'Wong',
             'email' => 'diana@example.com',
         ]);
 
