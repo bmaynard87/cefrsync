@@ -28,9 +28,9 @@ const handleSelectChat = (chatId: number) => {
 </script>
 
 <template>
-    <div class="w-64 border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+    <div class="w-64 border-r border-gray-200 bg-white">
         <!-- Sidebar Header -->
-        <div class="border-b border-gray-200 px-4 py-4 dark:border-gray-700">
+        <div class="border-b border-gray-200 px-4 py-4">
             <button
                 data-test="new-chat-button"
                 @click="handleNewChat"
@@ -54,16 +54,16 @@ const handleSelectChat = (chatId: number) => {
                     :class="[
                         'group flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
                         activeChat === chat.id
-                            ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'
-                            : 'hover:bg-gray-100 dark:hover:bg-gray-700',
+                            ? 'bg-gray-100 hover:bg-gray-200'
+                            : 'hover:bg-gray-100',
                     ]"
                 >
                     <svg
                         class="mt-0.5 h-4 w-4 flex-shrink-0"
                         :class="
                             activeChat === chat.id
-                                ? 'text-gray-600 dark:text-gray-400'
-                                : 'text-gray-400 dark:text-gray-500'
+                                ? 'text-gray-600'
+                                : 'text-gray-400'
                         "
                         fill="none"
                         stroke="currentColor"
@@ -81,13 +81,13 @@ const handleSelectChat = (chatId: number) => {
                             class="truncate text-sm font-medium"
                             :class="
                                 activeChat === chat.id
-                                    ? 'text-gray-900 dark:text-white'
-                                    : 'text-gray-700 dark:text-gray-300'
+                                    ? 'text-gray-900'
+                                    : 'text-gray-700'
                             "
                         >
                             {{ chat.title }}
                         </p>
-                        <p class="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
+                        <p class="mt-0.5 truncate text-xs text-gray-500">
                             {{ chat.timestamp }}
                         </p>
                     </div>

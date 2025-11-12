@@ -4,6 +4,8 @@ use App\Services\LangGptService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Config;
 
+uses(Tests\TestCase::class);
+
 beforeEach(function () {
     // Set up test configuration
     Config::set('services.langgpt', [
@@ -17,7 +19,7 @@ beforeEach(function () {
 describe('LangGptService Configuration', function () {
     it('initializes with correct configuration', function () {
         $service = new LangGptService();
-        
+
         expect($service->getBaseUrl())->toBe('http://test-langgpt.local:8000');
         expect($service->getApiVersion())->toBe('v2');
         expect($service->hasApiKey())->toBeTrue();
@@ -25,9 +27,9 @@ describe('LangGptService Configuration', function () {
 
     it('handles missing API key configuration', function () {
         Config::set('services.langgpt.key', null);
-        
+
         $service = new LangGptService();
-        
+
         expect($service->hasApiKey())->toBeFalse();
     });
 });
@@ -56,7 +58,7 @@ describe('LangGptService HTTP Requests', function () {
 
         Http::assertSent(function ($request) {
             return $request->hasHeader('X-API-Key', 'test_api_key_123') &&
-                   $request->url() === 'http://test-langgpt.local:8000/v2/ping';
+                $request->url() === 'http://test-langgpt.local:8000/v2/ping';
         });
     });
 
@@ -104,7 +106,7 @@ describe('LangGptService HTTP Requests', function () {
 
     it('prevents features request on v1 API', function () {
         Config::set('services.langgpt.version', 'v1');
-        
+
         $service = new LangGptService();
         $result = $service->features();
 
@@ -151,15 +153,15 @@ describe('LangGptService Protected Endpoints', function () {
 
     it('prevents protected requests without API key', function () {
         Config::set('services.langgpt.key', null);
-        
+
         $service = new LangGptService();
-        
+
         $pingResult = $service->protectedPing();
         $profileResult = $service->profile();
 
         expect($pingResult['success'])->toBeFalse();
         expect($pingResult['error'])->toBe('API key required for protected endpoints');
-        
+
         expect($profileResult['success'])->toBeFalse();
         expect($profileResult['error'])->toBe('API key required for profile endpoint');
     });
@@ -231,7 +233,7 @@ describe('LangGptService HTTP Methods', function () {
         ]);
 
         $service = new LangGptService();
-        
+
         // Test GET (via ping which uses GET internally)
         $getResult = $service->ping();
         expect($getResult['success'])->toBeTrue();
@@ -239,7 +241,7 @@ describe('LangGptService HTTP Methods', function () {
 
     it('throws exception for unsupported HTTP methods', function () {
         $service = new LangGptService();
-        
+
         expect(function () use ($service) {
             $reflection = new \ReflectionClass($service);
             $method = $reflection->getMethod('makeRequest');

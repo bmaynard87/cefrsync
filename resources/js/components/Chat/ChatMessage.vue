@@ -37,7 +37,7 @@ defineProps<Props>();
             :class="
                 role === 'user'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:text-white dark:ring-gray-700'
+                    : 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200'
             "
         >
             <p class="whitespace-pre-wrap break-words text-sm leading-relaxed">
@@ -45,7 +45,7 @@ defineProps<Props>();
             </p>
             <div
                 class="mt-2 flex items-center gap-2 text-xs"
-                :class="role === 'user' ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'"
+                :class="role === 'user' ? 'text-blue-100' : 'text-gray-500'"
             >
                 <span>{{ timestamp }}</span>
                 <span v-if="isAnalyzing" data-test="analyzing-indicator" class="flex items-center gap-1">

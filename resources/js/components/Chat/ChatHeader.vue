@@ -23,11 +23,11 @@ const handleEditParams = () => {
 </script>
 
 <template>
-    <div class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-800">
+    <div class="border-b border-gray-200 bg-white px-6 py-4">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Language Exchange Chat</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400">
+                <h1 class="text-xl font-semibold text-gray-900">Language Exchange Chat</h1>
+                <p class="text-sm text-gray-500">
                     Practice your language skills with AI assistance
                 </p>
             </div>
@@ -35,7 +35,7 @@ const handleEditParams = () => {
                 <button
                     data-test="settings-button"
                     @click="handleSettings"
-                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
                 >
                     Settings
                 </button>
@@ -46,10 +46,10 @@ const handleEditParams = () => {
         <div class="mt-4 flex flex-wrap items-center gap-3">
             <div
                 data-test="native-language"
-                class="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 dark:bg-blue-900/20"
+                class="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5"
             >
                 <svg
-                    class="h-4 w-4 text-blue-600 dark:text-blue-400"
+                    class="h-4 w-4 text-blue-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -62,8 +62,8 @@ const handleEditParams = () => {
                     ></path>
                 </svg>
                 <div class="flex items-center gap-1.5 text-sm">
-                    <span class="font-medium text-gray-700 dark:text-gray-300">Native:</span>
-                    <span class="text-gray-900 dark:text-white">{{ nativeLanguage }}</span>
+                    <span class="font-medium text-gray-700">Native:</span>
+                    <span class="text-gray-900">{{ nativeLanguage }}</span>
                 </div>
             </div>
 
@@ -73,10 +73,10 @@ const handleEditParams = () => {
 
             <div
                 data-test="target-language"
-                class="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-1.5 dark:bg-green-900/20"
+                class="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-1.5"
             >
                 <svg
-                    class="h-4 w-4 text-green-600 dark:text-green-400"
+                    class="h-4 w-4 text-green-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -89,19 +89,19 @@ const handleEditParams = () => {
                     ></path>
                 </svg>
                 <div class="flex items-center gap-1.5 text-sm">
-                    <span class="font-medium text-gray-700 dark:text-gray-300">Target:</span>
-                    <span class="text-gray-900 dark:text-white">{{ targetLanguage }}</span>
+                    <span class="font-medium text-gray-700">Target:</span>
+                    <span class="text-gray-900">{{ targetLanguage }}</span>
                 </div>
             </div>
 
-            <div class="h-4 w-px bg-gray-300 dark:bg-gray-600"></div>
+            <div class="h-4 w-px bg-gray-300"></div>
 
             <div
                 data-test="proficiency-level"
-                class="flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-1.5 dark:bg-purple-900/20"
+                class="flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-1.5"
             >
                 <svg
-                    class="h-4 w-4 text-purple-600 dark:text-purple-400"
+                    class="h-4 w-4 text-purple-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -114,8 +114,8 @@ const handleEditParams = () => {
                     ></path>
                 </svg>
                 <div class="flex items-center gap-1.5 text-sm">
-                    <span class="font-medium text-gray-700 dark:text-gray-300">Level:</span>
-                    <span class="text-gray-900 dark:text-white">
+                    <span class="font-medium text-gray-700">Level:</span>
+                    <span class="text-gray-900">
                         {{ proficiencyLevel }}{{ proficiencyLabel ? ` (${proficiencyLabel})` : '' }}
                     </span>
                 </div>
@@ -124,7 +124,7 @@ const handleEditParams = () => {
             <button
                 data-test="edit-params-button"
                 @click="handleEditParams"
-                class="ml-auto flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+                class="ml-auto flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
             >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path

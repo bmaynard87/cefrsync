@@ -37,7 +37,7 @@ const isSendDisabled = () => {
 </script>
 
 <template>
-    <div class="border-t border-gray-200 bg-white px-4 py-4 dark:border-gray-700 dark:bg-gray-800">
+    <div class="border-t border-gray-200 bg-white px-4 py-4">
         <div class="mx-auto max-w-3xl">
             <div class="relative flex items-end gap-2">
                 <textarea
@@ -47,7 +47,7 @@ const isSendDisabled = () => {
                     :disabled="disabled"
                     placeholder="Type your message here... (Shift+Enter for new line)"
                     rows="1"
-                    class="max-h-32 min-h-[44px] flex-1 resize-none rounded-xl border border-gray-300 px-4 py-3 pr-12 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                    class="max-h-32 min-h-[44px] flex-1 resize-none rounded-xl border border-gray-300 px-4 py-3 pr-12 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
                 ></textarea>
                 <button
                     data-test="send-button"
@@ -65,7 +65,7 @@ const isSendDisabled = () => {
                     </svg>
                 </button>
             </div>
-            <div class="mt-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <div class="mt-2 flex items-center justify-between text-xs text-gray-500">
                 <span>Press Enter to send, Shift+Enter for new line</span>
                 <span>AI will analyze your conversation for learning insights</span>
             </div>

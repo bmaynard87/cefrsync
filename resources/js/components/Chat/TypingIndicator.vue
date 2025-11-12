@@ -12,7 +12,7 @@
         </div>
         <div
             data-test="typing-container"
-            class="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700"
+            class="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-gray-200"
         >
             <div class="flex gap-1">
                 <div data-test="typing-dot" class="h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.3s]"></div>

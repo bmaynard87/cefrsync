@@ -104,7 +104,7 @@ const handleEditParams = () => {
 
 <template>
     <AppShell>
-        <div class="flex h-screen bg-gray-50 dark:bg-gray-900">
+        <div class="flex h-screen bg-gray-50">
             <ChatSidebar :chats="chats" :active-chat="activeChat" @new-chat="handleNewChat" @select-chat="handleSelectChat" />
 
             <div class="flex flex-1 flex-col">
