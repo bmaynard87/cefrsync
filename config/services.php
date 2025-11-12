@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'langgpt' => [
+        'url' => env('LANGGPT_URL', 'http://host.docker.internal:8000'),
+        'version' => env('LANGGPT_API_VERSION', 'v2'),
+        'key' => env('LANGGPT_API_KEY'),
+        'timeout' => env('LANGGPT_API_TIMEOUT', 30),
+    ],
+
 ];
