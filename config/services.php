@@ -42,4 +42,12 @@ return [
         'timeout' => env('LANGGPT_API_TIMEOUT', 30),
     ],
 
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+        'organization' => env('OPENAI_ORGANIZATION'),
+        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+        'max_tokens' => (int) env('OPENAI_MAX_TOKENS', 500),
+        'temperature' => (float) env('OPENAI_TEMPERATURE', 0.7),
+    ],
+
 ];

@@ -7,18 +7,19 @@ test('language chat page can be rendered for authenticated users', function () {
 
     $response = $this
         ->actingAs($user)
-        ->get(route('language-chat'));
+        ->get(route('language-chat.index'));
 
     $response->assertOk();
-    $response->assertInertia(fn ($page) => $page
-        ->component('LanguageChat')
-        ->has('chatHistory')
-        ->has('userSettings')
+    $response->assertInertia(
+        fn($page) => $page
+            ->component('LanguageChat')
+            ->has('chatHistory')
+            ->has('userSettings')
     );
 });
 
 test('language chat page requires authentication', function () {
-    $response = $this->get(route('language-chat'));
+    $response = $this->get(route('language-chat.index'));
 
     $response->assertRedirect(route('login'));
 });
@@ -28,7 +29,7 @@ test('language chat page requires email verification', function () {
 
     $response = $this
         ->actingAs($user)
-        ->get(route('language-chat'));
+        ->get(route('language-chat.index'));
 
     $response->assertRedirect(route('verification.notice'));
 });
@@ -206,4 +207,195 @@ test('validates message content is not empty', function () {
         ]);
 
     $response->assertSessionHasErrors(['message']);
+});
+
+test('generates title from first user message', function () {
+    $user = User::factory()->create();
+
+    // Create a chat session
+    $sessionResponse = $this
+        ->actingAs($user)
+        ->post(route('language-chat.create'), [
+            'native_language' => 'Spanish',
+            'target_language' => 'English',
+            'proficiency_level' => 'B1',
+        ]);
+
+    $sessionId = $sessionResponse->json('id');
+
+    // Send first message
+    $response = $this
+        ->actingAs($user)
+        ->post(route('language-chat.message', $sessionId), [
+            'message' => 'I want to talk about my favorite hobbies and interests.',
+        ]);
+
+    $response->assertOk();
+    $response->assertJsonStructure([
+        'user_message',
+        'ai_response',
+        'new_title',
+    ]);
+
+    // Title should be generated
+    expect($response->json('new_title'))->not->toBeNull();
+
+    // Check database has the new title
+    $this->assertDatabaseHas('chat_sessions', [
+        'id' => $sessionId,
+    ]);
+
+    $session = \App\Models\ChatSession::find($sessionId);
+    expect($session->title)->not->toBe('New Conversation');
+});
+
+test('does not generate title after first message', function () {
+    $user = User::factory()->create();
+
+    $sessionResponse = $this
+        ->actingAs($user)
+        ->post(route('language-chat.create'), [
+            'native_language' => 'Spanish',
+            'target_language' => 'English',
+            'proficiency_level' => 'B1',
+        ]);
+
+    $sessionId = $sessionResponse->json('id');
+
+    // Send first message
+    $this->actingAs($user)
+        ->post(route('language-chat.message', $sessionId), [
+            'message' => 'Hello, how are you?',
+        ]);
+
+    // Send second message
+    $response = $this
+        ->actingAs($user)
+        ->post(route('language-chat.message', $sessionId), [
+            'message' => 'I am doing well, thanks!',
+        ]);
+
+    $response->assertOk();
+    expect($response->json('new_title'))->toBeNull();
+});
+
+test('can update chat session title', function () {
+    $user = User::factory()->create();
+
+    $sessionResponse = $this
+        ->actingAs($user)
+        ->post(route('language-chat.create'), [
+            'native_language' => 'Spanish',
+            'target_language' => 'English',
+            'proficiency_level' => 'B1',
+        ]);
+
+    $sessionId = $sessionResponse->json('id');
+
+    $response = $this
+        ->actingAs($user)
+        ->patch(route('language-chat.update-title', $sessionId), [
+            'title' => 'My Custom Chat Title',
+        ]);
+
+    $response->assertOk();
+    $response->assertJsonStructure([
+        'success',
+        'title',
+    ]);
+
+    $this->assertDatabaseHas('chat_sessions', [
+        'id' => $sessionId,
+        'title' => 'My Custom Chat Title',
+    ]);
+});
+
+test('validates title is required when updating', function () {
+    $user = User::factory()->create();
+
+    $sessionResponse = $this
+        ->actingAs($user)
+        ->post(route('language-chat.create'), [
+            'native_language' => 'Spanish',
+            'target_language' => 'English',
+            'proficiency_level' => 'B1',
+        ]);
+
+    $sessionId = $sessionResponse->json('id');
+
+    $response = $this
+        ->actingAs($user)
+        ->patch(route('language-chat.update-title', $sessionId), [
+            'title' => '',
+        ]);
+
+    $response->assertSessionHasErrors(['title']);
+});
+
+test('cannot update another users chat title', function () {
+    $user1 = User::factory()->create();
+    $user2 = User::factory()->create();
+
+    $sessionResponse = $this
+        ->actingAs($user1)
+        ->post(route('language-chat.create'), [
+            'native_language' => 'Spanish',
+            'target_language' => 'English',
+            'proficiency_level' => 'B1',
+        ]);
+
+    $sessionId = $sessionResponse->json('id');
+
+    $response = $this
+        ->actingAs($user2)
+        ->patch(route('language-chat.update-title', $sessionId), [
+            'title' => 'Hacked Title',
+        ]);
+
+    $response->assertForbidden();
+});
+
+test('can delete a chat session', function () {
+    $user = User::factory()->create();
+
+    $sessionResponse = $this
+        ->actingAs($user)
+        ->post(route('language-chat.create'), [
+            'native_language' => 'Spanish',
+            'target_language' => 'English',
+            'proficiency_level' => 'B1',
+        ]);
+
+    $sessionId = $sessionResponse->json('id');
+
+    $response = $this
+        ->actingAs($user)
+        ->delete(route('language-chat.destroy', $sessionId));
+
+    $response->assertOk();
+
+    $this->assertDatabaseMissing('chat_sessions', [
+        'id' => $sessionId,
+    ]);
+});
+
+test('cannot delete another users chat session', function () {
+    $user1 = User::factory()->create();
+    $user2 = User::factory()->create();
+
+    $sessionResponse = $this
+        ->actingAs($user1)
+        ->post(route('language-chat.create'), [
+            'native_language' => 'Spanish',
+            'target_language' => 'English',
+            'proficiency_level' => 'B1',
+        ]);
+
+    $sessionId = $sessionResponse->json('id');
+
+    $response = $this
+        ->actingAs($user2)
+        ->delete(route('language-chat.destroy', $sessionId));
+
+    $response->assertForbidden();
 });

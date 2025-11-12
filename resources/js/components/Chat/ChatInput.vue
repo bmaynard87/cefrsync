@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref, watch, onMounted } from 'vue';
+
 interface Props {
     modelValue: string;
     disabled: boolean;
@@ -10,6 +12,8 @@ const emit = defineEmits<{
     'update:modelValue': [value: string];
     send: [];
 }>();
+
+const textareaRef = ref<HTMLTextAreaElement | null>(null);
 
 const handleInput = (event: Event) => {
     const target = event.target as HTMLTextAreaElement;
@@ -34,6 +38,30 @@ const handleSend = () => {
 const isSendDisabled = () => {
     return !props.modelValue.trim() || props.disabled;
 };
+
+// Watch for when typing finishes (disabled becomes false) and refocus
+watch(() => props.disabled, (newDisabled, oldDisabled) => {
+    if (oldDisabled && !newDisabled) {
+        // Just finished typing, refocus
+        setTimeout(() => {
+            textareaRef.value?.focus();
+        }, 100);
+    }
+});
+
+// Auto-focus on mount
+onMounted(() => {
+    textareaRef.value?.focus();
+});
+
+// Expose focus method to parent
+const focus = () => {
+    textareaRef.value?.focus();
+};
+
+defineExpose({
+    focus,
+});
 </script>
 
 <template>
@@ -41,6 +69,7 @@ const isSendDisabled = () => {
         <div class="mx-auto max-w-3xl">
             <div class="relative flex items-end gap-2">
                 <textarea
+                    ref="textareaRef"
                     :value="modelValue"
                     @input="handleInput"
                     @keydown="handleKeydown"

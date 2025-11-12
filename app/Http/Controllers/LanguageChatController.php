@@ -4,19 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\ChatSession;
 use App\Models\ChatMessage;
+use App\Services\OpenAiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class LanguageChatController extends Controller
 {
+    public function __construct(
+        protected OpenAiService $openAiService
+    ) {
+    }
+
     public function index(Request $request)
     {
         $chatHistory = $request->user()
             ->chatSessions()
             ->latest('last_message_at')
             ->get()
-            ->map(fn ($session) => [
+            ->map(fn($session) => [
                 'id' => $session->id,
                 'title' => $session->title ?? 'New Conversation',
                 'last_message_at' => $session->last_message_at,
@@ -69,20 +75,59 @@ class LanguageChatController extends Controller
             'message' => 'required|string',
         ]);
 
+        // Create user message
         $userMessage = $chatSession->messages()->create([
             'sender_type' => 'user',
             'content' => $validated['message'],
         ]);
 
-        // Simulate AI response
+        // Get conversation history for context
+        $conversationHistory = $chatSession->messages()
+            ->orderBy('created_at')
+            ->get(['sender_type', 'content'])
+            ->toArray();
+
+        $formattedHistory = $this->openAiService->formatConversationHistory($conversationHistory);
+
+        // Build session context from summary and topics
+        $sessionContext = $this->buildSessionContext($chatSession);
+
+        // Build user context (can be enhanced later with user preferences)
+        $userContext = $this->buildUserContext($request->user());
+
+        // Generate AI response using OpenAI with enhanced memory
+        $aiResponseContent = $this->openAiService->generateChatResponse(
+            $formattedHistory,
+            $chatSession->target_language,
+            $chatSession->proficiency_level,
+            $sessionContext,
+            $userContext
+        );
+
+        // Create AI message
         $aiMessage = $chatSession->messages()->create([
-            'sender_type' => 'ai',
-            'content' => "That's a great topic! Let's practice together.",
+            'sender_type' => 'assistant',
+            'content' => $aiResponseContent,
         ]);
 
+        // Update session timestamp
         $chatSession->update([
             'last_message_at' => now(),
         ]);
+
+        // Generate title from first user message
+        $messageCount = $chatSession->messages()->where('sender_type', 'user')->count();
+        $newTitle = null;
+        if ($messageCount === 1) {
+            $title = $this->openAiService->generateChatTitle($validated['message']);
+            $chatSession->update(['title' => $title]);
+            $newTitle = $title;
+        }
+
+        // Periodically update conversation summary (every 10 messages)
+        if ($chatSession->messages()->count() % 10 === 0) {
+            $this->updateSessionSummary($chatSession, $formattedHistory);
+        }
 
         return response()->json([
             'user_message' => [
@@ -95,7 +140,53 @@ class LanguageChatController extends Controller
                 'content' => $aiMessage->content,
                 'created_at' => $aiMessage->created_at,
             ],
+            'new_title' => $newTitle,
         ]);
+    }
+
+    /**
+     * Build session-specific context for AI memory
+     */
+    protected function buildSessionContext(ChatSession $chatSession): ?string
+    {
+        $context = [];
+
+        if ($chatSession->conversation_summary) {
+            $context[] = "Previous conversation summary: " . $chatSession->conversation_summary;
+        }
+
+        if ($chatSession->topics_discussed && count($chatSession->topics_discussed) > 0) {
+            $topics = implode(', ', $chatSession->topics_discussed);
+            $context[] = "Topics discussed: " . $topics;
+        }
+
+        return empty($context) ? null : implode("\n", $context);
+    }
+
+    /**
+     * Build user-specific context for AI memory
+     */
+    protected function buildUserContext($user): ?string
+    {
+        // For now, just basic info. Can be enhanced with learning patterns later
+        return "Learner name: " . $user->name;
+    }
+
+    /**
+     * Update conversation summary periodically
+     */
+    protected function updateSessionSummary(ChatSession $chatSession, array $formattedHistory): void
+    {
+        $summary = $this->openAiService->summarizeConversation(
+            $formattedHistory,
+            $chatSession->target_language
+        );
+
+        if ($summary) {
+            $chatSession->update([
+                'conversation_summary' => $summary,
+            ]);
+        }
     }
 
     public function history(Request $request)
@@ -104,7 +195,7 @@ class LanguageChatController extends Controller
             ->chatSessions()
             ->latest('last_message_at')
             ->get()
-            ->map(fn ($session) => [
+            ->map(fn($session) => [
                 'id' => $session->id,
                 'title' => $session->title ?? 'New Conversation',
                 'last_message_at' => $session->last_message_at,
@@ -133,6 +224,36 @@ class LanguageChatController extends Controller
                 'target_language' => $chatSession->target_language,
                 'proficiency_level' => $chatSession->proficiency_level,
             ],
+        ]);
+    }
+
+    public function destroy(Request $request, ChatSession $chatSession)
+    {
+        Gate::authorize('view', $chatSession);
+
+        $chatSession->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Chat session deleted successfully',
+        ]);
+    }
+
+    public function updateTitle(Request $request, ChatSession $chatSession)
+    {
+        Gate::authorize('view', $chatSession);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+        ]);
+
+        $chatSession->update([
+            'title' => $validated['title'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'title' => $chatSession->title,
         ]);
     }
 }

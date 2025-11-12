@@ -15,10 +15,15 @@ class ChatSession extends Model
         'proficiency_level',
         'title',
         'last_message_at',
+        'conversation_summary',
+        'topics_discussed',
+        'user_context',
     ];
 
     protected $casts = [
         'last_message_at' => 'datetime',
+        'topics_discussed' => 'array',
+        'user_context' => 'array',
     ];
 
     public function user(): BelongsTo

@@ -61,11 +61,13 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->prefix('language-chat')->name('language-chat')->group(function () {
-    Route::get('/', [\App\Http\Controllers\LanguageChatController::class, 'index']);
+    Route::get('/', [\App\Http\Controllers\LanguageChatController::class, 'index'])->name('.index');
     Route::post('/', [\App\Http\Controllers\LanguageChatController::class, 'create'])->name('.create');
     Route::get('/history', [\App\Http\Controllers\LanguageChatController::class, 'history'])->name('.history');
     Route::get('/{chatSession}/messages', [\App\Http\Controllers\LanguageChatController::class, 'messages'])->name('.messages');
     Route::post('/{chatSession}/message', [\App\Http\Controllers\LanguageChatController::class, 'sendMessage'])->name('.message');
+    Route::patch('/{chatSession}/title', [\App\Http\Controllers\LanguageChatController::class, 'updateTitle'])->name('.update-title');
+    Route::delete('/{chatSession}', [\App\Http\Controllers\LanguageChatController::class, 'destroy'])->name('.destroy');
 });
 
 require __DIR__ . '/settings.php';
