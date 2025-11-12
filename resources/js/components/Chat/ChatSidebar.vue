@@ -154,25 +154,28 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
                         
                         <!-- View Mode -->
                         <div v-else class="group/title">
-                            <p
-                                class="truncate text-sm font-medium"
-                                :class="
-                                    activeChat === chat.id
-                                        ? 'text-gray-900'
-                                        : 'text-gray-700'
-                                "
-                            >
-                                {{ chat.title }}
+                            <div class="flex items-center gap-1">
+                                <p
+                                    class="truncate text-sm font-medium"
+                                    :class="
+                                        activeChat === chat.id
+                                            ? 'text-gray-900'
+                                            : 'text-gray-700'
+                                    "
+                                    :title="chat.title"
+                                >
+                                    {{ chat.title }}
+                                </p>
                                 <button
                                     @click="(e) => startEditing(e, chat)"
-                                    class="ml-1 opacity-0 group-hover/title:opacity-100 inline-flex p-0.5 rounded hover:bg-gray-200"
+                                    class="flex-shrink-0 opacity-0 group-hover/title:opacity-100 p-0.5 rounded hover:bg-gray-200"
                                     title="Edit title"
                                 >
                                     <svg class="h-3 w-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                                     </svg>
                                 </button>
-                            </p>
+                            </div>
                             <p class="mt-0.5 truncate text-xs text-gray-500">
                                 {{ chat.timestamp }}
                             </p>

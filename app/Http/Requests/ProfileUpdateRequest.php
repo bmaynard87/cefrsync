@@ -25,6 +25,9 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'native_language' => ['nullable', 'string', 'max:255'],
+            'target_language' => ['nullable', 'string', 'max:255'],
+            'proficiency_level' => ['nullable', 'string', Rule::in(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])],
         ];
     }
 }

@@ -96,4 +96,62 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_language_preferences_can_be_updated(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'native_language' => 'Spanish',
+                'target_language' => 'English',
+                'proficiency_level' => 'B2',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+
+        $this->assertSame('Spanish', $user->native_language);
+        $this->assertSame('English', $user->target_language);
+        $this->assertSame('B2', $user->proficiency_level);
+    }
+
+    public function test_language_preferences_are_optional(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+    }
+
+    public function test_proficiency_level_must_be_valid_cefr_level(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'native_language' => 'Spanish',
+                'target_language' => 'English',
+                'proficiency_level' => 'Invalid',
+            ]);
+
+        $response->assertSessionHasErrors('proficiency_level');
+    }
 }

@@ -10,15 +10,10 @@ defineProps<Props>();
 
 const emit = defineEmits<{
     settings: [];
-    'edit-params': [];
 }>();
 
 const handleSettings = () => {
     emit('settings');
-};
-
-const handleEditParams = () => {
-    emit('edit-params');
 };
 </script>
 
@@ -120,22 +115,6 @@ const handleEditParams = () => {
                     </span>
                 </div>
             </div>
-
-            <button
-                data-test="edit-params-button"
-                @click="handleEditParams"
-                class="ml-auto flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
-            >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                    ></path>
-                </svg>
-                Edit
-            </button>
         </div>
     </div>
 </template>

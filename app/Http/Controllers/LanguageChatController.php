@@ -30,10 +30,11 @@ class LanguageChatController extends Controller
                 'target_language' => $session->target_language,
             ]);
 
+        $user = $request->user();
         $userSettings = [
-            'native_language' => 'Spanish',
-            'target_language' => 'English',
-            'proficiency_level' => 'B1',
+            'native_language' => $user->native_language ?? 'Spanish',
+            'target_language' => $user->target_language ?? 'English',
+            'proficiency_level' => $user->proficiency_level ?? 'B1',
         ];
 
         return Inertia::render('LanguageChat', [
@@ -95,11 +96,21 @@ class LanguageChatController extends Controller
         // Build user context (can be enhanced later with user preferences)
         $userContext = $this->buildUserContext($request->user());
 
+        // Use user's proficiency level instead of session's
+        $proficiencyLevel = $request->user()->proficiency_level ?? 'B1';
+
+        // Log for debugging
+        \Log::info('Generating chat response', [
+            'target_language' => $chatSession->target_language,
+            'proficiency_level' => $proficiencyLevel,
+            'session_id' => $chatSession->id,
+        ]);
+
         // Generate AI response using OpenAI with enhanced memory
         $aiResponseContent = $this->openAiService->generateChatResponse(
             $formattedHistory,
             $chatSession->target_language,
-            $chatSession->proficiency_level,
+            $proficiencyLevel,
             $sessionContext,
             $userContext
         );
@@ -255,5 +266,24 @@ class LanguageChatController extends Controller
             'success' => true,
             'title' => $chatSession->title,
         ]);
+    }
+
+    public function updateParameters(Request $request, ChatSession $chatSession)
+    {
+        Gate::authorize('view', $chatSession);
+
+        $validated = $request->validate([
+            'native_language' => 'required|string|max:255',
+            'target_language' => 'required|string|max:255',
+            'proficiency_level' => 'required|string|in:A1,A2,B1,B2,C1,C2',
+        ]);
+
+        $chatSession->update([
+            'native_language' => $validated['native_language'],
+            'target_language' => $validated['target_language'],
+            'proficiency_level' => $validated['proficiency_level'],
+        ]);
+
+        return back();
     }
 }

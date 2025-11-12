@@ -25,6 +25,12 @@ class OpenAiService
         try {
             $systemPrompt = $this->buildSystemPrompt($targetLanguage, $proficiencyLevel, $sessionContext, $userContext);
 
+            // Log the system prompt for debugging
+            Log::info('OpenAI System Prompt', [
+                'proficiency_level' => $proficiencyLevel,
+                'prompt' => $systemPrompt,
+            ]);
+
             // Limit conversation history to prevent token overflow
             $limitedHistory = $this->limitConversationHistory($conversationHistory);
 
@@ -62,7 +68,19 @@ class OpenAiService
         ?string $sessionContext = null,
         ?string $userContext = null
     ): string {
+        $levelGuidance = match($proficiencyLevel) {
+            'A1' => 'This is a complete beginner. Use ONLY the most basic vocabulary (hello, yes, no, numbers, colors, etc.) and simple present tense. Keep sentences VERY short (3-5 words). Example: "こんにちは。元気ですか。" (Hello. How are you?)',
+            'A2' => 'This is an elementary learner. Use simple vocabulary and basic grammar (present, past simple). Avoid complex sentences, idioms, and advanced grammar. Keep it simple.',
+            'B1' => 'This is an intermediate learner. Use everyday vocabulary and common grammar structures. Some complexity is okay, but avoid very advanced language.',
+            'B2' => 'This is an upper-intermediate learner. Use varied vocabulary and grammar. You can introduce some advanced structures and expressions.',
+            'C1' => 'This is an advanced learner. Use sophisticated vocabulary and complex grammar freely. Natural, nuanced language is appropriate.',
+            'C2' => 'This is a proficient learner. Use native-level language including idioms, colloquialisms, and nuanced expressions.',
+            default => 'Adapt your language complexity based on their responses.',
+        };
+
         $basePrompt = "You are a friendly and helpful language learning assistant. You are helping someone practice {$targetLanguage} at a {$proficiencyLevel} (CEFR) proficiency level.
+
+CRITICAL INSTRUCTION: {$levelGuidance}
 
 Your goals:
 - Engage in natural conversation appropriate for their level

@@ -19,7 +19,44 @@ const user = usePage().props.auth.user;
 const form = useForm({
     name: user.name,
     email: user.email,
+    native_language: user.native_language || '',
+    target_language: user.target_language || '',
+    proficiency_level: user.proficiency_level || '',
 });
+
+const languages = [
+    { value: '', label: 'Select Language' },
+    { value: 'Arabic', label: 'Arabic' },
+    { value: 'Chinese (Mandarin)', label: 'Chinese (Mandarin)' },
+    { value: 'Chinese (Cantonese)', label: 'Chinese (Cantonese)' },
+    { value: 'Dutch', label: 'Dutch' },
+    { value: 'English', label: 'English' },
+    { value: 'French', label: 'French' },
+    { value: 'German', label: 'German' },
+    { value: 'Greek', label: 'Greek' },
+    { value: 'Hebrew', label: 'Hebrew' },
+    { value: 'Hindi', label: 'Hindi' },
+    { value: 'Italian', label: 'Italian' },
+    { value: 'Japanese', label: 'Japanese' },
+    { value: 'Korean', label: 'Korean' },
+    { value: 'Polish', label: 'Polish' },
+    { value: 'Portuguese', label: 'Portuguese' },
+    { value: 'Russian', label: 'Russian' },
+    { value: 'Spanish', label: 'Spanish' },
+    { value: 'Swedish', label: 'Swedish' },
+    { value: 'Turkish', label: 'Turkish' },
+    { value: 'Vietnamese', label: 'Vietnamese' },
+];
+
+const proficiencyLevels = [
+    { value: '', label: 'Select Level' },
+    { value: 'A1', label: 'A1 - Beginner' },
+    { value: 'A2', label: 'A2 - Elementary' },
+    { value: 'B1', label: 'B1 - Intermediate' },
+    { value: 'B2', label: 'B2 - Upper Intermediate' },
+    { value: 'C1', label: 'C1 - Advanced' },
+    { value: 'C2', label: 'C2 - Proficient' },
+];
 </script>
 
 <template>
@@ -30,7 +67,7 @@ const form = useForm({
             </h2>
 
             <p class="mt-1 text-sm text-gray-600">
-                Update your account's profile information and email address.
+                Update your account's profile information, email address, and language learning preferences.
             </p>
         </header>
 
@@ -67,6 +104,66 @@ const form = useForm({
                 />
 
                 <InputError class="mt-2" :message="form.errors.email" />
+            </div>
+
+            <div class="border-t border-gray-200 pt-6">
+                <h3 class="text-base font-medium text-gray-900 mb-4">
+                    Language Learning Preferences
+                </h3>
+
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <InputLabel for="native_language" value="Native Language" />
+
+                        <select
+                            id="native_language"
+                            v-model="form.native_language"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        >
+                            <option v-for="lang in languages" :key="lang.value" :value="lang.value">
+                                {{ lang.label }}
+                            </option>
+                        </select>
+
+                        <InputError class="mt-2" :message="form.errors.native_language" />
+                    </div>
+
+                    <div>
+                        <InputLabel for="target_language" value="Target Language" />
+
+                        <select
+                            id="target_language"
+                            v-model="form.target_language"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        >
+                            <option v-for="lang in languages" :key="lang.value" :value="lang.value">
+                                {{ lang.label }}
+                            </option>
+                        </select>
+
+                        <InputError class="mt-2" :message="form.errors.target_language" />
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <InputLabel for="proficiency_level" value="Proficiency Level (CEFR)" />
+
+                        <select
+                            id="proficiency_level"
+                            v-model="form.proficiency_level"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        >
+                            <option v-for="level in proficiencyLevels" :key="level.value" :value="level.value">
+                                {{ level.label }}
+                            </option>
+                        </select>
+
+                        <InputError class="mt-2" :message="form.errors.proficiency_level" />
+                        
+                        <p class="mt-1 text-xs text-gray-500">
+                            Your default proficiency level for language learning sessions.
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <div v-if="mustVerifyEmail && user.email_verified_at === null">

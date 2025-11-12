@@ -54,6 +54,7 @@ const chatInputRef = ref<{ focus: () => void } | null>(null);
 const nativeLanguage = ref(props.userSettings.native_language);
 const targetLanguage = ref(props.userSettings.target_language);
 const proficiencyLevel = ref(props.userSettings.proficiency_level);
+
 const proficiencyLabel = computed(() => {
     const levels: Record<string, string> = {
         'A1': 'Beginner',
@@ -257,11 +258,6 @@ const handleSettings = () => {
     router.visit('/profile');
 };
 
-const handleEditParams = () => {
-    // TODO: Implement parameter editing modal
-    console.log('Edit parameters - to be implemented');
-};
-
 // Load messages for the first chat on mount
 onMounted(() => {
     if (activeChat.value) {
@@ -289,7 +285,6 @@ onMounted(() => {
                     :proficiency-level="proficiencyLevel"
                     :proficiency-label="proficiencyLabel"
                     @settings="handleSettings"
-                    @edit-params="handleEditParams"
                 />
 
                 <div ref="chatContainer" class="flex-1 overflow-y-auto px-4 py-6">

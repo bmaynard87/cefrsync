@@ -399,3 +399,84 @@ test('cannot delete another users chat session', function () {
 
     $response->assertForbidden();
 });
+
+test('can update chat session parameters', function () {
+    $user = User::factory()->create();
+
+    $sessionResponse = $this
+        ->actingAs($user)
+        ->post(route('language-chat.create'), [
+            'native_language' => 'Spanish',
+            'target_language' => 'English',
+            'proficiency_level' => 'B1',
+        ]);
+
+    $sessionId = $sessionResponse->json('id');
+
+    $response = $this
+        ->actingAs($user)
+        ->patch(route('language-chat.update-parameters', $sessionId), [
+            'native_language' => 'French',
+            'target_language' => 'German',
+            'proficiency_level' => 'B2',
+        ]);
+
+    $response->assertRedirect();
+
+    $this->assertDatabaseHas('chat_sessions', [
+        'id' => $sessionId,
+        'native_language' => 'French',
+        'target_language' => 'German',
+        'proficiency_level' => 'B2',
+    ]);
+});
+
+test('validates parameters when updating chat session', function () {
+    $user = User::factory()->create();
+
+    $sessionResponse = $this
+        ->actingAs($user)
+        ->post(route('language-chat.create'), [
+            'native_language' => 'Spanish',
+            'target_language' => 'English',
+            'proficiency_level' => 'B1',
+        ]);
+
+    $sessionId = $sessionResponse->json('id');
+
+    $response = $this
+        ->actingAs($user)
+        ->patch(route('language-chat.update-parameters', $sessionId), [
+            'native_language' => '',
+            'target_language' => '',
+            'proficiency_level' => 'Invalid',
+        ]);
+
+    $response->assertSessionHasErrors(['native_language', 'target_language', 'proficiency_level']);
+});
+
+test('cannot update another users chat session parameters', function () {
+    $user1 = User::factory()->create();
+    $user2 = User::factory()->create();
+
+    $sessionResponse = $this
+        ->actingAs($user1)
+        ->post(route('language-chat.create'), [
+            'native_language' => 'Spanish',
+            'target_language' => 'English',
+            'proficiency_level' => 'B1',
+        ]);
+
+    $sessionId = $sessionResponse->json('id');
+
+    $response = $this
+        ->actingAs($user2)
+        ->patch(route('language-chat.update-parameters', $sessionId), [
+            'native_language' => 'French',
+            'target_language' => 'German',
+            'proficiency_level' => 'B2',
+        ]);
+
+    $response->assertForbidden();
+});
+
