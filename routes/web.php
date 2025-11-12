@@ -16,6 +16,10 @@ Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('language-chat', function () {
+    return Inertia::render('LanguageChat');
+})->middleware(['auth', 'verified'])->name('language-chat');
+
 Route::get('/ping-langgpt', function (LangGptService $langGpt) {
     $result = $langGpt->ping();
 
