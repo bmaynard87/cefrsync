@@ -13,6 +13,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Create main user
+        User::factory()->create([
+            'name' => 'Brandon Maynard',
+            'email' => 'bmmaynard87@gmail.com',
+            'password' => bcrypt('MySecurePass2025!'),
+            'native_language' => 'English',
+            'target_language' => 'Japanese',
+            'proficiency_level' => 'C2',
+        ]);
+
         // Create test users with different proficiency levels
         User::factory()->create([
             'name' => 'Test User',
@@ -39,7 +49,8 @@ class DatabaseSeeder extends Seeder
             'email' => 'diana@example.com',
         ]);
 
-        $this->command->info('Created 5 test users:');
+        $this->command->info('Created 6 users:');
+        $this->command->info('- bmmaynard87@gmail.com (password: MySecurePass2025!)');
         $this->command->info('- test@example.com (password: password)');
         $this->command->info('- alice@example.com (password: password)');
         $this->command->info('- bob@example.com (password: password)');
