@@ -26,6 +26,12 @@ class LangGptService
      */
     protected function makeRequest(string $method, string $endpoint, array $data = []): array
     {
+        // Validate HTTP method before making request
+        $method = strtoupper($method);
+        if (!in_array($method, ['GET', 'POST', 'PUT', 'DELETE'])) {
+            throw new \InvalidArgumentException("Unsupported HTTP method: {$method}");
+        }
+
         try {
             $http = Http::timeout($this->timeout);
 
@@ -36,12 +42,11 @@ class LangGptService
 
             $url = "{$this->baseUrl}/{$this->apiVersion}/{$endpoint}";
 
-            $response = match (strtoupper($method)) {
+            $response = match ($method) {
                 'GET' => $http->get($url, $data),
                 'POST' => $http->post($url, $data),
                 'PUT' => $http->put($url, $data),
                 'DELETE' => $http->delete($url, $data),
-                default => throw new \InvalidArgumentException("Unsupported HTTP method: {$method}")
             };
 
             return [
