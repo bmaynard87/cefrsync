@@ -13,11 +13,37 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
+        // Create test users with different proficiency levels
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        User::factory()->create([
+            'name' => 'Alice Johnson',
+            'email' => 'alice@example.com',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Bob Smith',
+            'email' => 'bob@example.com',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Carlos García',
+            'email' => 'carlos@example.com',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Diana Wong',
+            'email' => 'diana@example.com',
+        ]);
+
+        $this->command->info('Created 5 test users:');
+        $this->command->info('- test@example.com (password: password)');
+        $this->command->info('- alice@example.com (password: password)');
+        $this->command->info('- bob@example.com (password: password)');
+        $this->command->info('- carlos@example.com (password: password)');
+        $this->command->info('- diana@example.com (password: password)');
     }
 }
