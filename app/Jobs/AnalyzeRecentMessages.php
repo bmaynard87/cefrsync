@@ -6,6 +6,7 @@ use App\Models\ChatSession;
 use App\Models\LanguageInsight;
 use App\Models\User;
 use App\Services\LangGptService;
+use App\Services\OpenAiService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -26,31 +27,52 @@ class AnalyzeRecentMessages implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(LangGptService $langGptService): void
+    public function handle(LangGptService $langGptService, OpenAiService $openAiService): void
     {
         $user = $this->chatSession->user;
 
         // Get recent user messages (not assistant messages)
-        $recentMessages = $this->chatSession->messages()
+        $messages = $this->chatSession->messages()
             ->where('sender_type', 'user')
             ->orderBy('created_at', 'desc')
             ->limit($this->messageCount)
             ->get()
             ->reverse()
-            ->values()  // Reindex to ensure sequential array, not associative
-            ->map(fn($msg) => [
-                'content' => $msg->content,
-                'timestamp' => $msg->created_at->toIso8601String(),
-            ])
-            ->toArray();
+            ->values();
 
-        if (empty($recentMessages)) {
+        if ($messages->isEmpty()) {
+            return;
+        }
+
+        // Filter messages to only include those in the target language
+        $validMessages = [];
+        foreach ($messages as $msg) {
+            $detection = $openAiService->detectLanguage(
+                $msg->content,
+                $user->target_language
+            );
+
+            // Only include messages that are in the target language
+            if ($detection['is_target_language']) {
+                $validMessages[] = [
+                    'content' => $msg->content,
+                    'timestamp' => $msg->created_at->toIso8601String(),
+                ];
+            }
+        }
+
+        // Need at least some valid messages to analyze
+        if (empty($validMessages)) {
+            Log::info('No valid target language messages to analyze', [
+                'chat_session_id' => $this->chatSession->id,
+                'total_messages_checked' => $messages->count(),
+            ]);
             return;
         }
 
         // Call LangGPT to evaluate progress
         $payload = [
-            'messages' => $recentMessages,
+            'messages' => $validMessages,
             'current_level' => $user->proficiency_level,
             'target_language' => $user->target_language,
             'native_language' => $user->native_language,
