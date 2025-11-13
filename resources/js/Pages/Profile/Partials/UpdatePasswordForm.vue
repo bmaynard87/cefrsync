@@ -3,6 +3,7 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator.vue';
 import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
@@ -78,6 +79,10 @@ const updatePassword = () => {
                 />
 
                 <InputError :message="form.errors.password" class="mt-2" />
+                
+                <div class="mt-3">
+                    <PasswordStrengthIndicator :password="form.password" />
+                </div>
             </div>
 
             <div>

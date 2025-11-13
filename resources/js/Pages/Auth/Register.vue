@@ -6,6 +6,7 @@ import AuthLayout from '@/components/AuthLayout.vue';
 import FormField from '@/components/FormField.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import LanguageSelect from '@/components/LanguageSelect.vue';
+import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator.vue';
 
 const { languages, proficiencyLevels } = useLanguageOptions();
 
@@ -100,16 +101,19 @@ const submit = () => {
                 required
             />
 
-            <FormField
-                id="password"
-                label="Password"
-                type="password"
-                v-model="form.password"
-                :error="form.errors.password"
-                placeholder="••••••••"
-                required
-                autocomplete="new-password"
-            />
+            <div class="space-y-2">
+                <FormField
+                    id="password"
+                    label="Password"
+                    type="password"
+                    v-model="form.password"
+                    :error="form.errors.password"
+                    placeholder="••••••••"
+                    required
+                    autocomplete="new-password"
+                />
+                <PasswordStrengthIndicator :password="form.password" />
+            </div>
 
             <FormField
                 id="password_confirmation"

@@ -3,6 +3,7 @@ import { Head, useForm } from '@inertiajs/vue3';
 import AuthLayout from '@/components/AuthLayout.vue';
 import FormField from '@/components/FormField.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
+import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator.vue';
 
 const props = defineProps<{
     email: string;
@@ -42,17 +43,19 @@ const submit = () => {
                 autocomplete="username"
             />
 
-            <!-- TODO: Implement a strong password only system -->
-            <FormField
-                id="password"
-                label="New Password"
-                type="password"
-                v-model="form.password"
-                :error="form.errors.password"
-                placeholder="••••••••"
-                required
-                autocomplete="new-password"
-            />
+            <div class="space-y-2">
+                <FormField
+                    id="password"
+                    label="New Password"
+                    type="password"
+                    v-model="form.password"
+                    :error="form.errors.password"
+                    placeholder="••••••••"
+                    required
+                    autocomplete="new-password"
+                />
+                <PasswordStrengthIndicator :password="form.password" />
+            </div>
 
             <FormField
                 id="password_confirmation"
