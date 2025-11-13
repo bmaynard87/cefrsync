@@ -298,7 +298,7 @@ onMounted(() => {
 <template>
     <Head :title="pageTitle" />
     <AppShell>
-        <div class="flex h-screen w-full bg-gray-50">
+        <div data-test="main-container" class="flex h-screen w-full overflow-hidden bg-gray-50">
             <ChatSidebar 
                 :chats="chats" 
                 :active-chat="activeChat"
@@ -309,7 +309,7 @@ onMounted(() => {
                 @update-title="handleUpdateTitle"
             />
 
-            <div class="flex min-w-0 flex-1 flex-col">
+            <div data-test="chat-area" class="flex min-w-0 flex-1 flex-col">
                 <ChatHeader
                     :native-language="nativeLanguage"
                     :target-language="targetLanguage"
@@ -318,7 +318,7 @@ onMounted(() => {
                     @settings="handleSettings"
                 />
 
-                <div ref="chatContainer" class="flex-1 overflow-y-auto px-4 py-6">
+                <div ref="chatContainer" data-test="chat-container" class="flex-1 overflow-y-auto px-4 py-6">
                     <!-- Empty State -->
                     <div v-if="!activeChat && chats.length === 0" class="flex h-full items-center justify-center">
                         <div class="text-center">

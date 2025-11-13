@@ -81,7 +81,7 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
 </script>
 
 <template>
-    <div class="w-64 border-r border-gray-200 bg-white">
+    <div class="flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
         <!-- Logo -->
         <div class="border-b border-gray-200 px-4 py-4">
             <Link :href="route('language-chat.index')">
@@ -110,7 +110,7 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
         </div>
 
         <!-- Chat List -->
-        <div class="overflow-y-auto p-2" style="height: calc(100vh - 73px)">
+        <div data-test="chat-list" class="flex-1 overflow-y-auto p-2">
             <div class="space-y-1">
                 <button
                     v-for="chat in chats"

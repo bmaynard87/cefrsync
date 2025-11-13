@@ -85,4 +85,42 @@ describe('ChatSidebar', () => {
         expect(wrapper.emitted()).toHaveProperty('select-chat');
         expect(wrapper.emitted('select-chat')?.[0]).toEqual([1]);
     });
+
+    describe('Scrolling behavior', () => {
+        it('has scrollable chat list', () => {
+            const manyChats = Array.from({ length: 20 }, (_, i) => ({
+                id: i + 1,
+                title: `Chat ${i + 1}`,
+                timestamp: '2:30 PM',
+                isActive: false,
+            }));
+
+            const wrapper = mount(ChatSidebar, {
+                props: {
+                    chats: manyChats,
+                    activeChat: 1,
+                },
+            });
+
+            const chatList = wrapper.find('[data-test="chat-list"]');
+            expect(chatList.exists()).toBe(true);
+            expect(chatList.classes()).toContain('overflow-y-auto');
+        });
+
+        it('constrains chat list to viewport height', () => {
+            const wrapper = mount(ChatSidebar, {
+                props: {
+                    chats: [],
+                    activeChat: null,
+                },
+            });
+
+            const chatList = wrapper.find('[data-test="chat-list"]');
+            expect(chatList.exists()).toBe(true);
+            
+            // Should have height constraint
+            const classes = chatList.classes().join(' ');
+            expect(classes).toMatch(/h-|max-h-|flex-1/);
+        });
+    });
 });
