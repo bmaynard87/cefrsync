@@ -36,7 +36,7 @@ class RegisteredUserController extends Controller
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'native_language' => 'required|string|max:255',
-            'target_language' => 'required|string|max:255',
+            'target_language' => 'required|string|max:255|different:native_language',
             'proficiency_level' => 'required|string|in:A1,A2,B1,B2,C1,C2',
         ]);
 

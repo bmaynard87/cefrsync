@@ -5,6 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { useLanguageOptions } from '@/composables/useLanguageOptions';
+import { computed } from 'vue';
 
 defineProps({
     mustVerifyEmail: {
@@ -28,6 +29,17 @@ const form = useForm({
 });
 
 const { languages, proficiencyLevels } = useLanguageOptions();
+
+// Filter out the selected language from the other dropdown
+const availableNativeLanguages = computed(() => {
+    if (!form.target_language) return languages;
+    return languages.filter(lang => lang.value !== form.target_language);
+});
+
+const availableTargetLanguages = computed(() => {
+    if (!form.native_language) return languages;
+    return languages.filter(lang => lang.value !== form.native_language);
+});
 </script>
 
 <template>
@@ -99,7 +111,6 @@ const { languages, proficiencyLevels } = useLanguageOptions();
                     Language Learning Preferences
                 </h3>
 
-                <!-- TODO: Prevent the same language being selected for both fields -->
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <div>
                         <InputLabel for="native_language" value="Native Language" />
@@ -109,7 +120,8 @@ const { languages, proficiencyLevels } = useLanguageOptions();
                             v-model="form.native_language"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         >
-                            <option v-for="lang in languages" :key="lang.value" :value="lang.value">
+                            <option value="">Select your native language</option>
+                            <option v-for="lang in availableNativeLanguages" :key="lang.value" :value="lang.value">
                                 {{ lang.label }}
                             </option>
                         </select>
@@ -125,7 +137,8 @@ const { languages, proficiencyLevels } = useLanguageOptions();
                             v-model="form.target_language"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         >
-                            <option v-for="lang in languages" :key="lang.value" :value="lang.value">
+                            <option value="">Select language to learn</option>
+                            <option v-for="lang in availableTargetLanguages" :key="lang.value" :value="lang.value">
                                 {{ lang.label }}
                             </option>
                         </select>

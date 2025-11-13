@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useLanguageOptions } from '@/composables/useLanguageOptions';
+import { computed } from 'vue';
 
 const { languages, proficiencyLevels } = useLanguageOptions();
 
@@ -17,6 +18,17 @@ const form = useForm({
     native_language: '',
     target_language: '',
     proficiency_level: '',
+});
+
+// Filter out the selected language from the other dropdown
+const availableNativeLanguages = computed(() => {
+    if (!form.target_language) return languages;
+    return languages.filter(lang => lang.value !== form.target_language);
+});
+
+const availableTargetLanguages = computed(() => {
+    if (!form.native_language) return languages;
+    return languages.filter(lang => lang.value !== form.native_language);
 });
 
 const submit = () => {
@@ -105,7 +117,8 @@ const submit = () => {
                             class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             :class="{ 'border-red-500': form.errors.native_language }"
                         >
-                            <option v-for="lang in languages" :key="lang.value" :value="lang.value">
+                            <option value="" disabled>Select your native language</option>
+                            <option v-for="lang in availableNativeLanguages" :key="lang.value" :value="lang.value">
                                 {{ lang.label }}
                             </option>
                         </select>
@@ -123,7 +136,8 @@ const submit = () => {
                             class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             :class="{ 'border-red-500': form.errors.target_language }"
                         >
-                            <option v-for="lang in languages" :key="lang.value" :value="lang.value">
+                            <option value="" disabled>Select language to learn</option>
+                            <option v-for="lang in availableTargetLanguages" :key="lang.value" :value="lang.value">
                                 {{ lang.label }}
                             </option>
                         </select>

@@ -17,13 +17,13 @@ test('authenticated user can soft delete their account', function () {
         ]);
 
     $response->assertRedirect('/');
-    
+
     // User should be soft deleted (still in database but deleted_at is set)
     $this->assertSoftDeleted('users', ['id' => $user->id]);
-    
+
     // User should not be retrievable via normal queries
     expect(User::find($user->id))->toBeNull();
-    
+
     // But should be retrievable with trashed
     expect(User::withTrashed()->find($user->id))->not->toBeNull();
 });
@@ -42,7 +42,7 @@ test('user cannot delete another user account', function () {
         ->delete("/users/{$user2->id}");
 
     $response->assertNotFound();
-    
+
     // User 2 should still exist
     expect(User::find($user2->id))->not->toBeNull();
 });
@@ -61,7 +61,7 @@ test('soft deleted user data is preserved', function () {
     ]);
 
     $deletedUser = User::withTrashed()->find($user->id);
-    
+
     expect($deletedUser->first_name)->toBe('Test');
     expect($deletedUser->last_name)->toBe('User');
     expect($deletedUser->email)->toBe('test@example.com');
@@ -75,7 +75,7 @@ test('soft deleted user cannot login', function () {
         'email' => 'deleted@example.com',
         'password' => bcrypt('testpassword'),
     ]);
-    
+
     // Delete the account
     $this->actingAs($user)->delete('/account', [
         'password' => 'testpassword',
@@ -106,7 +106,7 @@ test('user sessions are preserved when account is soft deleted', function () {
 
     // Session should still exist (not cascade deleted)
     expect(ChatSession::find($session->id))->not->toBeNull();
-    
+
     // But user should be soft deleted
     $this->assertSoftDeleted('users', ['id' => $user->id]);
 });
@@ -116,7 +116,7 @@ test('user messages are preserved when account is soft deleted', function () {
     $session = ChatSession::factory()
         ->for($user)
         ->create();
-    
+
     $message = ChatMessage::create([
         'chat_session_id' => $session->id,
         'role' => 'user',
@@ -129,7 +129,7 @@ test('user messages are preserved when account is soft deleted', function () {
 
     // Message should still exist
     expect(ChatMessage::find($message->id))->not->toBeNull();
-    
+
     // User should be soft deleted
     $this->assertSoftDeleted('users', ['id' => $user->id]);
 });
@@ -139,7 +139,7 @@ test('user insights are preserved when account is soft deleted', function () {
     $session = ChatSession::factory()
         ->for($user)
         ->create();
-    
+
     $insight = LanguageInsight::factory()
         ->for($user)
         ->for($session, 'chatSession')
@@ -151,7 +151,7 @@ test('user insights are preserved when account is soft deleted', function () {
 
     // Insight should still exist
     expect(LanguageInsight::find($insight->id))->not->toBeNull();
-    
+
     // User should be soft deleted
     $this->assertSoftDeleted('users', ['id' => $user->id]);
 });
@@ -176,7 +176,7 @@ test('deleted account can be restored by admin', function () {
     $this->actingAs($user)->delete('/account', [
         'password' => 'password',
     ]);
-    
+
     $this->assertSoftDeleted('users', ['id' => $user->id]);
 
     // Restore the user (simulating admin action)
