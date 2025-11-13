@@ -1,0 +1,127 @@
+name: Tests
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  php-tests:
+    name: PHP Tests (Pest)
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
+        coverage: none
+    
+    - name: Install Composer Dependencies
+      run: composer install --no-interaction --prefer-dist --optimize-autoloader
+    
+    - name: Copy Environment File
+      run: cp .env.example .env
+    
+    - name: Generate Application Key
+      run: php artisan key:generate
+    
+    - name: Create Database
+      run: touch database/database.sqlite
+    
+    - name: Run Migrations
+      run: php artisan migrate --force
+    
+    - name: Run PHP Tests
+      run: php artisan test
+
+  javascript-tests:
+    name: JavaScript Tests (Vitest)
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    
+    - name: Install Dependencies
+      run: npm ci --legacy-peer-deps
+    
+    - name: Run JavaScript Tests
+      run: npm test -- --run
+
+  e2e-tests:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
+        coverage: none
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    
+    - name: Install Composer Dependencies
+      run: composer install --no-interaction --prefer-dist --optimize-autoloader
+    
+    - name: Install NPM Dependencies
+      run: npm ci --legacy-peer-deps
+    
+    - name: Copy Environment File
+      run: cp .env.example .env
+    
+    - name: Generate Application Key
+      run: php artisan key:generate
+    
+    - name: Create Database
+      run: touch database/database.sqlite
+    
+    - name: Run Migrations
+      run: php artisan migrate --force
+    
+    - name: Seed Database
+      run: php artisan db:seed
+    
+    - name: Build Frontend Assets
+      run: npm run build
+    
+    - name: Start Application Server
+      run: php artisan serve --host=127.0.0.1 --port=8000 &
+      env:
+        APP_ENV: production
+        APP_URL: http://localhost:8000
+    
+    - name: Wait for Server
+      run: |
+        timeout 30 bash -c 'until curl -f http://localhost:8000 > /dev/null 2>&1; do sleep 1; done'
+        echo "Server is ready"
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    
+    - name: Run Playwright Tests
+      run: npx playwright test
+      env:
+        CI: true
+    
+    - name: Upload Playwright Report
+      uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
