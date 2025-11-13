@@ -163,7 +163,8 @@ const submit = () => {
                             {{ form.errors.proficiency_level }}
                         </p>
                     </div>
-
+                    
+                    <!-- TODO: Implement a strong password only system -->
                     <div class="space-y-2">
                         <Label for="password">Password</Label>
                         <Input

@@ -57,7 +57,8 @@ const submit = () => {
                             {{ form.errors.email }}
                         </p>
                     </div>
-
+                    
+                    <!-- TODO: Implement a strong password only system -->
                     <div class="space-y-2">
                         <Label for="password">New Password</Label>
                         <Input
