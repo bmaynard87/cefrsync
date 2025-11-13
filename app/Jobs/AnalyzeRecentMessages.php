@@ -1,0 +1,166 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\ChatSession;
+use App\Models\LanguageInsight;
+use App\Models\User;
+use App\Services\LangGptService;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
+
+class AnalyzeRecentMessages implements ShouldQueue
+{
+    use Queueable;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(
+        public ChatSession $chatSession,
+        public int $messageCount = 20
+    ) {
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(LangGptService $langGptService): void
+    {
+        $user = $this->chatSession->user;
+
+        // Get recent user messages (not assistant messages)
+        $recentMessages = $this->chatSession->messages()
+            ->where('sender_type', 'user')
+            ->orderBy('created_at', 'desc')
+            ->limit($this->messageCount)
+            ->get()
+            ->reverse()
+            ->values()  // Reindex to ensure sequential array, not associative
+            ->map(fn($msg) => [
+                'content' => $msg->content,
+                'timestamp' => $msg->created_at->toIso8601String(),
+            ])
+            ->toArray();
+
+        if (empty($recentMessages)) {
+            return;
+        }
+
+        // Call LangGPT to evaluate progress
+        $payload = [
+            'messages' => $recentMessages,
+            'current_level' => $user->proficiency_level,
+            'target_language' => $user->target_language,
+            'native_language' => $user->native_language,
+        ];
+
+        try {
+            $response = $langGptService->evaluateProgress($payload);
+
+            if (!$response['success']) {
+                Log::warning('LangGPT progress evaluation failed', [
+                    'chat_session_id' => $this->chatSession->id,
+                    'response' => $response,
+                ]);
+                return;
+            }
+
+            $analysis = $response['data'];
+
+            // Store insights
+            $this->storeInsights($user, $analysis);
+
+            // Update proficiency if user opted in and LangGPT suggests a change
+            if ($user->auto_update_proficiency && isset($analysis['suggested_level'])) {
+                $this->updateProficiencyIfNeeded($user, $analysis);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error analyzing recent messages', [
+                'chat_session_id' => $this->chatSession->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Store insights from the analysis
+     */
+    private function storeInsights(User $user, array $analysis): void
+    {
+        // Store grammar patterns insight
+        if (!empty($analysis['grammar_patterns'])) {
+            LanguageInsight::create([
+                'user_id' => $user->id,
+                'chat_session_id' => $this->chatSession->id,
+                'insight_type' => 'grammar_pattern',
+                'title' => 'Grammar Patterns Detected',
+                'message' => $analysis['grammar_summary'] ?? 'We noticed some patterns in your grammar usage.',
+                'data' => ['patterns' => $analysis['grammar_patterns']],
+            ]);
+        }
+
+        // Store vocabulary strength insight
+        if (!empty($analysis['vocabulary_assessment'])) {
+            LanguageInsight::create([
+                'user_id' => $user->id,
+                'chat_session_id' => $this->chatSession->id,
+                'insight_type' => 'vocabulary_strength',
+                'title' => 'Vocabulary Assessment',
+                'message' => $analysis['vocabulary_summary'] ?? 'Your vocabulary usage shows interesting patterns.',
+                'data' => ['insights' => $analysis['vocabulary_assessment']],
+            ]);
+        }
+
+        // Store proficiency suggestion if different from current
+        if (isset($analysis['suggested_level']) && $analysis['suggested_level'] !== $user->proficiency_level) {
+            LanguageInsight::create([
+                'user_id' => $user->id,
+                'chat_session_id' => $this->chatSession->id,
+                'insight_type' => 'proficiency_suggestion',
+                'title' => 'Proficiency Level Update',
+                'message' => $analysis['proficiency_message'] ?? "Based on your recent progress, you might be ready for {$analysis['suggested_level']}!",
+                'data' => [
+                    'current_level' => $user->proficiency_level,
+                    'suggested_level' => $analysis['suggested_level'],
+                    'reasoning' => $analysis['reasoning'] ?? null,
+                ],
+            ]);
+        }
+    }
+
+    /**
+     * Update user proficiency if conditions are met
+     */
+    private function updateProficiencyIfNeeded(User $user, array $analysis): void
+    {
+        if (!isset($analysis['suggested_level']) || !isset($analysis['confidence'])) {
+            return;
+        }
+
+        // Only update if confidence is high enough (e.g., > 0.7)
+        if ($analysis['confidence'] < 0.7) {
+            return;
+        }
+
+        $suggestedLevel = $analysis['suggested_level'];
+        $currentLevel = $user->proficiency_level;
+
+        // Only allow progression, not regression
+        $levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+        $currentIndex = array_search($currentLevel, $levels);
+        $suggestedIndex = array_search($suggestedLevel, $levels);
+
+        if ($suggestedIndex > $currentIndex) {
+            $user->update(['proficiency_level' => $suggestedLevel]);
+
+            Log::info('User proficiency updated automatically', [
+                'user_id' => $user->id,
+                'from' => $currentLevel,
+                'to' => $suggestedLevel,
+                'confidence' => $analysis['confidence'],
+            ]);
+        }
+    }
+}

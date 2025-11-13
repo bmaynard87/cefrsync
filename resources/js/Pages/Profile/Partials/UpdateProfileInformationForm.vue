@@ -24,6 +24,7 @@ const form = useForm({
     native_language: user.native_language || '',
     target_language: user.target_language || '',
     proficiency_level: user.proficiency_level || '',
+    auto_update_proficiency: user.auto_update_proficiency || false,
 });
 
 const { languages, proficiencyLevels } = useLanguageOptions();
@@ -98,6 +99,7 @@ const { languages, proficiencyLevels } = useLanguageOptions();
                     Language Learning Preferences
                 </h3>
 
+                <!-- TODO: Prevent the same language being selected for both fields -->
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <div>
                         <InputLabel for="native_language" value="Native Language" />
@@ -149,6 +151,28 @@ const { languages, proficiencyLevels } = useLanguageOptions();
                         <p class="mt-1 text-xs text-gray-500">
                             Your default proficiency level for language learning sessions.
                         </p>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input
+                                    id="auto_update_proficiency"
+                                    type="checkbox"
+                                    v-model="form.auto_update_proficiency"
+                                    class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                />
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="auto_update_proficiency" class="font-medium text-gray-700">
+                                    Auto-update proficiency level
+                                </label>
+                                <p class="text-gray-500">
+                                    Allow LangGPT to automatically update your proficiency level based on your progress (when highly confident).
+                                </p>
+                            </div>
+                        </div>
+                        <InputError class="mt-2" :message="form.errors.auto_update_proficiency" />
                     </div>
                 </div>
             </div>

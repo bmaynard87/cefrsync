@@ -26,6 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'native_language',
         'target_language',
         'proficiency_level',
+        'auto_update_proficiency',
     ];
 
     /**
@@ -58,6 +59,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'auto_update_proficiency' => 'boolean',
         ];
     }
 
@@ -74,5 +76,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function chatSessions()
     {
         return $this->hasMany(ChatSession::class);
+    }
+
+    public function languageInsights()
+    {
+        return $this->hasMany(LanguageInsight::class);
     }
 }

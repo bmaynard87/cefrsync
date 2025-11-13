@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import InsightPanel from '@/components/Insights/InsightPanel.vue';
 
 interface Props {
     nativeLanguage: string;
@@ -28,7 +29,8 @@ const handleSettings = () => {
                     Practice your language skills with AI assistance
                 </p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
+                <InsightPanel />
                 <button
                     data-test="settings-button"
                     @click="handleSettings"

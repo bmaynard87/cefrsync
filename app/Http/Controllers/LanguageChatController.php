@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\AnalyzeRecentMessages;
 use App\Models\ChatSession;
 use App\Models\ChatMessage;
 use App\Services\OpenAiService;
@@ -140,6 +141,9 @@ class LanguageChatController extends Controller
         // Periodically update conversation summary (every 10 messages)
         if ($chatSession->messages()->count() % 10 === 0) {
             $this->updateSessionSummary($chatSession, $formattedHistory);
+
+            // Dispatch job to analyze recent messages for insights
+            AnalyzeRecentMessages::dispatch($chatSession, 20);
         }
 
         return response()->json([
@@ -334,7 +338,7 @@ class LanguageChatController extends Controller
 
         foreach ($userMessages as $message) {
             $processedCount++;
-            
+
             // Detect language for each message
             $detection = $this->openAiService->detectLanguage(
                 $message->content,
@@ -387,8 +391,8 @@ class LanguageChatController extends Controller
                 'total_processed' => $processedCount,
                 'valid_messages' => count($validMessages),
                 'invalid_messages' => count($invalidMessages),
-                'accuracy_rate' => $processedCount > 0 
-                    ? round((count($validMessages) / $processedCount) * 100, 2) 
+                'accuracy_rate' => $processedCount > 0
+                    ? round((count($validMessages) / $processedCount) * 100, 2)
                     : 0,
             ],
             'valid_messages' => $validMessages,

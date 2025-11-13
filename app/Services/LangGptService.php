@@ -170,4 +170,26 @@ class LangGptService
 
         return $this->makeRequest('POST', 'analyze-messages', $payload);
     }
+
+    /**
+     * Evaluate user progress over time and suggest proficiency changes
+     */
+    public function evaluateProgress(array $payload): array
+    {
+        if (!$this->hasApiKey()) {
+            return [
+                'success' => false,
+                'error' => 'API key required for progress evaluation',
+            ];
+        }
+
+        Log::info('Calling LangGPT evaluate-progress', [
+            'api_key_present' => !empty($this->apiKey),
+            'api_key_length' => strlen($this->apiKey ?? ''),
+            'url' => "{$this->baseUrl}/{$this->apiVersion}/evaluate-progress",
+            'payload_keys' => array_keys($payload),
+        ]);
+
+        return $this->makeRequest('POST', 'evaluate-progress', $payload);
+    }
 }

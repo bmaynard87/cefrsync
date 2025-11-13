@@ -70,5 +70,12 @@ Route::middleware(['auth', 'verified'])->prefix('language-chat')->name('language
     Route::delete('/{chatSession}', [\App\Http\Controllers\LanguageChatController::class, 'destroy'])->name('.destroy');
 });
 
+Route::middleware(['auth', 'verified'])->prefix('insights')->name('insights')->group(function () {
+    Route::get('/', [\App\Http\Controllers\LanguageInsightController::class, 'index'])->name('.index');
+    Route::post('/mark-all-read', [\App\Http\Controllers\LanguageInsightController::class, 'markAllAsRead'])->name('.mark-all-read');
+    Route::patch('/{insight}/read', [\App\Http\Controllers\LanguageInsightController::class, 'markAsRead'])->name('.mark-read');
+    Route::delete('/{insight}', [\App\Http\Controllers\LanguageInsightController::class, 'destroy'])->name('.destroy');
+});
+
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
