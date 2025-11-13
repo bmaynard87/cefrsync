@@ -20,8 +20,16 @@ jobs:
         extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
         coverage: none
     
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    
     - name: Install Composer Dependencies
       run: composer install --no-interaction --prefer-dist --optimize-autoloader
+    
+    - name: Install NPM Dependencies
+      run: npm ci --legacy-peer-deps
     
     - name: Setup Environment
       run: |
@@ -37,6 +45,9 @@ jobs:
     
     - name: Run Migrations
       run: php artisan migrate --force
+    
+    - name: Build Frontend Assets
+      run: npm run build
     
     - name: Run PHP Tests
       run: php artisan test
