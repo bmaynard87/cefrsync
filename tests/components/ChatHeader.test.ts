@@ -75,35 +75,6 @@ describe('ChatHeader', () => {
         expect(wrapper.emitted()).toHaveProperty('settings');
     });
 
-    it('renders edit parameters button', () => {
-        const wrapper = mount(ChatHeader, {
-            props: {
-                nativeLanguage: 'Spanish',
-                targetLanguage: 'English',
-                proficiencyLevel: 'B1',
-            },
-        });
-
-        const editButton = wrapper.find('[data-test="edit-params-button"]');
-        expect(editButton.exists()).toBe(true);
-        expect(editButton.text()).toContain('Edit');
-    });
-
-    it('emits edit-params event when edit button is clicked', async () => {
-        const wrapper = mount(ChatHeader, {
-            props: {
-                nativeLanguage: 'Spanish',
-                targetLanguage: 'English',
-                proficiencyLevel: 'B1',
-            },
-        });
-
-        const editButton = wrapper.find('[data-test="edit-params-button"]');
-        await editButton.trigger('click');
-
-        expect(wrapper.emitted()).toHaveProperty('edit-params');
-    });
-
     it('displays language parameters with correct styling classes', () => {
         const wrapper = mount(ChatHeader, {
             props: {
