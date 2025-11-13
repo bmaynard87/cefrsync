@@ -286,4 +286,23 @@ class LanguageChatController extends Controller
 
         return back();
     }
+
+    /**
+     * Detect the language of a message
+     */
+    public function detectLanguage(Request $request, ChatSession $chatSession)
+    {
+        Gate::authorize('view', $chatSession);
+
+        $validated = $request->validate([
+            'message' => 'required|string|max:1000',
+        ]);
+
+        $result = $this->openAiService->detectLanguage(
+            $validated['message'],
+            $chatSession->target_language
+        );
+
+        return response()->json($result);
+    }
 }

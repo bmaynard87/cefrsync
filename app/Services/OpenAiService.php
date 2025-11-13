@@ -230,4 +230,61 @@ Keep your responses conversational and concise (2-4 sentences usually). Focus on
             ];
         })->toArray();
     }
+
+    /**
+     * Detect if a message is in the target language
+     * 
+     * @param string $message The user's message to check
+     * @param string $targetLanguage The expected language
+     * @return array ['is_target_language' => bool, 'detected_language' => string|null]
+     */
+    public function detectLanguage(string $message, string $targetLanguage): array
+    {
+        try {
+            $systemPrompt = "You are a language detection expert. Analyze the provided text and determine what language it is written in. Be precise and only respond with a JSON object.";
+
+            $userPrompt = "Analyze this text and determine if it is written in {$targetLanguage}. If it is, respond with {\"is_target_language\": true, \"detected_language\": \"{$targetLanguage}\"}. If it is NOT in {$targetLanguage}, respond with {\"is_target_language\": false, \"detected_language\": \"[the actual language name]\"}.
+
+Text to analyze: \"{$message}\"
+
+Respond ONLY with the JSON object, nothing else.";
+
+            $response = OpenAI::chat()->create([
+                'model' => config('services.openai.model'),
+                'messages' => [
+                    ['role' => 'system', 'content' => $systemPrompt],
+                    ['role' => 'user', 'content' => $userPrompt],
+                ],
+                'max_tokens' => 100,
+                'temperature' => 0.1, // Low temperature for more deterministic results
+            ]);
+
+            $content = $response->choices[0]->message->content;
+            
+            // Parse JSON response
+            $result = json_decode(trim($content), true);
+            
+            if (!$result || !isset($result['is_target_language'])) {
+                throw new \Exception('Invalid response format from OpenAI');
+            }
+
+            return [
+                'is_target_language' => (bool) $result['is_target_language'],
+                'detected_language' => $result['detected_language'] ?? null,
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Language Detection Error', [
+                'error' => $e->getMessage(),
+                'message' => $message,
+                'target_language' => $targetLanguage,
+            ]);
+
+            // Fallback: assume it's in the target language
+            return [
+                'is_target_language' => true,
+                'detected_language' => $targetLanguage,
+            ];
+        }
+    }
 }
