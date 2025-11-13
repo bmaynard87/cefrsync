@@ -64,6 +64,7 @@ Route::middleware(['auth', 'verified'])->prefix('language-chat')->name('language
     Route::get('/{chatSession}/messages', [\App\Http\Controllers\LanguageChatController::class, 'messages'])->name('.messages');
     Route::post('/{chatSession}/message', [\App\Http\Controllers\LanguageChatController::class, 'sendMessage'])->name('.message');
     Route::post('/{chatSession}/detect-language', [\App\Http\Controllers\LanguageChatController::class, 'detectLanguage'])->name('.detect-language');
+    Route::post('/{chatSession}/analyze-for-langgpt', [\App\Http\Controllers\LanguageChatController::class, 'analyzeForLangGpt'])->name('.analyze-for-langgpt');
     Route::patch('/{chatSession}/title', [\App\Http\Controllers\LanguageChatController::class, 'updateTitle'])->name('.update-title');
     Route::patch('/{chatSession}/parameters', [\App\Http\Controllers\LanguageChatController::class, 'updateParameters'])->name('.update-parameters');
     Route::delete('/{chatSession}', [\App\Http\Controllers\LanguageChatController::class, 'destroy'])->name('.destroy');

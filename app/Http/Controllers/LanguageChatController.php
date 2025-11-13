@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ChatSession;
 use App\Models\ChatMessage;
 use App\Services\OpenAiService;
+use App\Services\LangGptService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -12,7 +13,8 @@ use Inertia\Inertia;
 class LanguageChatController extends Controller
 {
     public function __construct(
-        protected OpenAiService $openAiService
+        protected OpenAiService $openAiService,
+        protected LangGptService $langGptService
     ) {
     }
 
@@ -304,5 +306,85 @@ class LanguageChatController extends Controller
         );
 
         return response()->json($result);
+    }
+
+    /**
+     * Analyze user messages and prepare valid target language messages for LangGPT
+     */
+    public function analyzeForLangGpt(Request $request, ChatSession $chatSession)
+    {
+        Gate::authorize('view', $chatSession);
+
+        $validated = $request->validate([
+            'limit' => 'sometimes|integer|min:1|max:100',
+        ]);
+
+        $limit = $validated['limit'] ?? 20;
+
+        // Get recent user messages
+        $userMessages = $chatSession->messages()
+            ->where('sender_type', 'user')
+            ->latest()
+            ->limit($limit)
+            ->get();
+
+        $validMessages = [];
+        $invalidMessages = [];
+        $processedCount = 0;
+
+        foreach ($userMessages as $message) {
+            $processedCount++;
+            
+            // Detect language for each message
+            $detection = $this->openAiService->detectLanguage(
+                $message->content,
+                $chatSession->target_language
+            );
+
+            if ($detection['is_target_language']) {
+                $validMessages[] = [
+                    'id' => $message->id,
+                    'content' => $message->content,
+                    'created_at' => $message->created_at,
+                    'detected_language' => $detection['detected_language'],
+                ];
+            } else {
+                $invalidMessages[] = [
+                    'id' => $message->id,
+                    'content' => $message->content,
+                    'created_at' => $message->created_at,
+                    'detected_language' => $detection['detected_language'],
+                    'expected_language' => $chatSession->target_language,
+                ];
+            }
+        }
+
+        // Prepare data for LangGPT
+        $langGptPayload = [
+            'target_language' => $chatSession->target_language,
+            'proficiency_level' => $chatSession->proficiency_level,
+            'messages' => array_map(fn($msg) => [
+                'content' => $msg['content'],
+                'timestamp' => $msg['created_at']->toIso8601String(),
+            ], $validMessages),
+            'total_messages' => count($validMessages),
+        ];
+
+        return response()->json([
+            'chat_session_id' => $chatSession->id,
+            'target_language' => $chatSession->target_language,
+            'proficiency_level' => $chatSession->proficiency_level,
+            'analysis' => [
+                'total_processed' => $processedCount,
+                'valid_messages' => count($validMessages),
+                'invalid_messages' => count($invalidMessages),
+                'accuracy_rate' => $processedCount > 0 
+                    ? round((count($validMessages) / $processedCount) * 100, 2) 
+                    : 0,
+            ],
+            'valid_messages' => $validMessages,
+            'invalid_messages' => $invalidMessages,
+            'langgpt_payload' => $langGptPayload,
+        ]);
     }
 }
