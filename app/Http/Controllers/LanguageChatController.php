@@ -370,6 +370,15 @@ class LanguageChatController extends Controller
             'total_messages' => count($validMessages),
         ];
 
+        // Get AI-powered analysis from LangGPT
+        $langGptAnalysis = null;
+        if (count($validMessages) > 0) {
+            $langGptResponse = $this->langGptService->analyzeMessages($langGptPayload);
+            if ($langGptResponse['success']) {
+                $langGptAnalysis = $langGptResponse['data'];
+            }
+        }
+
         return response()->json([
             'chat_session_id' => $chatSession->id,
             'target_language' => $chatSession->target_language,
@@ -384,7 +393,7 @@ class LanguageChatController extends Controller
             ],
             'valid_messages' => $validMessages,
             'invalid_messages' => $invalidMessages,
-            'langgpt_payload' => $langGptPayload,
+            'langgpt_analysis' => $langGptAnalysis,
         ]);
     }
 }

@@ -76,12 +76,7 @@ test('can analyze messages for langgpt', function () {
             ],
             'valid_messages',
             'invalid_messages',
-            'langgpt_payload' => [
-                'target_language',
-                'proficiency_level',
-                'messages',
-                'total_messages',
-            ],
+            'langgpt_analysis',
         ])
         ->assertJson([
             'target_language' => 'Spanish',
@@ -96,7 +91,9 @@ test('can analyze messages for langgpt', function () {
 
     expect($response->json('valid_messages'))->toHaveCount(2);
     expect($response->json('invalid_messages'))->toHaveCount(1);
-    expect($response->json('langgpt_payload.total_messages'))->toBe(2);
+    
+    // Verify LangGPT analysis was included (may be null if no valid messages or LangGPT unavailable)
+    expect($response->json())->toHaveKey('langgpt_analysis');
 });
 
 test('analyze messages respects limit parameter', function () {

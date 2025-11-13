@@ -155,4 +155,19 @@ class LangGptService
     {
         return $this->baseUrl;
     }
+
+    /**
+     * Analyze messages for language learning insights
+     */
+    public function analyzeMessages(array $payload): array
+    {
+        if (!$this->hasApiKey()) {
+            return [
+                'success' => false,
+                'error' => 'API key required for message analysis',
+            ];
+        }
+
+        return $this->makeRequest('POST', 'analyze-messages', $payload);
+    }
 }
