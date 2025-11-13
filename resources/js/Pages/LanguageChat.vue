@@ -77,6 +77,11 @@ const pageTitle = computed(() => {
     return 'Language Chat';
 });
 
+// Check if there's already an unused "New Conversation" chat
+const hasUnusedNewChat = computed(() => {
+    return chats.value.some(chat => chat.title === 'New Conversation');
+});
+
 const scrollToBottom = async () => {
     await nextTick();
     if (chatContainer.value) {
@@ -175,6 +180,20 @@ const sendMessage = async () => {
 };
 
 const handleNewChat = async () => {
+    // Check if there's already an unused new chat
+    const unusedNewChat = chats.value.find(chat => chat.title === 'New Conversation');
+    
+    if (unusedNewChat) {
+        // Just switch to the existing unused chat instead of creating a new one
+        handleSelectChat(unusedNewChat.id);
+        return;
+    }
+    
+    // Double-check we're not creating duplicate (safety check)
+    if (hasUnusedNewChat.value) {
+        return;
+    }
+    
     try {
         const response = await fetch(route('language-chat.create'), {
             method: 'POST',
@@ -282,7 +301,8 @@ onMounted(() => {
         <div class="flex h-screen w-full bg-gray-50">
             <ChatSidebar 
                 :chats="chats" 
-                :active-chat="activeChat" 
+                :active-chat="activeChat"
+                :has-unused-new-chat="hasUnusedNewChat"
                 @new-chat="handleNewChat" 
                 @select-chat="handleSelectChat"
                 @delete-chat="handleDeleteChat"

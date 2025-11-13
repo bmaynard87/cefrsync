@@ -11,9 +11,10 @@ interface Chat {
 interface Props {
     chats: Chat[];
     activeChat: number | null;
+    hasUnusedNewChat?: boolean;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
     'new-chat': [];
@@ -26,6 +27,10 @@ const editingChatId = ref<number | null>(null);
 const editingTitle = ref('');
 
 const handleNewChat = () => {
+    // Don't emit if there's already an unused new chat
+    if (props.hasUnusedNewChat) {
+        return;
+    }
     emit('new-chat');
 };
 
@@ -80,7 +85,13 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
             <button
                 data-test="new-chat-button"
                 @click="handleNewChat"
-                class="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                :disabled="hasUnusedNewChat"
+                :class="[
+                    'flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors',
+                    hasUnusedNewChat 
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                ]"
             >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
