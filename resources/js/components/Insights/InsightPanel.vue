@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { router } from '@inertiajs/vue3';
+import axios from 'axios';
 
 interface Insight {
     id: number;
@@ -27,23 +28,14 @@ const fetchInsights = async (silent = false) => {
         isLoading.value = true;
     }
     try {
-        const response = await fetch('/insights', {
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'same-origin',
-        });
-
-        if (response.ok) {
-            const data: InsightsData = await response.json();
-            // Only update if data has changed to prevent unnecessary re-renders
-            if (JSON.stringify(insights.value) !== JSON.stringify(data.insights)) {
-                insights.value = data.insights;
-            }
-            if (unreadCount.value !== data.unread_count) {
-                unreadCount.value = data.unread_count;
-            }
+        const { data } = await axios.get<InsightsData>('/insights');
+        
+        // Only update if data has changed to prevent unnecessary re-renders
+        if (JSON.stringify(insights.value) !== JSON.stringify(data.insights)) {
+            insights.value = data.insights;
+        }
+        if (unreadCount.value !== data.unread_count) {
+            unreadCount.value = data.unread_count;
         }
     } catch (error) {
         console.error('Error fetching insights:', error);
@@ -56,24 +48,12 @@ const fetchInsights = async (silent = false) => {
 
 const markAsRead = async (insightId: number) => {
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        const response = await fetch(`/insights/${insightId}/read`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken || '',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'same-origin',
-        });
-
-        if (response.ok) {
-            const insight = insights.value.find(i => i.id === insightId);
-            if (insight) {
-                insight.is_read = true;
-                unreadCount.value = Math.max(0, unreadCount.value - 1);
-            }
+        await axios.patch(`/insights/${insightId}/read`);
+        
+        const insight = insights.value.find(i => i.id === insightId);
+        if (insight) {
+            insight.is_read = true;
+            unreadCount.value = Math.max(0, unreadCount.value - 1);
         }
     } catch (error) {
         console.error('Error marking insight as read:', error);
@@ -82,24 +62,12 @@ const markAsRead = async (insightId: number) => {
 
 const markAllAsRead = async () => {
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        const response = await fetch('/insights/mark-all-read', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken || '',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'same-origin',
+        await axios.post('/insights/mark-all-read');
+        
+        insights.value.forEach(insight => {
+            insight.is_read = true;
         });
-
-        if (response.ok) {
-            insights.value.forEach(insight => {
-                insight.is_read = true;
-            });
-            unreadCount.value = 0;
-        }
+        unreadCount.value = 0;
     } catch (error) {
         console.error('Error marking all as read:', error);
     }
@@ -107,26 +75,14 @@ const markAllAsRead = async () => {
 
 const deleteInsight = async (insightId: number) => {
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        const response = await fetch(`/insights/${insightId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken || '',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'same-origin',
-        });
-
-        if (response.ok) {
-            const index = insights.value.findIndex(i => i.id === insightId);
-            if (index !== -1) {
-                const wasUnread = !insights.value[index].is_read;
-                insights.value.splice(index, 1);
-                if (wasUnread) {
-                    unreadCount.value = Math.max(0, unreadCount.value - 1);
-                }
+        await axios.delete(`/insights/${insightId}`);
+        
+        const index = insights.value.findIndex(i => i.id === insightId);
+        if (index !== -1) {
+            const wasUnread = !insights.value[index].is_read;
+            insights.value.splice(index, 1);
+            if (wasUnread) {
+                unreadCount.value = Math.max(0, unreadCount.value - 1);
             }
         }
     } catch (error) {
