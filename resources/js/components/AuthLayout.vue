@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import AppLogo from '@/components/AppLogo.vue';
+import { Link } from '@inertiajs/vue3';
+
 defineProps<{
     title: string;
     subtitle?: string;
@@ -9,8 +12,10 @@ defineProps<{
     <div class="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4 py-12">
         <div class="w-full max-w-md space-y-8">
             <!-- Logo/Header -->
-            <div class="text-center">
-                <h1 class="text-4xl font-bold tracking-tight text-gray-900">CefrSync</h1>
+            <div class="flex flex-col items-center text-center">
+                <Link :href="route('home')">
+                    <AppLogo size="lg" />
+                </Link>
                 <p class="mt-2 text-sm text-gray-600">Language learning companion</p>
             </div>
 

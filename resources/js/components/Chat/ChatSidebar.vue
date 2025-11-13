@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { Link } from '@inertiajs/vue3';
+import AppLogo from '@/components/AppLogo.vue';
 
 interface Chat {
     id: number;
@@ -80,6 +82,13 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
 
 <template>
     <div class="w-64 border-r border-gray-200 bg-white">
+        <!-- Logo -->
+        <div class="border-b border-gray-200 px-4 py-4">
+            <Link :href="route('language-chat.index')">
+                <AppLogo size="sm" />
+            </Link>
+        </div>
+        
         <!-- Sidebar Header -->
         <div class="border-b border-gray-200 px-4 py-4">
             <button

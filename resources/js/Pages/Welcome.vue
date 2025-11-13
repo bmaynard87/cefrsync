@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import AppLogo from '@/components/AppLogo.vue';
 
 defineProps<{
     canLogin?: boolean;
@@ -13,14 +14,7 @@ defineProps<{
         <!-- Header -->
         <header class="container mx-auto px-6 py-6">
             <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
-                        </svg>
-                    </div>
-                    <span class="text-2xl font-bold text-gray-900">CefrSync</span>
-                </div>
+                <AppLogo />
                 
                 <nav v-if="canLogin" class="flex items-center gap-4">
                     <Link
