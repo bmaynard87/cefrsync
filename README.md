@@ -252,10 +252,44 @@ Run with coverage:
 npm test -- --coverage
 ```
 
+### End-to-End Tests (Playwright)
+
+Run E2E tests (requires Docker stack and Vite dev server running):
+
+```bash
+npm run test:e2e
+```
+
+Run with UI mode (recommended for development):
+
+```bash
+npm run test:e2e:ui
+```
+
+Run in headed mode (see the browser):
+
+```bash
+npm run test:e2e:headed
+```
+
+Debug specific test:
+
+```bash
+npm run test:e2e:debug
+```
+
+**Prerequisites for E2E tests:**
+1. Start Docker stack: `./vendor/bin/sail up -d`
+2. Start Vite dev server: `npm run dev`
+3. Ensure database is seeded: `./vendor/bin/sail artisan migrate:fresh --seed`
+
+See `e2e/README.md` for more details.
+
 ### Test Structure
 
 - **PHP Tests** (`tests/Feature/`, `tests/Unit/`): Backend logic, API endpoints, database
 - **Vue Tests** (`tests/components/`): Component rendering, user interactions, props
+- **E2E Tests** (`e2e/`): Full application workflows across browsers (Chromium, Firefox, WebKit)
 
 All tests use the TDD approach and should be written before implementing features.
 
