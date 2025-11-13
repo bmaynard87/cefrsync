@@ -26,7 +26,7 @@ const verificationLinkSent = computed(
         <div class="w-full max-w-md space-y-8">
             <!-- Logo/Header -->
             <div class="text-center">
-                <h1 class="text-4xl font-bold tracking-tight text-gray-900">CEFRSync</h1>
+                <h1 class="text-4xl font-bold tracking-tight text-gray-900">CefrSync</h1>
                 <p class="mt-2 text-sm text-gray-600">Language learning companion</p>
             </div>
 
@@ -76,7 +76,7 @@ const verificationLinkSent = computed(
 
             <!-- Footer -->
             <p class="text-center text-xs text-gray-500">
-                © {{ new Date().getFullYear() }} CEFRSync. All rights reserved.
+                © {{ new Date().getFullYear() }} CefrSync. All rights reserved.
             </p>
         </div>
     </div>

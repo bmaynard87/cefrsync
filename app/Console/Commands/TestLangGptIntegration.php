@@ -10,12 +10,12 @@ use Illuminate\Console\Command;
 class TestLangGptIntegration extends Command
 {
     protected $signature = 'test:langgpt-integration {session_id?}';
-    protected $description = 'Test the full CEFRSync to LangGPT integration';
+    protected $description = 'Test the full CefrSync to LangGPT integration';
 
     public function handle(LangGptService $langGptService)
     {
         $sessionId = $this->argument('session_id');
-        
+
         if (!$sessionId) {
             $session = ChatSession::with('user')->first();
             if (!$session) {
@@ -34,14 +34,14 @@ class TestLangGptIntegration extends Command
         $this->info("Testing with session: {$session->id}");
         $this->info("Target language: {$session->target_language}");
         $this->info("Proficiency: {$session->proficiency_level}");
-        
+
         // Prepare payload similar to controller
         $messages = $session->messages()
             ->where('sender_type', 'user')
             ->latest()
             ->take(5)
             ->get();
-            
+
         if ($messages->isEmpty()) {
             $this->error('No messages found in this session');
             return 1;
@@ -74,9 +74,9 @@ class TestLangGptIntegration extends Command
 
         $this->info('✓ Successfully received analysis from LangGPT');
         $this->newLine();
-        
+
         $analysis = $response['data'];
-        
+
         $this->info('=== Analysis Summary ===');
         $this->line("Messages processed: {$analysis['total_messages_analyzed']}");
         $this->line("Target language: {$analysis['target_language']}");
@@ -86,13 +86,13 @@ class TestLangGptIntegration extends Command
             $this->line("Complexity score: {$analysis['analysis']['complexity_score']}/10");
         }
         $this->newLine();
-        
+
         if (isset($analysis['overall_feedback'])) {
             $this->info('=== Overall Feedback ===');
             $this->line($analysis['overall_feedback']);
             $this->newLine();
         }
-        
+
         if (isset($analysis['grammar_issues']) && count($analysis['grammar_issues']) > 0) {
             $this->info('=== Grammar Issues ===');
             foreach ($analysis['grammar_issues'] as $issue) {
@@ -104,7 +104,7 @@ class TestLangGptIntegration extends Command
                 $this->newLine();
             }
         }
-        
+
         if (isset($analysis['vocabulary_insights']) && count($analysis['vocabulary_insights']) > 0) {
             $this->info('=== Vocabulary Insights ===');
             foreach ($analysis['vocabulary_insights'] as $vocab) {
@@ -112,7 +112,7 @@ class TestLangGptIntegration extends Command
             }
             $this->newLine();
         }
-        
+
         if (isset($analysis['strengths'])) {
             $this->info('=== Strengths ===');
             foreach ($analysis['strengths'] as $strength) {
@@ -120,7 +120,7 @@ class TestLangGptIntegration extends Command
             }
             $this->newLine();
         }
-        
+
         if (isset($analysis['areas_for_improvement'])) {
             $this->info('=== Areas for Improvement ===');
             foreach ($analysis['areas_for_improvement'] as $area) {
