@@ -6,7 +6,14 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return redirect(route('language-chat.index'));
+    if (auth()->check()) {
+        return redirect(route('language-chat.index'));
+    }
+    
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+    ]);
 })->name('home');
 
 Route::get('dashboard', function () {
