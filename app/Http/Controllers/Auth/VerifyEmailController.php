@@ -14,14 +14,22 @@ class VerifyEmailController extends Controller
      */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
+        if (! hash_equals((string) $request->route('id'), (string) $request->user()->getKey())) {
+            return redirect()->intended(route('language-chat.index', absolute: false).'?verified=1');
+        }
+
+        if (! hash_equals((string) $request->route('hash'), sha1($request->user()->getEmailForVerification()))) {
+            return redirect()->intended(route('language-chat.index', absolute: false).'?verified=1');
+        }
+
         if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+            return redirect()->intended(route('language-chat.index', absolute: false).'?verified=1');
         }
 
         if ($request->user()->markEmailAsVerified()) {
             event(new Verified($request->user()));
         }
 
-        return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+        return redirect()->intended(route('language-chat.index', absolute: false).'?verified=1');
     }
 }

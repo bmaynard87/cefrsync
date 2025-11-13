@@ -79,7 +79,12 @@ class ProfileTest extends TestCase
             ->assertRedirect('/');
 
         $this->assertGuest();
-        $this->assertNull($user->fresh());
+        
+        // User should be soft deleted (not hard deleted)
+        $this->assertSoftDeleted('users', ['id' => $user->id]);
+        
+        // Verify user is no longer retrievable via normal queries
+        $this->assertNull(User::find($user->id));
     }
 
     public function test_correct_password_must_be_provided_to_delete_account(): void
