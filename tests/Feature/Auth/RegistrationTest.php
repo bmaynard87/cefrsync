@@ -13,6 +13,9 @@ test('new users can register', function () {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'native_language' => 'English',
+        'target_language' => 'Spanish',
+        'proficiency_level' => 'B1',
     ]);
 
     $this->assertAuthenticated();

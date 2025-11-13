@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { useLanguageOptions } from '@/composables/useLanguageOptions';
+
+const { languages, proficiencyLevels } = useLanguageOptions();
 
 const form = useForm({
     first_name: '',
@@ -11,6 +14,9 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
+    native_language: '',
+    target_language: '',
+    proficiency_level: '',
 });
 
 const submit = () => {
@@ -87,6 +93,60 @@ const submit = () => {
                         />
                         <p v-if="form.errors.email" class="text-sm text-red-600">
                             {{ form.errors.email }}
+                        </p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="native_language">Native Language</Label>
+                        <select
+                            id="native_language"
+                            v-model="form.native_language"
+                            required
+                            class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            :class="{ 'border-red-500': form.errors.native_language }"
+                        >
+                            <option v-for="lang in languages" :key="lang.value" :value="lang.value">
+                                {{ lang.label }}
+                            </option>
+                        </select>
+                        <p v-if="form.errors.native_language" class="text-sm text-red-600">
+                            {{ form.errors.native_language }}
+                        </p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="target_language">Target Language</Label>
+                        <select
+                            id="target_language"
+                            v-model="form.target_language"
+                            required
+                            class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            :class="{ 'border-red-500': form.errors.target_language }"
+                        >
+                            <option v-for="lang in languages" :key="lang.value" :value="lang.value">
+                                {{ lang.label }}
+                            </option>
+                        </select>
+                        <p v-if="form.errors.target_language" class="text-sm text-red-600">
+                            {{ form.errors.target_language }}
+                        </p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="proficiency_level">Proficiency Level (CEFR)</Label>
+                        <select
+                            id="proficiency_level"
+                            v-model="form.proficiency_level"
+                            required
+                            class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            :class="{ 'border-red-500': form.errors.proficiency_level }"
+                        >
+                            <option v-for="level in proficiencyLevels" :key="level.value" :value="level.value">
+                                {{ level.label }}
+                            </option>
+                        </select>
+                        <p v-if="form.errors.proficiency_level" class="text-sm text-red-600">
+                            {{ form.errors.proficiency_level }}
                         </p>
                     </div>
 
