@@ -22,8 +22,10 @@ const unreadCount = ref(0);
 const isLoading = ref(false);
 const isOpen = ref(false);
 
-const fetchInsights = async () => {
-    isLoading.value = true;
+const fetchInsights = async (silent = false) => {
+    if (!silent) {
+        isLoading.value = true;
+    }
     try {
         const response = await fetch('/insights', {
             headers: {
@@ -35,13 +37,20 @@ const fetchInsights = async () => {
 
         if (response.ok) {
             const data: InsightsData = await response.json();
-            insights.value = data.insights;
-            unreadCount.value = data.unread_count;
+            // Only update if data has changed to prevent unnecessary re-renders
+            if (JSON.stringify(insights.value) !== JSON.stringify(data.insights)) {
+                insights.value = data.insights;
+            }
+            if (unreadCount.value !== data.unread_count) {
+                unreadCount.value = data.unread_count;
+            }
         }
     } catch (error) {
         console.error('Error fetching insights:', error);
     } finally {
-        isLoading.value = false;
+        if (!silent) {
+            isLoading.value = false;
+        }
     }
 };
 
@@ -160,8 +169,8 @@ const togglePanel = () => {
 
 onMounted(() => {
     fetchInsights();
-    // Poll for new insights every 30 seconds
-    setInterval(fetchInsights, 30000);
+    // Poll for new insights every 30 seconds (silently to avoid flash)
+    setInterval(() => fetchInsights(true), 30000);
 });
 </script>
 
