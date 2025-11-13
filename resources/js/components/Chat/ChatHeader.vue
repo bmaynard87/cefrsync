@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
+
 interface Props {
     nativeLanguage: string;
     targetLanguage: string;
@@ -34,6 +36,14 @@ const handleSettings = () => {
                 >
                     Settings
                 </button>
+                <Link
+                    :href="route('logout')"
+                    method="post"
+                    as="button"
+                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                    Log out
+                </Link>
             </div>
         </div>
 
