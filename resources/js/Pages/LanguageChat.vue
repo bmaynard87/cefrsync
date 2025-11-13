@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, nextTick, computed, onMounted } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, Head } from '@inertiajs/vue3';
 import AppShell from '@/components/AppShell.vue';
 import ChatSidebar from '@/components/Chat/ChatSidebar.vue';
 import ChatHeader from '@/components/Chat/ChatHeader.vue';
@@ -65,6 +65,16 @@ const proficiencyLabel = computed(() => {
         'C2': 'Proficient',
     };
     return levels[proficiencyLevel.value] || proficiencyLevel.value;
+});
+
+const pageTitle = computed(() => {
+    if (activeChat.value) {
+        const chat = chats.value.find(c => c.id === activeChat.value);
+        if (chat) {
+            return chat.title;
+        }
+    }
+    return 'Language Chat';
 });
 
 const scrollToBottom = async () => {
@@ -267,6 +277,7 @@ onMounted(() => {
 </script>
 
 <template>
+    <Head :title="pageTitle" />
     <AppShell>
         <div class="flex h-screen w-full bg-gray-50">
             <ChatSidebar 

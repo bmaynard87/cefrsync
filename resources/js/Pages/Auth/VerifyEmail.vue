@@ -20,7 +20,7 @@ const verificationLinkSent = computed(
 </script>
 
 <template>
-    <Head title="Email Verification" />
+    <Head title="Verify Email" />
 
     <div class="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4 py-12">
         <div class="w-full max-w-md space-y-8">
