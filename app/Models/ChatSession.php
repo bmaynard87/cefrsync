@@ -38,4 +38,9 @@ class ChatSession extends Model
     {
         return $this->hasMany(ChatMessage::class);
     }
+
+    public function insights(): HasMany
+    {
+        return $this->hasMany(LanguageInsight::class);
+    }
 }
