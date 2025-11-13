@@ -341,31 +341,31 @@ onMounted(() => {
                                 </button>
                                 <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     <div class="rounded-lg border border-gray-200 bg-white p-4">
-                                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
+                                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-green-100 mx-auto">
                                             <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
                                         </div>
-                                        <h3 class="mb-1 font-medium text-gray-900">Adaptive Learning</h3>
-                                        <p class="text-sm text-gray-600">AI adjusts to your {{ proficiencyLevel }} level</p>
+                                        <h3 class="mb-1 font-medium text-gray-900 text-center">Adaptive Learning</h3>
+                                        <p class="text-sm text-gray-600 text-center">AI adjusts to your {{ proficiencyLevel }} level</p>
                                     </div>
                                     <div class="rounded-lg border border-gray-200 bg-white p-4">
-                                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
+                                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 mx-auto">
                                             <svg class="h-5 w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
                                             </svg>
                                         </div>
-                                        <h3 class="mb-1 font-medium text-gray-900">Natural Conversation</h3>
-                                        <p class="text-sm text-gray-600">Practice real-world dialogue</p>
+                                        <h3 class="mb-1 font-medium text-gray-900 text-center">Natural Conversation</h3>
+                                        <p class="text-sm text-gray-600 text-center">Practice real-world dialogue</p>
                                     </div>
                                     <div class="rounded-lg border border-gray-200 bg-white p-4">
-                                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-orange-100">
+                                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 mx-auto">
                                             <svg class="h-5 w-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                             </svg>
                                         </div>
-                                        <h3 class="mb-1 font-medium text-gray-900">Instant Feedback</h3>
-                                        <p class="text-sm text-gray-600">Get corrections and suggestions</p>
+                                        <h3 class="mb-1 font-medium text-gray-900 text-center">Instant Feedback</h3>
+                                        <p class="text-sm text-gray-600 text-center">Get corrections and suggestions</p>
                                     </div>
                                 </div>
                             </div>
