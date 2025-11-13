@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     // Set up test configuration
@@ -21,35 +21,35 @@ describe('LangGPT Integration Endpoints', function () {
                     'message' => 'pong from LangGPT API v2!',
                     'version' => '2.0',
                     'timestamp' => '2025-11-12T07:00:00Z',
-                    'features' => ['api_keys', 'versioning', 'enhanced_responses']
+                    'features' => ['api_keys', 'versioning', 'enhanced_responses'],
                 ], 200, [
                     'API-Version' => 'v2',
                     'API-Latest-Version' => 'v2',
-                    'API-Supported-Versions' => 'v1, v2'
-                ])
+                    'API-Supported-Versions' => 'v1, v2',
+                ]),
             ]);
 
             $response = $this->get('/ping-langgpt');
 
             $response->assertStatus(200)
-                    ->assertJsonStructure([
-                        'ping_result' => [
-                            'success',
-                            'data' => [
-                                'message',
-                                'version',
-                                'timestamp',
-                                'features'
-                            ],
-                            'status',
-                            'headers'
-                        ],
-                        'api_info' => [
+                ->assertJsonStructure([
+                    'ping_result' => [
+                        'success',
+                        'data' => [
+                            'message',
                             'version',
-                            'base_url',
-                            'has_api_key'
-                        ]
-                    ]);
+                            'timestamp',
+                            'features',
+                        ],
+                        'status',
+                        'headers',
+                    ],
+                    'api_info' => [
+                        'version',
+                        'base_url',
+                        'has_api_key',
+                    ],
+                ]);
 
             $data = $response->json();
             expect($data['ping_result']['success'])->toBeTrue();
@@ -61,14 +61,14 @@ describe('LangGPT Integration Endpoints', function () {
         it('handles LangGPT API failure gracefully', function () {
             Http::fake([
                 'http://test-langgpt.local:8000/v2/ping' => Http::response([
-                    'detail' => 'Service unavailable'
-                ], 503)
+                    'detail' => 'Service unavailable',
+                ], 503),
             ]);
 
             $response = $this->get('/ping-langgpt');
 
             $response->assertStatus(200); // Endpoint should still return 200
-            
+
             $data = $response->json();
             expect($data['ping_result']['success'])->toBeFalse();
             expect($data['ping_result']['status'])->toBe(503);
@@ -78,13 +78,13 @@ describe('LangGPT Integration Endpoints', function () {
             Http::fake([
                 'http://test-langgpt.local:8000/v2/ping' => function () {
                     throw new \Illuminate\Http\Client\ConnectionException('Connection refused');
-                }
+                },
             ]);
 
             $response = $this->get('/ping-langgpt');
 
             $response->assertStatus(200);
-            
+
             $data = $response->json();
             expect($data['ping_result']['success'])->toBeFalse();
             expect($data['ping_result']['error'])->toContain('Connection refused');
@@ -96,7 +96,7 @@ describe('LangGPT Integration Endpoints', function () {
             Http::fake([
                 'http://test-langgpt.local:8000/v2/ping' => Http::response([
                     'message' => 'pong from LangGPT API v2!',
-                    'version' => '2.0'
+                    'version' => '2.0',
                 ], 200),
                 'http://test-langgpt.local:8000/v2/health' => Http::response([
                     'status' => 'healthy',
@@ -105,43 +105,43 @@ describe('LangGPT Integration Endpoints', function () {
                     'components' => [
                         'api' => 'healthy',
                         'auth' => 'healthy',
-                        'storage' => 'healthy'
-                    ]
+                        'storage' => 'healthy',
+                    ],
                 ], 200),
                 'http://test-langgpt.local:8000/v2/features' => Http::response([
                     'version' => '2.0',
                     'features' => [
                         'api_key_authentication',
                         'version_management',
-                        'enhanced_responses'
-                    ]
+                        'enhanced_responses',
+                    ],
                 ], 200),
                 'http://test-langgpt.local:8000/v2/protected/ping' => Http::response([
                     'message' => 'pong from protected endpoint v2!',
                     'authenticated_with' => 'test-key',
-                    'version' => '2.0'
+                    'version' => '2.0',
                 ], 200),
                 'http://test-langgpt.local:8000/v2/protected/profile' => Http::response([
                     'profile' => [
                         'key_name' => 'test-key',
                         'created_at' => '2025-11-12T07:00:00Z',
                         'is_active' => true,
-                        'version' => '2.0'
-                    ]
-                ], 200)
+                        'version' => '2.0',
+                    ],
+                ], 200),
             ]);
 
             $response = $this->get('/langgpt-status');
 
             $response->assertStatus(200)
-                    ->assertJsonStructure([
-                        'ping' => ['success', 'data', 'status'],
-                        'health' => ['success', 'data', 'status'],
-                        'features' => ['success', 'data', 'status'],
-                        'api_info' => ['version', 'base_url', 'has_api_key'],
-                        'protected_ping' => ['success', 'data', 'status'],
-                        'profile' => ['success', 'data', 'status']
-                    ]);
+                ->assertJsonStructure([
+                    'ping' => ['success', 'data', 'status'],
+                    'health' => ['success', 'data', 'status'],
+                    'features' => ['success', 'data', 'status'],
+                    'api_info' => ['version', 'base_url', 'has_api_key'],
+                    'protected_ping' => ['success', 'data', 'status'],
+                    'profile' => ['success', 'data', 'status'],
+                ]);
 
             $data = $response->json();
             expect($data['ping']['success'])->toBeTrue();
@@ -154,27 +154,27 @@ describe('LangGPT Integration Endpoints', function () {
         it('handles mixed success/failure scenarios', function () {
             Http::fake([
                 'http://test-langgpt.local:8000/v2/ping' => Http::response([
-                    'message' => 'pong from LangGPT API v2!'
+                    'message' => 'pong from LangGPT API v2!',
                 ], 200),
                 'http://test-langgpt.local:8000/v2/health' => Http::response([
-                    'detail' => 'Service degraded'
+                    'detail' => 'Service degraded',
                 ], 503),
                 'http://test-langgpt.local:8000/v2/features' => Http::response([
                     'version' => '2.0',
-                    'features' => []
+                    'features' => [],
                 ], 200),
                 'http://test-langgpt.local:8000/v2/protected/ping' => Http::response([
-                    'detail' => 'Invalid or inactive API key'
+                    'detail' => 'Invalid or inactive API key',
                 ], 401),
                 'http://test-langgpt.local:8000/v2/protected/profile' => Http::response([
-                    'detail' => 'Invalid or inactive API key'
-                ], 401)
+                    'detail' => 'Invalid or inactive API key',
+                ], 401),
             ]);
 
             $response = $this->get('/langgpt-status');
 
             $response->assertStatus(200);
-            
+
             $data = $response->json();
             expect($data['ping']['success'])->toBeTrue();
             expect($data['health']['success'])->toBeFalse();
@@ -185,24 +185,24 @@ describe('LangGPT Integration Endpoints', function () {
 
         it('works without API key (skips protected endpoints)', function () {
             Config::set('services.langgpt.key', null);
-            
+
             Http::fake([
                 'http://test-langgpt.local:8000/v2/ping' => Http::response([
-                    'message' => 'pong from LangGPT API v2!'
+                    'message' => 'pong from LangGPT API v2!',
                 ], 200),
                 'http://test-langgpt.local:8000/v2/health' => Http::response([
-                    'status' => 'healthy'
+                    'status' => 'healthy',
                 ], 200),
                 'http://test-langgpt.local:8000/v2/features' => Http::response([
                     'version' => '2.0',
-                    'features' => []
-                ], 200)
+                    'features' => [],
+                ], 200),
             ]);
 
             $response = $this->get('/langgpt-status');
 
             $response->assertStatus(200);
-            
+
             $data = $response->json();
             expect($data['api_info']['has_api_key'])->toBeFalse();
             expect(array_key_exists('protected_ping', $data))->toBeFalse();
@@ -213,18 +213,18 @@ describe('LangGPT Integration Endpoints', function () {
     describe('API Configuration Tests', function () {
         it('adapts to different API versions', function () {
             Config::set('services.langgpt.version', 'v1');
-            
+
             Http::fake([
                 'http://test-langgpt.local:8000/v1/ping' => Http::response([
                     'message' => 'pong from LangGPT API v1!',
-                    'version' => '1.0'
-                ], 200)
+                    'version' => '1.0',
+                ], 200),
             ]);
 
             $response = $this->get('/ping-langgpt');
 
             $response->assertStatus(200);
-            
+
             $data = $response->json();
             expect($data['api_info']['version'])->toBe('v1');
             expect($data['ping_result']['data']['version'])->toBe('1.0');
@@ -236,35 +236,35 @@ describe('LangGPT Integration Endpoints', function () {
 
         it('handles different base URLs', function () {
             Config::set('services.langgpt.url', 'https://production-langgpt.example.com');
-            
+
             Http::fake([
                 'https://production-langgpt.example.com/v2/ping' => Http::response([
-                    'message' => 'pong from production!'
-                ], 200)
+                    'message' => 'pong from production!',
+                ], 200),
             ]);
 
             $response = $this->get('/ping-langgpt');
 
             $response->assertStatus(200);
-            
+
             $data = $response->json();
             expect($data['api_info']['base_url'])->toBe('https://production-langgpt.example.com');
         });
 
         it('respects timeout configuration', function () {
             Config::set('services.langgpt.timeout', 5);
-            
+
             Http::fake([
                 'http://test-langgpt.local:8000/v2/ping' => function () {
                     // Simulate a timeout error
                     throw new \Illuminate\Http\Client\ConnectionException('Operation timed out after 5000 milliseconds');
-                }
+                },
             ]);
 
             $response = $this->get('/ping-langgpt');
 
             $response->assertStatus(200);
-            
+
             $data = $response->json();
             expect($data['ping_result']['success'])->toBeFalse();
             expect($data['ping_result']['error'])->toContain('timed out');
@@ -274,7 +274,7 @@ describe('LangGPT Integration Endpoints', function () {
     describe('Authentication Headers', function () {
         it('sends API key in X-API-Key header', function () {
             Http::fake([
-                'http://test-langgpt.local:8000/v2/ping' => Http::response(['message' => 'pong'], 200)
+                'http://test-langgpt.local:8000/v2/ping' => Http::response(['message' => 'pong'], 200),
             ]);
 
             $this->get('/ping-langgpt');
@@ -286,15 +286,15 @@ describe('LangGPT Integration Endpoints', function () {
 
         it('does not send API key header when not configured', function () {
             Config::set('services.langgpt.key', null);
-            
+
             Http::fake([
-                'http://test-langgpt.local:8000/v2/ping' => Http::response(['message' => 'pong'], 200)
+                'http://test-langgpt.local:8000/v2/ping' => Http::response(['message' => 'pong'], 200),
             ]);
 
             $this->get('/ping-langgpt');
 
             Http::assertSent(function ($request) {
-                return !$request->hasHeader('X-API-Key');
+                return ! $request->hasHeader('X-API-Key');
             });
         });
     });

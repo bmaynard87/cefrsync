@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\User;
-use App\Models\ChatSession;
 use App\Models\ChatMessage;
+use App\Models\ChatSession;
 use App\Models\LanguageInsight;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);

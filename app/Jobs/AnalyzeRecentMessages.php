@@ -21,8 +21,7 @@ class AnalyzeRecentMessages implements ShouldQueue
     public function __construct(
         public ChatSession $chatSession,
         public int $messageCount = 20
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -67,6 +66,7 @@ class AnalyzeRecentMessages implements ShouldQueue
                 'chat_session_id' => $this->chatSession->id,
                 'total_messages_checked' => $messages->count(),
             ]);
+
             return;
         }
 
@@ -81,11 +81,12 @@ class AnalyzeRecentMessages implements ShouldQueue
         try {
             $response = $langGptService->evaluateProgress($payload);
 
-            if (!$response['success']) {
+            if (! $response['success']) {
                 Log::warning('LangGPT progress evaluation failed', [
                     'chat_session_id' => $this->chatSession->id,
                     'response' => $response,
                 ]);
+
                 return;
             }
 
@@ -112,7 +113,7 @@ class AnalyzeRecentMessages implements ShouldQueue
     private function storeInsights(User $user, array $analysis): void
     {
         // Store grammar patterns insight
-        if (!empty($analysis['grammar_patterns'])) {
+        if (! empty($analysis['grammar_patterns'])) {
             LanguageInsight::create([
                 'user_id' => $user->id,
                 'chat_session_id' => $this->chatSession->id,
@@ -124,7 +125,7 @@ class AnalyzeRecentMessages implements ShouldQueue
         }
 
         // Store vocabulary strength insight
-        if (!empty($analysis['vocabulary_assessment'])) {
+        if (! empty($analysis['vocabulary_assessment'])) {
             LanguageInsight::create([
                 'user_id' => $user->id,
                 'chat_session_id' => $this->chatSession->id,
@@ -157,7 +158,7 @@ class AnalyzeRecentMessages implements ShouldQueue
      */
     private function updateProficiencyIfNeeded(User $user, array $analysis): void
     {
-        if (!isset($analysis['suggested_level']) || !isset($analysis['confidence'])) {
+        if (! isset($analysis['suggested_level']) || ! isset($analysis['confidence'])) {
             return;
         }
 

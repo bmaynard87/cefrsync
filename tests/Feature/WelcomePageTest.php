@@ -15,7 +15,7 @@ it('shows welcome page for guests', function () {
 
 it('redirects authenticated users to language chat', function () {
     $user = User::factory()->create();
-    
+
     $response = $this->actingAs($user)->get('/');
 
     $response->assertRedirect(route('language-chat.index'));

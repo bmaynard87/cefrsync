@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 class ShowAnalysisPayload extends Command
 {
     protected $signature = 'show:analysis-payload {session_id?}';
+
     protected $description = 'Show example of LangGPT analysis payload';
 
     public function handle(OpenAiService $openAiService)
@@ -16,8 +17,9 @@ class ShowAnalysisPayload extends Command
         $sessionId = $this->argument('session_id') ?? 1;
         $session = ChatSession::find($sessionId);
 
-        if (!$session) {
+        if (! $session) {
             $this->error("Session {$sessionId} not found");
+
             return 1;
         }
 
@@ -56,7 +58,7 @@ class ShowAnalysisPayload extends Command
         $langGptPayload = [
             'target_language' => $session->target_language,
             'proficiency_level' => $session->proficiency_level,
-            'messages' => array_map(fn($msg) => [
+            'messages' => array_map(fn ($msg) => [
                 'content' => $msg['content'],
                 'timestamp' => $msg['created_at']->toIso8601String(),
             ], $validMessages),
@@ -71,8 +73,8 @@ class ShowAnalysisPayload extends Command
                 'total_processed' => count($messages),
                 'valid_messages' => count($validMessages),
                 'invalid_messages' => count($invalidMessages),
-                'accuracy_rate' => count($messages) > 0 
-                    ? round((count($validMessages) / count($messages)) * 100, 2) 
+                'accuracy_rate' => count($messages) > 0
+                    ? round((count($validMessages) / count($messages)) * 100, 2)
                     : 0,
             ],
             'valid_messages' => $validMessages,

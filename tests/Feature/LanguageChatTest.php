@@ -11,7 +11,7 @@ test('language chat page can be rendered for authenticated users', function () {
 
     $response->assertOk();
     $response->assertInertia(
-        fn($page) => $page
+        fn ($page) => $page
             ->component('LanguageChat')
             ->has('chatHistory')
             ->has('userSettings')
@@ -119,8 +119,8 @@ test('can retrieve chat history', function () {
                 'last_message_at',
                 'native_language',
                 'target_language',
-            ]
-        ]
+            ],
+        ],
     ]);
 });
 
@@ -479,4 +479,3 @@ test('cannot update another users chat session parameters', function () {
 
     $response->assertForbidden();
 });
-

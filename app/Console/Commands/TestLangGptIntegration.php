@@ -3,30 +3,32 @@
 namespace App\Console\Commands;
 
 use App\Models\ChatSession;
-use App\Models\User;
 use App\Services\LangGptService;
 use Illuminate\Console\Command;
 
 class TestLangGptIntegration extends Command
 {
     protected $signature = 'test:langgpt-integration {session_id?}';
+
     protected $description = 'Test the full CefrSync to LangGPT integration';
 
     public function handle(LangGptService $langGptService)
     {
         $sessionId = $this->argument('session_id');
 
-        if (!$sessionId) {
+        if (! $sessionId) {
             $session = ChatSession::with('user')->first();
-            if (!$session) {
+            if (! $session) {
                 $this->error('No chat sessions found. Creating test data...');
+
                 return 1;
             }
             $sessionId = $session->id;
         } else {
             $session = ChatSession::find($sessionId);
-            if (!$session) {
+            if (! $session) {
                 $this->error("Chat session {$sessionId} not found");
+
                 return 1;
             }
         }
@@ -44,13 +46,14 @@ class TestLangGptIntegration extends Command
 
         if ($messages->isEmpty()) {
             $this->error('No messages found in this session');
+
             return 1;
         }
 
         $payload = [
             'target_language' => $session->target_language,
             'proficiency_level' => $session->proficiency_level,
-            'messages' => $messages->map(fn($msg) => [
+            'messages' => $messages->map(fn ($msg) => [
                 'content' => $msg->content,
                 'timestamp' => $msg->created_at->toIso8601String(),
             ])->toArray(),
@@ -61,7 +64,7 @@ class TestLangGptIntegration extends Command
 
         $response = $langGptService->analyzeMessages($payload);
 
-        if (!$response['success']) {
+        if (! $response['success']) {
             $this->error('LangGPT request failed:');
             $this->error($response['error'] ?? 'Unknown error');
             if (isset($response['status'])) {
@@ -69,6 +72,7 @@ class TestLangGptIntegration extends Command
             }
             $this->line("\nFull response:");
             $this->line(json_encode($response, JSON_PRETTY_PRINT));
+
             return 1;
         }
 

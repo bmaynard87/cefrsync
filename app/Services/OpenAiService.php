@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use OpenAI\Laravel\Facades\OpenAI;
 use Illuminate\Support\Facades\Log;
+use OpenAI\Laravel\Facades\OpenAI;
 
 class OpenAiService
 {
@@ -68,7 +68,7 @@ class OpenAiService
         ?string $sessionContext = null,
         ?string $userContext = null
     ): string {
-        $levelGuidance = match($proficiencyLevel) {
+        $levelGuidance = match ($proficiencyLevel) {
             'A1' => 'This is a complete beginner. Use ONLY the most basic vocabulary (hello, yes, no, numbers, colors, etc.) and simple present tense. Keep sentences VERY short (3-5 words). Example: "こんにちは。元気ですか。" (Hello. How are you?)',
             'A2' => 'This is an elementary learner. Use simple vocabulary and basic grammar (present, past simple). Avoid complex sentences, idioms, and advanced grammar. Keep it simple.',
             'B1' => 'This is an intermediate learner. Use everyday vocabulary and common grammar structures. Some complexity is okay, but avoid very advanced language.',
@@ -135,7 +135,7 @@ Keep your responses conversational and concise (2-4 sentences usually). Focus on
 
         try {
             $conversationText = collect($conversationHistory)
-                ->map(fn($msg) => "{$msg['role']}: {$msg['content']}")
+                ->map(fn ($msg) => "{$msg['role']}: {$msg['content']}")
                 ->join("\n");
 
             $response = OpenAI::chat()->create([
@@ -159,6 +159,7 @@ Keep your responses conversational and concise (2-4 sentences usually). Focus on
             Log::error('Failed to summarize conversation', [
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -199,6 +200,7 @@ Keep your responses conversational and concise (2-4 sentences usually). Focus on
 
             // Fallback: use first few words of the message
             $words = explode(' ', $firstMessage);
+
             return mb_substr(implode(' ', array_slice($words, 0, 4)), 0, 60);
         }
     }
@@ -233,15 +235,15 @@ Keep your responses conversational and concise (2-4 sentences usually). Focus on
 
     /**
      * Detect if a message is in the target language
-     * 
-     * @param string $message The user's message to check
-     * @param string $targetLanguage The expected language
+     *
+     * @param  string  $message  The user's message to check
+     * @param  string  $targetLanguage  The expected language
      * @return array ['is_target_language' => bool, 'detected_language' => string|null]
      */
     public function detectLanguage(string $message, string $targetLanguage): array
     {
         try {
-            $systemPrompt = "You are a language detection expert. Analyze the provided text and determine what language it is written in. Be precise and only respond with a JSON object.";
+            $systemPrompt = 'You are a language detection expert. Analyze the provided text and determine what language it is written in. Be precise and only respond with a JSON object.';
 
             $userPrompt = "Analyze this text and determine if it is written in {$targetLanguage}. If it is, respond with {\"is_target_language\": true, \"detected_language\": \"{$targetLanguage}\"}. If it is NOT in {$targetLanguage}, respond with {\"is_target_language\": false, \"detected_language\": \"[the actual language name]\"}.
 
@@ -260,11 +262,11 @@ Respond ONLY with the JSON object, nothing else.";
             ]);
 
             $content = $response->choices[0]->message->content;
-            
+
             // Parse JSON response
             $result = json_decode(trim($content), true);
-            
-            if (!$result || !isset($result['is_target_language'])) {
+
+            if (! $result || ! isset($result['is_target_language'])) {
                 throw new \Exception('Invalid response format from OpenAI');
             }
 

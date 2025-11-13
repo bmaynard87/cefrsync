@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\User;
 use App\Models\ChatSession;
 use App\Models\LanguageInsight;
+use App\Models\User;
 
 test('can retrieve insights for authenticated user', function () {
     $user = User::factory()->create([
@@ -44,7 +44,7 @@ test('insights endpoint requires authentication', function () {
 test('user can only see their own insights', function () {
     $user = User::factory()->create();
     $session = ChatSession::factory()->create(['user_id' => $user->id]);
-    
+
     $otherUser = User::factory()->create();
     $otherSession = ChatSession::factory()->create(['user_id' => $otherUser->id]);
 
@@ -242,4 +242,3 @@ test('insights are ordered by creation date descending', function () {
     expect($insights[1]['id'])->toBe($middle->id);
     expect($insights[2]['id'])->toBe($oldest->id);
 });
-

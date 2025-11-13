@@ -29,7 +29,7 @@ class ChatMessageFactory extends Factory
      */
     public function fromUser(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'sender_type' => 'user',
         ]);
     }
@@ -39,7 +39,7 @@ class ChatMessageFactory extends Factory
      */
     public function fromAssistant(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'sender_type' => 'assistant',
         ]);
     }

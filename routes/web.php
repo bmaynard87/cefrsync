@@ -9,7 +9,7 @@ Route::get('/', function () {
     if (auth()->check()) {
         return redirect(route('language-chat.index'));
     }
-    
+
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
@@ -29,7 +29,7 @@ Route::get('/ping-langgpt', function (LangGptService $langGpt) {
             'version' => $langGpt->getApiVersion(),
             'base_url' => $langGpt->getBaseUrl(),
             'has_api_key' => $langGpt->hasApiKey(),
-        ]
+        ],
     ];
 });
 
@@ -46,7 +46,7 @@ Route::get('/langgpt-status', function (LangGptService $langGpt) {
             'version' => $langGpt->getApiVersion(),
             'base_url' => $langGpt->getBaseUrl(),
             'has_api_key' => $langGpt->hasApiKey(),
-        ]
+        ],
     ];
 
     // Test protected endpoints if API key is available
@@ -85,5 +85,5 @@ Route::middleware(['auth', 'verified'])->prefix('insights')->name('insights')->g
     Route::delete('/{insight}', [\App\Http\Controllers\LanguageInsightController::class, 'destroy'])->name('.destroy');
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

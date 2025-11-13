@@ -1,10 +1,10 @@
 <?php
 
 use App\Jobs\AnalyzeRecentMessages;
-use App\Models\User;
-use App\Models\ChatSession;
 use App\Models\ChatMessage;
+use App\Models\ChatSession;
 use App\Models\LanguageInsight;
+use App\Models\User;
 use App\Services\LangGptService;
 use App\Services\OpenAiService;
 use Illuminate\Support\Facades\Queue;
@@ -48,7 +48,7 @@ test('job filters out non-target language messages', function () {
         'target_language' => 'Japanese',
         'proficiency_level' => 'B1',
     ]);
-    
+
     $session = ChatSession::factory()->create([
         'user_id' => $user->id,
         'native_language' => $user->native_language,
@@ -86,7 +86,7 @@ test('job filters out non-target language messages', function () {
     $langGptService->shouldReceive('evaluateProgress')
         ->once()
         ->with(\Mockery::on(function ($payload) use ($japaneseMsg) {
-            return count($payload['messages']) === 1 
+            return count($payload['messages']) === 1
                 && $payload['messages'][0]['content'] === $japaneseMsg->content;
         }))
         ->andReturn([
@@ -94,7 +94,7 @@ test('job filters out non-target language messages', function () {
             'data' => [
                 'grammar_patterns' => [],
                 'vocabulary_assessment' => [],
-            ]
+            ],
         ]);
 
     $job = new AnalyzeRecentMessages($session);
@@ -106,7 +106,7 @@ test('job creates grammar pattern insights', function () {
         'target_language' => 'Spanish',
         'proficiency_level' => 'A2',
     ]);
-    
+
     $session = ChatSession::factory()->create(['user_id' => $user->id]);
 
     ChatMessage::factory()->create([
@@ -130,19 +130,19 @@ test('job creates grammar pattern insights', function () {
                         'pattern' => 'Incorrect verb conjugation',
                         'frequency' => 'common',
                         'examples' => ['Yo va al parque'],
-                        'severity' => 'moderate'
-                    ]
+                        'severity' => 'moderate',
+                    ],
                 ],
                 'grammar_summary' => 'Common errors with verb conjugation',
                 'vocabulary_assessment' => [],
-            ]
+            ],
         ]);
 
     $job = new AnalyzeRecentMessages($session);
     $job->handle($langGptService, $openAiService);
 
     expect(LanguageInsight::count())->toBe(1);
-    
+
     $insight = LanguageInsight::first();
     expect($insight->insight_type)->toBe('grammar_pattern');
     expect($insight->user_id)->toBe($user->id);
@@ -177,7 +177,7 @@ test('job creates vocabulary strength insights', function () {
                     'variety_score' => 0.8,
                 ],
                 'vocabulary_summary' => 'Strong vocabulary usage',
-            ]
+            ],
         ]);
 
     $job = new AnalyzeRecentMessages($session);
@@ -194,7 +194,7 @@ test('job creates proficiency suggestion when level changes', function () {
         'target_language' => 'Spanish',
         'auto_update_proficiency' => false, // Don't auto-update for this test
     ]);
-    
+
     $session = ChatSession::factory()->create(['user_id' => $user->id]);
 
     ChatMessage::factory()->count(10)->create([
@@ -218,7 +218,7 @@ test('job creates proficiency suggestion when level changes', function () {
                 'confidence' => 0.85,
                 'proficiency_message' => 'Ready to advance to B2!',
                 'reasoning' => 'Consistent complex structure usage',
-            ]
+            ],
         ]);
 
     $job = new AnalyzeRecentMessages($session);
@@ -236,7 +236,7 @@ test('job updates proficiency when user opted in and confidence is high', functi
         'target_language' => 'German',
         'auto_update_proficiency' => true,
     ]);
-    
+
     $session = ChatSession::factory()->create(['user_id' => $user->id]);
 
     ChatMessage::factory()->count(10)->create([
@@ -258,7 +258,7 @@ test('job updates proficiency when user opted in and confidence is high', functi
                 'vocabulary_assessment' => [],
                 'suggested_level' => 'B1',
                 'confidence' => 0.9, // High confidence
-            ]
+            ],
         ]);
 
     $job = new AnalyzeRecentMessages($session);
@@ -273,7 +273,7 @@ test('job does not update proficiency when user opted out', function () {
         'target_language' => 'Italian',
         'auto_update_proficiency' => false,
     ]);
-    
+
     $session = ChatSession::factory()->create(['user_id' => $user->id]);
 
     ChatMessage::factory()->count(10)->create([
@@ -295,7 +295,7 @@ test('job does not update proficiency when user opted out', function () {
                 'vocabulary_assessment' => [],
                 'suggested_level' => 'B1',
                 'confidence' => 0.9,
-            ]
+            ],
         ]);
 
     $job = new AnalyzeRecentMessages($session);
@@ -310,7 +310,7 @@ test('job does not update proficiency when confidence is low', function () {
         'target_language' => 'Portuguese',
         'auto_update_proficiency' => true,
     ]);
-    
+
     $session = ChatSession::factory()->create(['user_id' => $user->id]);
 
     ChatMessage::factory()->count(10)->create([
@@ -332,7 +332,7 @@ test('job does not update proficiency when confidence is low', function () {
                 'vocabulary_assessment' => [],
                 'suggested_level' => 'B1',
                 'confidence' => 0.5, // Low confidence
-            ]
+            ],
         ]);
 
     $job = new AnalyzeRecentMessages($session);
@@ -347,7 +347,7 @@ test('job does not downgrade proficiency level', function () {
         'target_language' => 'Russian',
         'auto_update_proficiency' => true,
     ]);
-    
+
     $session = ChatSession::factory()->create(['user_id' => $user->id]);
 
     ChatMessage::factory()->count(10)->create([
@@ -369,7 +369,7 @@ test('job does not downgrade proficiency level', function () {
                 'vocabulary_assessment' => [],
                 'suggested_level' => 'B1', // Lower level
                 'confidence' => 0.9,
-            ]
+            ],
         ]);
 
     $job = new AnalyzeRecentMessages($session);

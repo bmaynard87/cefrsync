@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\ChatSession;
 use App\Models\LanguageInsight;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class LanguageInsightSeeder extends Seeder
@@ -30,15 +30,15 @@ class LanguageInsightSeeder extends Seeder
                         'pattern' => 'Correct particle usage',
                         'frequency' => 'common',
                         'examples' => ['ラーメンが大好きです', '日本語を練習したい', '東京に行きたい'],
-                        'severity' => 'minor'
+                        'severity' => 'minor',
                     ],
                     [
                         'pattern' => 'Proper use of polite forms',
                         'frequency' => 'common',
                         'examples' => ['元気です', '好きです', '行きたいです'],
-                        'severity' => 'minor'
-                    ]
-                ]
+                        'severity' => 'minor',
+                    ],
+                ],
             ],
             'is_read' => false,
             'created_at' => now()->subHours(2),
@@ -59,9 +59,9 @@ class LanguageInsightSeeder extends Seeder
                     'recommendations' => [
                         'Practice using more keigo (honorific language) forms',
                         'Expand vocabulary around abstract concepts and emotions',
-                        'Work on casual speech patterns for informal situations'
-                    ]
-                ]
+                        'Work on casual speech patterns for informal situations',
+                    ],
+                ],
             ],
             'is_read' => false,
             'created_at' => now()->subHours(2),

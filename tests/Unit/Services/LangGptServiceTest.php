@@ -1,8 +1,8 @@
 <?php
 
 use App\Services\LangGptService;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
 
 uses(Tests\TestCase::class);
 
@@ -18,7 +18,7 @@ beforeEach(function () {
 
 describe('LangGptService Configuration', function () {
     it('initializes with correct configuration', function () {
-        $service = new LangGptService();
+        $service = new LangGptService;
 
         expect($service->getBaseUrl())->toBe('http://test-langgpt.local:8000');
         expect($service->getApiVersion())->toBe('v2');
@@ -28,7 +28,7 @@ describe('LangGptService Configuration', function () {
     it('handles missing API key configuration', function () {
         Config::set('services.langgpt.key', null);
 
-        $service = new LangGptService();
+        $service = new LangGptService;
 
         expect($service->hasApiKey())->toBeFalse();
     });
@@ -41,14 +41,14 @@ describe('LangGptService HTTP Requests', function () {
                 'message' => 'pong from LangGPT API v2!',
                 'version' => '2.0',
                 'timestamp' => '2025-11-12T07:00:00Z',
-                'features' => ['api_keys', 'versioning']
+                'features' => ['api_keys', 'versioning'],
             ], 200, [
                 'API-Version' => 'v2',
-                'API-Latest-Version' => 'v2'
-            ])
+                'API-Latest-Version' => 'v2',
+            ]),
         ]);
 
-        $service = new LangGptService();
+        $service = new LangGptService;
         $result = $service->ping();
 
         expect($result['success'])->toBeTrue();
@@ -70,12 +70,12 @@ describe('LangGptService HTTP Requests', function () {
                 'version' => '2.0',
                 'components' => [
                     'api' => 'healthy',
-                    'auth' => 'healthy'
-                ]
-            ], 200)
+                    'auth' => 'healthy',
+                ],
+            ], 200),
         ]);
 
-        $service = new LangGptService();
+        $service = new LangGptService;
         $result = $service->health();
 
         expect($result['success'])->toBeTrue();
@@ -90,14 +90,14 @@ describe('LangGptService HTTP Requests', function () {
                 'features' => [
                     'api_key_authentication',
                     'version_management',
-                    'enhanced_responses'
+                    'enhanced_responses',
                 ],
                 'deprecated_features' => [],
-                'coming_soon' => ['rate_limiting']
-            ], 200)
+                'coming_soon' => ['rate_limiting'],
+            ], 200),
         ]);
 
-        $service = new LangGptService();
+        $service = new LangGptService;
         $result = $service->features();
 
         expect($result['success'])->toBeTrue();
@@ -107,7 +107,7 @@ describe('LangGptService HTTP Requests', function () {
     it('prevents features request on v1 API', function () {
         Config::set('services.langgpt.version', 'v1');
 
-        $service = new LangGptService();
+        $service = new LangGptService;
         $result = $service->features();
 
         expect($result['success'])->toBeFalse();
@@ -121,11 +121,11 @@ describe('LangGptService Protected Endpoints', function () {
             'http://test-langgpt.local:8000/v2/protected/ping' => Http::response([
                 'message' => 'pong from protected endpoint v2!',
                 'authenticated_with' => 'test-key',
-                'version' => '2.0'
-            ], 200)
+                'version' => '2.0',
+            ], 200),
         ]);
 
-        $service = new LangGptService();
+        $service = new LangGptService;
         $result = $service->protectedPing();
 
         expect($result['success'])->toBeTrue();
@@ -139,12 +139,12 @@ describe('LangGptService Protected Endpoints', function () {
                     'key_name' => 'test-key',
                     'created_at' => '2025-11-12T07:00:00Z',
                     'is_active' => true,
-                    'version' => '2.0'
-                ]
-            ], 200)
+                    'version' => '2.0',
+                ],
+            ], 200),
         ]);
 
-        $service = new LangGptService();
+        $service = new LangGptService;
         $result = $service->profile();
 
         expect($result['success'])->toBeTrue();
@@ -154,7 +154,7 @@ describe('LangGptService Protected Endpoints', function () {
     it('prevents protected requests without API key', function () {
         Config::set('services.langgpt.key', null);
 
-        $service = new LangGptService();
+        $service = new LangGptService;
 
         $pingResult = $service->protectedPing();
         $profileResult = $service->profile();
@@ -172,10 +172,10 @@ describe('LangGptService Error Handling', function () {
         Http::fake([
             'http://test-langgpt.local:8000/v2/ping' => function () {
                 throw new \Illuminate\Http\Client\ConnectionException('Connection timeout');
-            }
+            },
         ]);
 
-        $service = new LangGptService();
+        $service = new LangGptService;
         $result = $service->ping();
 
         expect($result['success'])->toBeFalse();
@@ -186,11 +186,11 @@ describe('LangGptService Error Handling', function () {
     it('handles HTTP error responses', function () {
         Http::fake([
             'http://test-langgpt.local:8000/v2/ping' => Http::response([
-                'detail' => 'Internal Server Error'
-            ], 500)
+                'detail' => 'Internal Server Error',
+            ], 500),
         ]);
 
-        $service = new LangGptService();
+        $service = new LangGptService;
         $result = $service->ping();
 
         expect($result['success'])->toBeFalse();
@@ -201,11 +201,11 @@ describe('LangGptService Error Handling', function () {
     it('handles unauthorized responses', function () {
         Http::fake([
             'http://test-langgpt.local:8000/v2/protected/ping' => Http::response([
-                'detail' => 'Invalid or inactive API key'
-            ], 401)
+                'detail' => 'Invalid or inactive API key',
+            ], 401),
         ]);
 
-        $service = new LangGptService();
+        $service = new LangGptService;
         $result = $service->protectedPing();
 
         expect($result['success'])->toBeFalse();
@@ -215,10 +215,10 @@ describe('LangGptService Error Handling', function () {
 
     it('handles malformed JSON responses', function () {
         Http::fake([
-            'http://test-langgpt.local:8000/v2/ping' => Http::response('invalid json', 200)
+            'http://test-langgpt.local:8000/v2/ping' => Http::response('invalid json', 200),
         ]);
 
-        $service = new LangGptService();
+        $service = new LangGptService;
         $result = $service->ping();
 
         expect($result['success'])->toBeTrue(); // HTTP was successful
@@ -232,7 +232,7 @@ describe('LangGptService HTTP Methods', function () {
             'http://test-langgpt.local:8000/v2/ping' => Http::response(['method' => 'GET'], 200),
         ]);
 
-        $service = new LangGptService();
+        $service = new LangGptService;
 
         // Test GET (via ping which uses GET internally)
         $getResult = $service->ping();
@@ -240,7 +240,7 @@ describe('LangGptService HTTP Methods', function () {
     });
 
     it('throws exception for unsupported HTTP methods', function () {
-        $service = new LangGptService();
+        $service = new LangGptService;
 
         expect(function () use ($service) {
             $reflection = new \ReflectionClass($service);

@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\User;
 use App\Models\ChatSession;
 use App\Models\LanguageInsight;
+use App\Models\User;
 
 test('language insight has user relationship', function () {
     $user = User::factory()->create();
@@ -47,7 +47,7 @@ test('unread scope filters only unread insights', function () {
     $unread = LanguageInsight::unread()->get();
 
     expect($unread)->toHaveCount(3);
-    expect($unread->every(fn($insight) => !$insight->is_read))->toBeTrue();
+    expect($unread->every(fn ($insight) => ! $insight->is_read))->toBeTrue();
 });
 
 test('forUser scope filters by user id', function () {
@@ -69,13 +69,13 @@ test('forUser scope filters by user id', function () {
     $user1Insights = LanguageInsight::forUser($user1->id)->get();
 
     expect($user1Insights)->toHaveCount(3);
-    expect($user1Insights->every(fn($insight) => $insight->user_id === $user1->id))->toBeTrue();
+    expect($user1Insights->every(fn ($insight) => $insight->user_id === $user1->id))->toBeTrue();
 });
 
 test('data field is cast to array', function () {
     $user = User::factory()->create();
     $session = ChatSession::factory()->create(['user_id' => $user->id]);
-    
+
     $testData = [
         'patterns' => ['pattern1', 'pattern2'],
         'examples' => ['example1'],
@@ -94,7 +94,7 @@ test('data field is cast to array', function () {
 test('is_read field is cast to boolean', function () {
     $user = User::factory()->create();
     $session = ChatSession::factory()->create(['user_id' => $user->id]);
-    
+
     $insight = LanguageInsight::factory()->create([
         'user_id' => $user->id,
         'chat_session_id' => $session->id,

@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\User;
-use App\Models\ChatSession;
 use App\Models\ChatMessage;
+use App\Models\ChatSession;
+use App\Models\User;
 use App\Services\OpenAiService;
 
 test('can analyze messages for langgpt', function () {
@@ -91,7 +91,7 @@ test('can analyze messages for langgpt', function () {
 
     expect($response->json('valid_messages'))->toHaveCount(2);
     expect($response->json('invalid_messages'))->toHaveCount(1);
-    
+
     // Verify LangGPT analysis was included (may be null if no valid messages or LangGPT unavailable)
     expect($response->json())->toHaveKey('langgpt_analysis');
 });

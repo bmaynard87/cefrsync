@@ -3,14 +3,16 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
-use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Log;
 
 class LangGptService
 {
     protected string $baseUrl;
+
     protected string $apiVersion;
+
     protected ?string $apiKey;
+
     protected int $timeout;
 
     public function __construct()
@@ -28,7 +30,7 @@ class LangGptService
     {
         // Validate HTTP method before making request
         $method = strtoupper($method);
-        if (!in_array($method, ['GET', 'POST', 'PUT', 'DELETE'])) {
+        if (! in_array($method, ['GET', 'POST', 'PUT', 'DELETE'])) {
             throw new \InvalidArgumentException("Unsupported HTTP method: {$method}");
         }
 
@@ -59,7 +61,7 @@ class LangGptService
             Log::error('LangGPT API Error', [
                 'endpoint' => $endpoint,
                 'method' => $method,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return [
@@ -107,7 +109,7 @@ class LangGptService
      */
     public function profile(): array
     {
-        if (!$this->apiKey) {
+        if (! $this->apiKey) {
             return [
                 'success' => false,
                 'error' => 'API key required for profile endpoint',
@@ -122,7 +124,7 @@ class LangGptService
      */
     public function protectedPing(): array
     {
-        if (!$this->apiKey) {
+        if (! $this->apiKey) {
             return [
                 'success' => false,
                 'error' => 'API key required for protected endpoints',
@@ -137,7 +139,7 @@ class LangGptService
      */
     public function hasApiKey(): bool
     {
-        return !empty($this->apiKey);
+        return ! empty($this->apiKey);
     }
 
     /**
@@ -161,7 +163,7 @@ class LangGptService
      */
     public function analyzeMessages(array $payload): array
     {
-        if (!$this->hasApiKey()) {
+        if (! $this->hasApiKey()) {
             return [
                 'success' => false,
                 'error' => 'API key required for message analysis',
@@ -176,7 +178,7 @@ class LangGptService
      */
     public function evaluateProgress(array $payload): array
     {
-        if (!$this->hasApiKey()) {
+        if (! $this->hasApiKey()) {
             return [
                 'success' => false,
                 'error' => 'API key required for progress evaluation',
@@ -184,7 +186,7 @@ class LangGptService
         }
 
         Log::info('Calling LangGPT evaluate-progress', [
-            'api_key_present' => !empty($this->apiKey),
+            'api_key_present' => ! empty($this->apiKey),
             'api_key_length' => strlen($this->apiKey ?? ''),
             'url' => "{$this->baseUrl}/{$this->apiVersion}/evaluate-progress",
             'payload_keys' => array_keys($payload),

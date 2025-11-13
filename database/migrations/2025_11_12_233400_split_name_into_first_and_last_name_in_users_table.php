@@ -2,10 +2,11 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -26,9 +27,9 @@ return new class extends Migration {
             DB::table('users')
                 ->where('id', $user->id)
                 ->update([
-                        'first_name' => $nameParts[0] ?? '',
-                        'last_name' => $nameParts[1] ?? '',
-                    ]);
+                    'first_name' => $nameParts[0] ?? '',
+                    'last_name' => $nameParts[1] ?? '',
+                ]);
         });
 
         Schema::table('users', function (Blueprint $table) {
@@ -52,8 +53,8 @@ return new class extends Migration {
             DB::table('users')
                 ->where('id', $user->id)
                 ->update([
-                        'name' => trim($user->first_name . ' ' . $user->last_name),
-                    ]);
+                    'name' => trim($user->first_name.' '.$user->last_name),
+                ]);
         });
 
         Schema::table('users', function (Blueprint $table) {

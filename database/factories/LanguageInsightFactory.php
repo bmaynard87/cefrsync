@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
 use App\Models\ChatSession;
-use App\Models\LanguageInsight;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -67,9 +66,9 @@ class LanguageInsightFactory extends Factory
                         'pattern' => 'Subject-verb agreement',
                         'frequency' => 'common',
                         'examples' => ['He go to school', 'She have a car'],
-                        'severity' => 'moderate'
-                    ]
-                ]
+                        'severity' => 'moderate',
+                    ],
+                ],
             ],
         ]);
     }
@@ -87,8 +86,8 @@ class LanguageInsightFactory extends Factory
                     'complexity_level' => 'intermediate',
                     'variety_score' => 0.75,
                     'advanced_words_used' => ['sophisticated', 'elaborate', 'comprehensive'],
-                    'recommendations' => ['Expand academic vocabulary', 'Practice idioms']
-                ]
+                    'recommendations' => ['Expand academic vocabulary', 'Practice idioms'],
+                ],
             ],
         ]);
     }
@@ -104,7 +103,7 @@ class LanguageInsightFactory extends Factory
             'data' => [
                 'current_level' => 'B1',
                 'suggested_level' => 'B2',
-                'reasoning' => 'Consistent use of complex structures and expanded vocabulary'
+                'reasoning' => 'Consistent use of complex structures and expanded vocabulary',
             ],
         ]);
     }
@@ -114,7 +113,7 @@ class LanguageInsightFactory extends Factory
      */
     private function getTitleForType(string $type): string
     {
-        return match($type) {
+        return match ($type) {
             'grammar_pattern' => 'Grammar Patterns Detected',
             'vocabulary_strength' => 'Vocabulary Assessment',
             'proficiency_suggestion' => 'Proficiency Level Update',
@@ -127,29 +126,29 @@ class LanguageInsightFactory extends Factory
      */
     private function getDataForType(string $type): array
     {
-        return match($type) {
+        return match ($type) {
             'grammar_pattern' => [
                 'patterns' => [
                     [
                         'pattern' => fake()->sentence(3),
                         'frequency' => fake()->randomElement(['rare', 'occasional', 'common']),
                         'examples' => [fake()->sentence(5), fake()->sentence(6)],
-                        'severity' => fake()->randomElement(['minor', 'moderate', 'significant'])
-                    ]
-                ]
+                        'severity' => fake()->randomElement(['minor', 'moderate', 'significant']),
+                    ],
+                ],
             ],
             'vocabulary_strength' => [
                 'insights' => [
                     'complexity_level' => fake()->randomElement(['beginner', 'intermediate', 'advanced']),
                     'variety_score' => fake()->randomFloat(2, 0, 1),
                     'advanced_words_used' => [fake()->word(), fake()->word(), fake()->word()],
-                    'recommendations' => [fake()->sentence(), fake()->sentence()]
-                ]
+                    'recommendations' => [fake()->sentence(), fake()->sentence()],
+                ],
             ],
             'proficiency_suggestion' => [
                 'current_level' => fake()->randomElement(['A1', 'A2', 'B1', 'B2', 'C1']),
                 'suggested_level' => fake()->randomElement(['A2', 'B1', 'B2', 'C1', 'C2']),
-                'reasoning' => fake()->sentence()
+                'reasoning' => fake()->sentence(),
             ],
             default => [],
         };

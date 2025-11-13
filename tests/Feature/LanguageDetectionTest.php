@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\User;
 use App\Models\ChatSession;
+use App\Models\User;
 use App\Services\OpenAiService;
 
 test('can detect if message is in target language', function () {

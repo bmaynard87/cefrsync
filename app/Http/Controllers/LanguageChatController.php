@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Jobs\AnalyzeRecentMessages;
 use App\Models\ChatSession;
-use App\Models\ChatMessage;
-use App\Services\OpenAiService;
 use App\Services\LangGptService;
+use App\Services\OpenAiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -16,8 +15,7 @@ class LanguageChatController extends Controller
     public function __construct(
         protected OpenAiService $openAiService,
         protected LangGptService $langGptService
-    ) {
-    }
+    ) {}
 
     public function index(Request $request)
     {
@@ -25,7 +23,7 @@ class LanguageChatController extends Controller
             ->chatSessions()
             ->latest('last_message_at')
             ->get()
-            ->map(fn($session) => [
+            ->map(fn ($session) => [
                 'id' => $session->id,
                 'title' => $session->title ?? 'New Conversation',
                 'last_message_at' => $session->last_message_at,
@@ -169,12 +167,12 @@ class LanguageChatController extends Controller
         $context = [];
 
         if ($chatSession->conversation_summary) {
-            $context[] = "Previous conversation summary: " . $chatSession->conversation_summary;
+            $context[] = 'Previous conversation summary: '.$chatSession->conversation_summary;
         }
 
         if ($chatSession->topics_discussed && count($chatSession->topics_discussed) > 0) {
             $topics = implode(', ', $chatSession->topics_discussed);
-            $context[] = "Topics discussed: " . $topics;
+            $context[] = 'Topics discussed: '.$topics;
         }
 
         return empty($context) ? null : implode("\n", $context);
@@ -186,7 +184,7 @@ class LanguageChatController extends Controller
     protected function buildUserContext($user): ?string
     {
         // For now, just basic info. Can be enhanced with learning patterns later
-        return "Learner name: " . $user->name;
+        return 'Learner name: '.$user->name;
     }
 
     /**
@@ -212,7 +210,7 @@ class LanguageChatController extends Controller
             ->chatSessions()
             ->latest('last_message_at')
             ->get()
-            ->map(fn($session) => [
+            ->map(fn ($session) => [
                 'id' => $session->id,
                 'title' => $session->title ?? 'New Conversation',
                 'last_message_at' => $session->last_message_at,
@@ -367,7 +365,7 @@ class LanguageChatController extends Controller
         $langGptPayload = [
             'target_language' => $chatSession->target_language,
             'proficiency_level' => $chatSession->proficiency_level,
-            'messages' => array_map(fn($msg) => [
+            'messages' => array_map(fn ($msg) => [
                 'content' => $msg['content'],
                 'timestamp' => $msg['created_at']->toIso8601String(),
             ], $validMessages),
