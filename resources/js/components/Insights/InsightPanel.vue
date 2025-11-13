@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 
 interface Insight {
@@ -18,12 +18,21 @@ interface InsightsData {
     unread_count: number;
 }
 
+const page = usePage();
 const insights = ref<Insight[]>([]);
 const unreadCount = ref(0);
 const isLoading = ref(false);
 const isOpen = ref(false);
+let pollInterval: number | null = null;
+
+const isAuthenticated = computed(() => !!page.props.auth?.user);
 
 const fetchInsights = async (silent = false) => {
+    // Don't fetch if user is not authenticated
+    if (!isAuthenticated.value) {
+        return;
+    }
+
     if (!silent) {
         isLoading.value = true;
     }
@@ -38,7 +47,15 @@ const fetchInsights = async (silent = false) => {
             unreadCount.value = data.unread_count;
         }
     } catch (error) {
-        console.error('Error fetching insights:', error);
+        // If unauthorized, stop polling
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+            if (pollInterval !== null) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+        } else {
+            console.error('Error fetching insights:', error);
+        }
     } finally {
         if (!silent) {
             isLoading.value = false;
@@ -124,9 +141,20 @@ const togglePanel = () => {
 };
 
 onMounted(() => {
-    fetchInsights();
-    // Poll for new insights every 30 seconds (silently to avoid flash)
-    setInterval(() => fetchInsights(true), 30000);
+    // Only start polling if user is authenticated
+    if (isAuthenticated.value) {
+        fetchInsights();
+        // Poll for new insights every 30 seconds (silently to avoid flash)
+        pollInterval = setInterval(() => fetchInsights(true), 30000) as unknown as number;
+    }
+});
+
+onUnmounted(() => {
+    // Clean up interval when component is destroyed
+    if (pollInterval !== null) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+    }
 });
 </script>
 

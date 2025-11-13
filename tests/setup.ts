@@ -48,4 +48,9 @@ vi.mock('@inertiajs/vue3', () => ({
         name: 'Head',
         template: '<head><slot /></head>',
     },
+    usePage: () => ({
+        props: {
+            auth: { user: null },
+        },
+    }),
 }));
