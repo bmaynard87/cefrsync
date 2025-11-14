@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\ReCaptcha;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,6 +39,7 @@ class RegisteredUserController extends Controller
             'native_language' => 'required|string|max:255',
             'target_language' => 'required|string|max:255|different:native_language',
             'proficiency_level' => 'required|string|in:A1,A2,B1,B2,C1,C2',
+            'recaptcha_token' => ['required', 'string', new ReCaptcha()],
         ]);
 
         $user = User::create([

@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import AuthLayout from '@/components/AuthLayout.vue';
 import FormField from '@/components/FormField.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
+import { useRecaptcha } from '@/composables/useRecaptcha';
 
 defineProps<{
     status?: string;
@@ -11,10 +12,22 @@ defineProps<{
 
 const form = useForm({
     email: '',
+    recaptcha_token: '',
 });
 
-const submit = () => {
-    form.post(route('password.email'));
+const { executeRecaptcha, error: recaptchaError } = useRecaptcha();
+
+const submit = async () => {
+    try {
+        // Execute reCAPTCHA before submitting
+        const token = await executeRecaptcha('forgot_password');
+        form.recaptcha_token = token;
+        
+        form.post(route('password.email'));
+    } catch (err) {
+        console.error('reCAPTCHA error:', err);
+        // You might want to show an error message to the user
+    }
 };
 </script>
 

@@ -35,6 +35,9 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'csrf_token' => csrf_token(),
+            'recaptcha' => [
+                'siteKey' => config('services.recaptcha.site_key'),
+            ],
         ];
     }
 }

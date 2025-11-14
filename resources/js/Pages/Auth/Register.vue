@@ -7,6 +7,7 @@ import FormField from '@/components/FormField.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import LanguageSelect from '@/components/LanguageSelect.vue';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator.vue';
+import { useRecaptcha } from '@/composables/useRecaptcha';
 
 const { languages, proficiencyLevels } = useLanguageOptions();
 
@@ -19,12 +20,24 @@ const form = useForm({
     native_language: '',
     target_language: '',
     proficiency_level: '',
+    recaptcha_token: '',
 });
 
-const submit = () => {
-    form.post(route('register'), {
-        onFinish: () => form.reset('password', 'password_confirmation'),
-    });
+const { executeRecaptcha, error: recaptchaError } = useRecaptcha();
+
+const submit = async () => {
+    try {
+        // Execute reCAPTCHA before submitting
+        const token = await executeRecaptcha('register');
+        form.recaptcha_token = token;
+        
+        form.post(route('register'), {
+            onFinish: () => form.reset('password', 'password_confirmation'),
+        });
+    } catch (err) {
+        console.error('reCAPTCHA error:', err);
+        // You might want to show an error message to the user
+    }
 };
 </script>
 
