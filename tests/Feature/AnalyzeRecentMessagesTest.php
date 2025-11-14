@@ -378,3 +378,89 @@ test('job does not downgrade proficiency level', function () {
     // Should remain at B2
     expect($user->fresh()->proficiency_level)->toBe('B2');
 });
+
+test('job sends localize_insights flag when user has it enabled', function () {
+    $user = User::factory()->create([
+        'native_language' => 'Spanish',
+        'target_language' => 'French',
+        'proficiency_level' => 'A2',
+        'localize_insights' => true,
+    ]);
+
+    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+
+    ChatMessage::factory()->create([
+        'chat_session_id' => $session->id,
+        'sender_type' => 'user',
+        'content' => 'Je vais à l\'école',
+    ]);
+
+    $openAiService = $this->mock(OpenAiService::class);
+    $langGptService = $this->mock(LangGptService::class);
+
+    $openAiService->shouldReceive('detectLanguage')
+        ->andReturn(['is_target_language' => true]);
+
+    // Verify that localize_insights is sent to LangGPT
+    $langGptService->shouldReceive('evaluateProgress')
+        ->once()
+        ->with(\Mockery::on(function ($payload) {
+            return $payload['localize_insights'] === true
+                && $payload['native_language'] === 'Spanish';
+        }))
+        ->andReturn([
+            'success' => true,
+            'data' => [
+                'grammar_patterns' => [],
+                'vocabulary_assessment' => [],
+                'localized' => true,
+                'language' => 'Spanish',
+            ],
+        ]);
+
+    $job = new AnalyzeRecentMessages($session);
+    $job->handle($langGptService, $openAiService);
+});
+
+test('job does not send localize_insights when user has it disabled', function () {
+    $user = User::factory()->create([
+        'native_language' => 'German',
+        'target_language' => 'English',
+        'proficiency_level' => 'B1',
+        'localize_insights' => false,
+    ]);
+
+    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+
+    ChatMessage::factory()->create([
+        'chat_session_id' => $session->id,
+        'sender_type' => 'user',
+        'content' => 'Hello world',
+    ]);
+
+    $openAiService = $this->mock(OpenAiService::class);
+    $langGptService = $this->mock(LangGptService::class);
+
+    $openAiService->shouldReceive('detectLanguage')
+        ->andReturn(['is_target_language' => true]);
+
+    // Verify that localize_insights defaults to false
+    $langGptService->shouldReceive('evaluateProgress')
+        ->once()
+        ->with(\Mockery::on(function ($payload) {
+            return $payload['localize_insights'] === false;
+        }))
+        ->andReturn([
+            'success' => true,
+            'data' => [
+                'grammar_patterns' => [],
+                'vocabulary_assessment' => [],
+                'localized' => false,
+                'language' => 'English',
+            ],
+        ]);
+
+    $job = new AnalyzeRecentMessages($session);
+    $job->handle($langGptService, $openAiService);
+});
+

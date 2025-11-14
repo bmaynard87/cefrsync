@@ -76,6 +76,7 @@ class AnalyzeRecentMessages implements ShouldQueue
             'current_level' => $user->proficiency_level,
             'target_language' => $user->target_language,
             'native_language' => $user->native_language,
+            'localize_insights' => $user->localize_insights ?? false,
         ];
 
         try {
