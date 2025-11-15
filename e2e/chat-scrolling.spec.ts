@@ -14,9 +14,23 @@ test.describe('Chat Scrolling', () => {
       page.on('console', msg => console.log('[BROWSER]', msg.text()));
       
       // Listen to network requests
+      page.on('request', async (request) => {
+        if (request.url().includes('/login') && request.method() === 'POST') {
+          console.log('[DEBUG] POST /login request');
+          const postData = request.postData();
+          if (postData) {
+            console.log('[DEBUG] Request body:', postData.substring(0, 300));
+          }
+        }
+      });
+      
       page.on('response', async (response) => {
         if (response.url().includes('/login') && response.request().method() === 'POST') {
           console.log('[DEBUG] POST /login response status:', response.status());
+          const headers = response.headers();
+          if (headers['location']) {
+            console.log('[DEBUG] Redirect location:', headers['location']);
+          }
           try {
             const body = await response.text();
             console.log('[DEBUG] Response body:', body.substring(0, 500));
