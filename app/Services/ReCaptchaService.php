@@ -10,9 +10,8 @@ class ReCaptchaService
     /**
      * Verify a reCAPTCHA token with Google's API.
      *
-     * @param string $token The reCAPTCHA token to verify
-     * @param float $minScore Minimum score required (0.0 to 1.0)
-     * @return bool
+     * @param  string  $token  The reCAPTCHA token to verify
+     * @param  float  $minScore  Minimum score required (0.0 to 1.0)
      */
     public function verify(string $token, float $minScore = 0.5): bool
     {
@@ -25,6 +24,7 @@ class ReCaptchaService
         $secretKey = config('services.recaptcha.secret_key');
         if (empty($secretKey)) {
             Log::warning('reCAPTCHA secret key is not configured');
+
             return false;
         }
 
@@ -34,20 +34,22 @@ class ReCaptchaService
                 'response' => $token,
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error('reCAPTCHA verification request failed', [
                     'status' => $response->status(),
                 ]);
+
                 return false;
             }
 
             $data = $response->json();
 
             // Check if verification was successful
-            if (!($data['success'] ?? false)) {
+            if (! ($data['success'] ?? false)) {
                 Log::warning('reCAPTCHA verification failed', [
                     'errors' => $data['error-codes'] ?? [],
                 ]);
+
                 return false;
             }
 
@@ -58,6 +60,7 @@ class ReCaptchaService
                     'score' => $score,
                     'min_score' => $minScore,
                 ]);
+
                 return false;
             }
 
@@ -66,6 +69,7 @@ class ReCaptchaService
             Log::error('reCAPTCHA verification exception', [
                 'message' => $e->getMessage(),
             ]);
+
             return false;
         }
     }

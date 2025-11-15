@@ -29,20 +29,22 @@ class RegenerateLangGptKey extends Command
         $this->info('Regenerating LangGPT API key...');
 
         $langGptUrl = config('services.langgpt.url');
-        
+
         if (empty($langGptUrl)) {
             $this->error('LANGGPT_URL is not configured in .env file');
+
             return Command::FAILURE;
         }
 
         try {
             // Create a new API key
             $response = Http::post("{$langGptUrl}/api/keys", [
-                'name' => 'CefrSync'
+                'name' => 'CefrSync',
             ]);
 
-            if (!$response->successful()) {
-                $this->error('Failed to generate API key: ' . $response->body());
+            if (! $response->successful()) {
+                $this->error('Failed to generate API key: '.$response->body());
+
                 return Command::FAILURE;
             }
 
@@ -51,27 +53,30 @@ class RegenerateLangGptKey extends Command
 
             if (empty($newKey)) {
                 $this->error('No API key returned from LangGPT');
+
                 return Command::FAILURE;
             }
 
             // Update the .env file
             $envPath = base_path('.env');
-            
-            if (!file_exists($envPath)) {
+
+            if (! file_exists($envPath)) {
                 $this->error('.env file not found');
+
                 return Command::FAILURE;
             }
 
             $envContent = file_get_contents($envPath);
-            
+
             // Replace the LANGGPT_API_KEY value
             $pattern = '/LANGGPT_API_KEY=.*/';
             $replacement = "LANGGPT_API_KEY={$newKey}";
-            
+
             $updatedContent = preg_replace($pattern, $replacement, $envContent);
 
             if ($updatedContent === null || $updatedContent === $envContent) {
                 $this->error('Failed to update .env file. Make sure LANGGPT_API_KEY exists in your .env file.');
+
                 return Command::FAILURE;
             }
 
@@ -79,7 +84,7 @@ class RegenerateLangGptKey extends Command
 
             $this->newLine();
             $this->info('✓ API key regenerated successfully!');
-            $this->line('  New key: ' . $newKey);
+            $this->line('  New key: '.$newKey);
             $this->newLine();
             $this->warn('Note: You may need to restart your application for the changes to take effect.');
             $this->warn('      Run: php artisan config:clear');
@@ -87,7 +92,8 @@ class RegenerateLangGptKey extends Command
             return Command::SUCCESS;
 
         } catch (\Exception $e) {
-            $this->error('Error: ' . $e->getMessage());
+            $this->error('Error: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

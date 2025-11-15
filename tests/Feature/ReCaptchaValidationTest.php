@@ -12,7 +12,7 @@ test('recaptcha validation passes with valid token', function () {
             ->andReturn(true);
     });
 
-    $rule = new ReCaptcha();
+    $rule = new ReCaptcha;
     $validator = Validator::make(
         ['recaptcha_token' => 'valid-token'],
         ['recaptcha_token' => $rule]
@@ -29,7 +29,7 @@ test('recaptcha validation fails with invalid token', function () {
             ->andReturn(false);
     });
 
-    $rule = new ReCaptcha();
+    $rule = new ReCaptcha;
     $validator = Validator::make(
         ['recaptcha_token' => 'invalid-token'],
         ['recaptcha_token' => $rule]
@@ -41,7 +41,7 @@ test('recaptcha validation fails with invalid token', function () {
 });
 
 test('recaptcha validation fails with empty token', function () {
-    $rule = new ReCaptcha();
+    $rule = new ReCaptcha;
     $validator = Validator::make(
         ['recaptcha_token' => ''],
         ['recaptcha_token' => ['required', $rule]]
@@ -58,7 +58,7 @@ test('recaptcha validation fails when service throws exception', function () {
             ->andThrow(new \Exception('API error'));
     });
 
-    $rule = new ReCaptcha();
+    $rule = new ReCaptcha;
     $validator = Validator::make(
         ['recaptcha_token' => 'error-token'],
         ['recaptcha_token' => $rule]

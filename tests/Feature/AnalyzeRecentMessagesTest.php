@@ -463,4 +463,3 @@ test('job does not send localize_insights when user has it disabled', function (
     $job = new AnalyzeRecentMessages($session);
     $job->handle($langGptService, $openAiService);
 });
-

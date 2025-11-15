@@ -21,7 +21,7 @@ test('verify method returns true for successful verification', function () {
         ], 200),
     ]);
 
-    $service = new ReCaptchaService();
+    $service = new ReCaptchaService;
     $result = $service->verify('valid-token');
 
     expect($result)->toBeTrue();
@@ -41,7 +41,7 @@ test('verify method returns false for failed verification', function () {
         ], 200),
     ]);
 
-    $service = new ReCaptchaService();
+    $service = new ReCaptchaService;
     $result = $service->verify('invalid-token');
 
     expect($result)->toBeFalse();
@@ -56,7 +56,7 @@ test('verify method returns false for low score', function () {
         ], 200),
     ]);
 
-    $service = new ReCaptchaService();
+    $service = new ReCaptchaService;
     $result = $service->verify('low-score-token', 0.5);
 
     expect($result)->toBeFalse();
@@ -71,7 +71,7 @@ test('verify method passes with acceptable score', function () {
         ], 200),
     ]);
 
-    $service = new ReCaptchaService();
+    $service = new ReCaptchaService;
     $result = $service->verify('good-token', 0.5);
 
     expect($result)->toBeTrue();
@@ -82,14 +82,14 @@ test('verify method returns false on http exception', function () {
         'www.google.com/recaptcha/api/siteverify' => Http::response([], 500),
     ]);
 
-    $service = new ReCaptchaService();
+    $service = new ReCaptchaService;
     $result = $service->verify('token');
 
     expect($result)->toBeFalse();
 });
 
 test('verify method returns false with empty token', function () {
-    $service = new ReCaptchaService();
+    $service = new ReCaptchaService;
     $result = $service->verify('');
 
     expect($result)->toBeFalse();
@@ -98,7 +98,7 @@ test('verify method returns false with empty token', function () {
 test('verify method returns false when secret key is not configured', function () {
     config(['services.recaptcha.secret_key' => null]);
 
-    $service = new ReCaptchaService();
+    $service = new ReCaptchaService;
     $result = $service->verify('token');
 
     expect($result)->toBeFalse();

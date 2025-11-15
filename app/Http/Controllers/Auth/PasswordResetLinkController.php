@@ -32,7 +32,7 @@ class PasswordResetLinkController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'recaptcha_token' => ['required', 'string', new ReCaptcha()],
+            'recaptcha_token' => ['required', 'string', new ReCaptcha],
         ]);
 
         // We will send the password reset link to this user. Once we have attempted

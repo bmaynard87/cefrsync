@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 
 test('regenerate langgpt key command successfully updates env file', function () {
     // Mock the HTTP request to LangGPT
@@ -17,7 +17,7 @@ test('regenerate langgpt key command successfully updates env file', function ()
     // Create a temporary .env file for testing
     $envPath = base_path('.env');
     $originalContent = File::get($envPath);
-    
+
     // Ensure we have a LANGGPT_API_KEY line to replace
     $testContent = str_replace(
         'LANGGPT_API_KEY=',
@@ -41,7 +41,7 @@ test('regenerate langgpt key command successfully updates env file', function ()
 
     // Verify HTTP call was made
     Http::assertSent(function ($request) {
-        return $request->url() === config('services.langgpt.url') . '/api/keys' &&
+        return $request->url() === config('services.langgpt.url').'/api/keys' &&
                $request['name'] === 'CefrSync';
     });
 });
@@ -93,7 +93,7 @@ test('regenerate langgpt key command fails when env file does not have langgpt_a
 
     $envPath = base_path('.env');
     $originalContent = File::get($envPath);
-    
+
     // Remove LANGGPT_API_KEY line
     $testContent = preg_replace('/LANGGPT_API_KEY=.*\n/', '', $originalContent);
     File::put($envPath, $testContent);

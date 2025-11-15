@@ -22,6 +22,7 @@ class ReCaptcha implements ValidationRule
     {
         if (empty($value)) {
             $fail('The reCAPTCHA verification failed. Please try again.');
+
             return;
         }
 
@@ -29,7 +30,7 @@ class ReCaptcha implements ValidationRule
             $service = app(ReCaptchaService::class);
             $isValid = $service->verify($value, $this->minScore);
 
-            if (!$isValid) {
+            if (! $isValid) {
                 $fail('The reCAPTCHA verification failed. Please try again.');
             }
         } catch (\Exception $e) {
