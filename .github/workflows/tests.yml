@@ -118,6 +118,16 @@ jobs:
     - name: Seed Database
       run: php artisan db:seed
     
+    - name: Debug Test User
+      run: |
+        php artisan tinker --execute="
+        \$user = App\Models\User::where('email', 'test@example.com')->first();
+        echo 'Test User Debug:' . PHP_EOL;
+        echo 'Email Verified: ' . (\$user->email_verified_at ? 'YES' : 'NO') . PHP_EOL;
+        echo 'Native Language: ' . \$user->native_language . PHP_EOL;
+        echo 'Target Language: ' . \$user->target_language . PHP_EOL;
+        "
+    
     - name: Build Frontend Assets
       run: npm run build
     
