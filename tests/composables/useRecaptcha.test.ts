@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { defineComponent, h } from 'vue';
+import { mount } from '@vue/test-utils';
 import { useRecaptcha } from '@/composables/useRecaptcha';
-
-// Store the original implementation
-let mockUsePage: ReturnType<typeof vi.fn>;
 
 // Mock usePage from Inertia before importing
 vi.mock('@inertiajs/vue3', () => ({
@@ -33,7 +32,17 @@ describe('useRecaptcha', () => {
             execute: vi.fn(() => Promise.resolve('test-token')),
         };
 
-        const { executeRecaptcha } = useRecaptcha();
+        let executeRecaptcha: any;
+
+        const TestComponent = defineComponent({
+            setup() {
+                const recaptcha = useRecaptcha();
+                executeRecaptcha = recaptcha.executeRecaptcha;
+                return () => h('div');
+            },
+        });
+
+        mount(TestComponent);
 
         const token = await executeRecaptcha('test-action');
 
@@ -50,7 +59,17 @@ describe('useRecaptcha', () => {
             execute: vi.fn(() => Promise.reject(new Error('Execution failed'))),
         };
 
-        const { executeRecaptcha } = useRecaptcha();
+        let executeRecaptcha: any;
+
+        const TestComponent = defineComponent({
+            setup() {
+                const recaptcha = useRecaptcha();
+                executeRecaptcha = recaptcha.executeRecaptcha;
+                return () => h('div');
+            },
+        });
+
+        mount(TestComponent);
 
         await expect(executeRecaptcha('test')).rejects.toThrow('Execution failed');
     });
@@ -67,7 +86,19 @@ describe('useRecaptcha', () => {
             execute: vi.fn(() => executionPromise),
         };
 
-        const { executeRecaptcha, isExecuting } = useRecaptcha();
+        let executeRecaptcha: any;
+        let isExecuting: any;
+
+        const TestComponent = defineComponent({
+            setup() {
+                const recaptcha = useRecaptcha();
+                executeRecaptcha = recaptcha.executeRecaptcha;
+                isExecuting = recaptcha.isExecuting;
+                return () => h('div');
+            },
+        });
+
+        mount(TestComponent);
 
         // Start execution
         const promise = executeRecaptcha('test');
