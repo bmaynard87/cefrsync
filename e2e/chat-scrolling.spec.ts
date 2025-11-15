@@ -12,6 +12,19 @@ test.describe('Chat Scrolling', () => {
     // Debug: Check for validation errors before submitting
     if (process.env.CI) {
       page.on('console', msg => console.log('[BROWSER]', msg.text()));
+      
+      // Listen to network requests
+      page.on('response', async (response) => {
+        if (response.url().includes('/login') && response.request().method() === 'POST') {
+          console.log('[DEBUG] POST /login response status:', response.status());
+          try {
+            const body = await response.text();
+            console.log('[DEBUG] Response body:', body.substring(0, 500));
+          } catch (e) {
+            console.log('[DEBUG] Could not read response body');
+          }
+        }
+      });
     }
     
     await page.click('button[type="submit"]');
