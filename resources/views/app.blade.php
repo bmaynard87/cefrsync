@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <!-- Content Security Policy for Google Identity Services -->
+    @if(app()->environment('local'))
+    <!-- Content Security Policy for Google Identity Services (Development) -->
     <meta http-equiv="Content-Security-Policy" content="
         script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:5173 http://127.0.0.1:5174 https://accounts.google.com/gsi/client https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/;
         worker-src 'self' blob:;
@@ -15,6 +16,17 @@
         style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.bunny.net;
         font-src 'self' https://fonts.bunny.net;
     ">
+    @else
+    <!-- Content Security Policy for Google Identity Services (Production/Testing) -->
+    <meta http-equiv="Content-Security-Policy" content="
+        script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/;
+        worker-src 'self' blob:;
+        frame-src 'self' https://accounts.google.com/gsi/ https://www.google.com/recaptcha/;
+        connect-src 'self' https://accounts.google.com/gsi/ https://www.google.com/recaptcha/;
+        style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.bunny.net;
+        font-src 'self' https://fonts.bunny.net;
+    ">
+    @endif
 
     <title inertia>CefrSync</title>
 
