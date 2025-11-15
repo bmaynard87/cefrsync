@@ -13,9 +13,12 @@ defineProps<{
     status?: string;
 }>();
 
+// Pre-fill form in development mode for easier testing
+const isDev = import.meta.env.DEV;
+
 const form = useForm({
-    email: '',
-    password: '',
+    email: isDev ? 'john.doe@example.com' : '',
+    password: isDev ? 'SuperStrongPassword123!@#' : '',
     remember: false,
     recaptcha_token: '',
 });
