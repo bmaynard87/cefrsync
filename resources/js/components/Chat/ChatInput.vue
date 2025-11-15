@@ -73,7 +73,7 @@ defineExpose({
                     class="max-h-32 min-h-[44px] flex-1 resize-none rounded-xl border border-gray-300 px-4 py-3 pr-12 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"></textarea>
                 <button data-test="send-button" @click="handleSend" :disabled="isSendDisabled()"
                     class="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white transition-all hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
-                    <!-- TODO: Componentize all SVG icons in the app -->
+                    <!-- TODO: Componentize all SVGs in the app -->
                     <!-- TODO: rotate button 90 degrees to the right -->
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

@@ -8,12 +8,25 @@ test.describe('Chat Scrolling', () => {
     
     await page.fill('input[type="email"]', 'test@example.com');
     await page.fill('input[type="password"]', 'password');
+    
+    // Debug: Check for validation errors before submitting
+    if (process.env.CI) {
+      page.on('console', msg => console.log('[BROWSER]', msg.text()));
+    }
+    
     await page.click('button[type="submit"]');
     
-    // Debug: log current URL before waiting
+    // Debug: Wait a moment and check for errors
     if (process.env.CI) {
+      await page.waitForTimeout(2000);
       const currentUrl = page.url();
       console.log('[DEBUG] Current URL after login click:', currentUrl);
+      
+      // Check for validation errors on page
+      const errorText = await page.textContent('body').catch(() => 'Could not read body');
+      if (currentUrl.includes('/login')) {
+        console.log('[DEBUG] Still on login page. Page content:', errorText?.substring(0, 500));
+      }
     }
     
     // Wait for navigation after login (redirects to language-chat)
