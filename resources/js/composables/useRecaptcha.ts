@@ -68,12 +68,13 @@ export function useRecaptcha() {
     /**
      * Execute reCAPTCHA and get a token
      * @param action The action name for this reCAPTCHA execution
-     * @returns The reCAPTCHA token
+     * @returns The reCAPTCHA token, or empty string if reCAPTCHA is not configured
      */
     const executeRecaptcha = async (action: string = 'submit'): Promise<string> => {
+        // If no site key configured, skip reCAPTCHA (for testing environments)
         if (!siteKey) {
-            error.value = 'reCAPTCHA site key is not configured';
-            throw new Error('reCAPTCHA site key is not configured');
+            console.log('reCAPTCHA site key not configured - skipping verification');
+            return '';
         }
 
         try {
