@@ -2,12 +2,26 @@ import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import Login from '@/Pages/Auth/Login.vue';
 
+const mockPageProps = {
+    props: {
+        auth: {
+            user: null,
+            googleClientId: null,
+        },
+    },
+};
+
 describe('Login', () => {
     it('renders login form with email and password fields', () => {
         const wrapper = mount(Login, {
             props: {
                 canResetPassword: false,
                 status: '',
+            },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
             },
         });
 
@@ -21,6 +35,11 @@ describe('Login', () => {
                 canResetPassword: false,
                 status: '',
             },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
+            },
         });
 
         expect(wrapper.text()).toContain('Welcome back');
@@ -31,6 +50,11 @@ describe('Login', () => {
             props: {
                 canResetPassword: false,
                 status: '',
+            },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
             },
         });
 
@@ -46,6 +70,11 @@ describe('Login', () => {
                 canResetPassword: false,
                 status: '',
             },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
+            },
         });
 
         const labels = wrapper.findAll('label');
@@ -58,6 +87,11 @@ describe('Login', () => {
             props: {
                 canResetPassword: false,
                 status: '',
+            },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
             },
         });
 
@@ -72,6 +106,11 @@ describe('Login', () => {
                 canResetPassword: false,
                 status: '',
             },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
+            },
         });
 
         const checkbox = wrapper.find('input[type="checkbox"]');
@@ -84,6 +123,11 @@ describe('Login', () => {
             props: {
                 canResetPassword: true,
                 status: '',
+            },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
             },
         });
 
@@ -98,6 +142,11 @@ describe('Login', () => {
                 canResetPassword: false,
                 status: '',
             },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
+            },
         });
 
         const link = wrapper.find('a[href="/forgot-password"]');
@@ -110,6 +159,11 @@ describe('Login', () => {
                 canResetPassword: false,
                 status: 'Your password has been reset!',
             },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
+            },
         });
 
         expect(wrapper.text()).toContain('Your password has been reset!');
@@ -120,6 +174,11 @@ describe('Login', () => {
             props: {
                 canResetPassword: false,
                 status: '',
+            },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
             },
         });
 
@@ -134,6 +193,11 @@ describe('Login', () => {
                 canResetPassword: false,
                 status: '',
             },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
+            },
         });
 
         expect(wrapper.find('input[type="email"]').attributes('autofocus')).toBeDefined();
@@ -144,6 +208,11 @@ describe('Login', () => {
             props: {
                 canResetPassword: false,
                 status: '',
+            },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
             },
         });
 
@@ -156,6 +225,11 @@ describe('Login', () => {
             props: {
                 canResetPassword: false,
                 status: '',
+            },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
             },
         });
 
@@ -171,6 +245,11 @@ describe('Login', () => {
                 canResetPassword: false,
                 status: '',
             },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
+            },
         });
 
         wrapper.vm.form.errors.password = 'The password field is required.';
@@ -184,6 +263,11 @@ describe('Login', () => {
             props: {
                 canResetPassword: false,
                 status: '',
+            },
+            global: {
+                mocks: {
+                    $page: mockPageProps,
+                },
             },
         });
 

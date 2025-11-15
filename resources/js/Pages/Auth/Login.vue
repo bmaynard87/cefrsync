@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import AuthLayout from '@/components/AuthLayout.vue';
 import FormField from '@/components/FormField.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
+import GoogleSignInButton from '@/components/GoogleSignInButton.vue';
 import { useRecaptcha } from '@/composables/useRecaptcha';
+import { ref } from 'vue';
 
 defineProps<{
     canResetPassword?: boolean;
@@ -24,6 +26,7 @@ const form = useForm({
 });
 
 const { executeRecaptcha, error: recaptchaError } = useRecaptcha();
+const googleError = ref<string | null>(null);
 
 const submit = async () => {
     try {
@@ -39,6 +42,24 @@ const submit = async () => {
         // You might want to show an error message to the user
     }
 };
+
+const handleGoogleSignIn = (response: { credential: string }) => {
+    googleError.value = null;
+    
+    // Send the credential to our backend
+    router.post(route('auth.google.callback'), {
+        credential: response.credential,
+    }, {
+        onError: (errors) => {
+            googleError.value = errors.credential || 'Authentication failed. Please try again.';
+        },
+    });
+};
+
+const handleGoogleError = (error: { error: string }) => {
+    console.error('Google Sign-In error:', error);
+    googleError.value = 'Google Sign-In failed. Please try again.';
+};
 </script>
 
 <template>
@@ -53,6 +74,28 @@ const submit = async () => {
                 {{ status }}
             </AlertDescription>
         </Alert>
+
+        <Alert v-if="googleError" class="mb-6 border-red-200 bg-red-50">
+            <AlertDescription class="text-sm text-red-800">
+                {{ googleError }}
+            </AlertDescription>
+        </Alert>
+
+        <div class="mb-6">
+            <GoogleSignInButton
+                v-if="$page.props.auth?.googleClientId"
+                :client-id="$page.props.auth.googleClientId"
+                @signin="handleGoogleSignIn"
+                @error="handleGoogleError"
+            />
+        </div>
+
+        <div class="relative my-6">
+            <Separator />
+            <span class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-xs text-gray-500">
+                OR
+            </span>
+        </div>
 
         <form @submit.prevent="submit" class="space-y-5">
             <FormField

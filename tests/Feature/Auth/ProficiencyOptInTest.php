@@ -136,3 +136,89 @@ test('users with proficiency level skip opt-in page after registration', functio
 
     $response->assertRedirect('/');
 });
+
+test('user can set languages and proficiency preference together', function () {
+    $user = User::factory()->create([
+        'proficiency_level' => null,
+        'native_language' => null,
+        'target_language' => null,
+        'auto_update_proficiency' => false,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->post('/proficiency-opt-in', [
+            'native_language' => 'English',
+            'target_language' => 'Spanish',
+            'proficiency_level' => 'B1',
+            'auto_update_proficiency' => true,
+        ]);
+
+    $response->assertRedirect(route('language-chat.index'));
+
+    $user->refresh();
+    expect($user->native_language)->toBe('English');
+    expect($user->target_language)->toBe('Spanish');
+    expect($user->proficiency_level)->toBe('B1');
+    expect($user->auto_update_proficiency)->toBeTrue();
+});
+
+test('language setup requires all fields when languages are null', function () {
+    $user = User::factory()->create([
+        'proficiency_level' => null,
+        'native_language' => null,
+        'target_language' => null,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->post('/proficiency-opt-in', [
+            'auto_update_proficiency' => false, // Setting to false means proficiency_level is required
+        ]);
+
+    $response->assertSessionHasErrors(['native_language', 'target_language', 'proficiency_level']);
+});
+
+test('languages must be different', function () {
+    $user = User::factory()->create([
+        'proficiency_level' => null,
+        'native_language' => null,
+        'target_language' => null,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->post('/proficiency-opt-in', [
+            'native_language' => 'English',
+            'target_language' => 'English',
+            'proficiency_level' => 'B1',
+            'auto_update_proficiency' => false,
+        ]);
+
+    $response->assertSessionHasErrors('target_language');
+});
+
+test('user can set languages with auto update enabled without proficiency level', function () {
+    $user = User::factory()->create([
+        'proficiency_level' => null,
+        'native_language' => null,
+        'target_language' => null,
+        'auto_update_proficiency' => false,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->post('/proficiency-opt-in', [
+            'native_language' => 'English',
+            'target_language' => 'Spanish',
+            'auto_update_proficiency' => true, // Auto-update enabled, no proficiency_level needed
+        ]);
+
+    $response->assertRedirect(route('language-chat.index'));
+
+    $user->refresh();
+    expect($user->native_language)->toBe('English');
+    expect($user->target_language)->toBe('Spanish');
+    expect($user->proficiency_level)->toBeNull(); // Should remain null when auto-updating
+    expect($user->auto_update_proficiency)->toBeTrue();
+});

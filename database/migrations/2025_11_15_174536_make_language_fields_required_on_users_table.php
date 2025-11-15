@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('native_language')->nullable(false)->change();
-            $table->string('target_language')->nullable(false)->change();
+            // Keep nullable for Google OAuth users who haven't set preferences yet
+            $table->string('native_language')->nullable()->change();
+            $table->string('target_language')->nullable()->change();
             $table->string('proficiency_level')->nullable()->change();
         });
     }
@@ -26,7 +27,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->string('native_language')->nullable()->change();
             $table->string('target_language')->nullable()->change();
-            $table->string('proficiency_level')->nullable(false)->change();
+            $table->string('proficiency_level')->nullable()->change();
         });
     }
 };

@@ -27,6 +27,7 @@ class ProficiencyOptInController extends Controller
                 'native_language' => $user->native_language,
                 'target_language' => $user->target_language,
             ],
+            'needsLanguageSetup' => $user->native_language === null || $user->target_language === null,
         ]);
     }
 
@@ -35,17 +36,40 @@ class ProficiencyOptInController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'auto_update_proficiency' => 'required|boolean',
-        ]);
-
         $user = $request->user();
+        $needsLanguageSetup = $user->native_language === null || $user->target_language === null;
+
+        // Validation rules depend on whether user needs language setup
+        $rules = [
+            'auto_update_proficiency' => 'required|boolean',
+        ];
+
+        if ($needsLanguageSetup) {
+            $rules['native_language'] = 'required|string|max:255';
+            $rules['target_language'] = 'required|string|max:255|different:native_language';
+            // Only require proficiency_level if NOT auto-updating
+            $rules['proficiency_level'] = 'required_if:auto_update_proficiency,false|nullable|string|in:A1,A2,B1,B2,C1,C2';
+        }
+
+        $validated = $request->validate($rules);
 
         // Only update if user doesn't have a proficiency level set
         if ($user->proficiency_level === null) {
-            $user->update([
+            $updateData = [
                 'auto_update_proficiency' => $validated['auto_update_proficiency'],
-            ]);
+            ];
+
+            // Add language data if setting up for the first time
+            if ($needsLanguageSetup) {
+                $updateData['native_language'] = $validated['native_language'];
+                $updateData['target_language'] = $validated['target_language'];
+                // Only set proficiency_level if provided (i.e., not auto-updating)
+                if (isset($validated['proficiency_level']) && $validated['proficiency_level']) {
+                    $updateData['proficiency_level'] = $validated['proficiency_level'];
+                }
+            }
+
+            $user->update($updateData);
         }
 
         return redirect()->route('language-chat.index');
