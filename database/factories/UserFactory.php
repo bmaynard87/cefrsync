@@ -29,6 +29,9 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= 'password',
             'remember_token' => Str::random(10),
+            'native_language' => fake()->randomElement(['English', 'Spanish', 'French', 'German', 'Italian']),
+            'target_language' => fake()->randomElement(['Spanish', 'English', 'French', 'German', 'Japanese']),
+            'proficiency_level' => fake()->randomElement(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
         ];
     }
 

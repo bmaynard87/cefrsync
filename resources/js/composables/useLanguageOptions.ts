@@ -41,6 +41,7 @@ export function useLanguageOptions() {
         { value: 'B2', label: 'B2 - Upper Intermediate' },
         { value: 'C1', label: 'C1 - Advanced' },
         { value: 'C2', label: 'C2 - Proficient' },
+        { value: '', label: "I don't know my level" },
     ];
 
     return {

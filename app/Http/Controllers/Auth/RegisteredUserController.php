@@ -38,8 +38,8 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'native_language' => 'required|string|max:255',
             'target_language' => 'required|string|max:255|different:native_language',
-            'proficiency_level' => 'required|string|in:A1,A2,B1,B2,C1,C2',
-            'recaptcha_token' => ['required', 'string', new ReCaptcha()],
+            'proficiency_level' => 'nullable|string|in:A1,A2,B1,B2,C1,C2',
+            'recaptcha_token' => ['required', 'string', new ReCaptcha],
         ]);
 
         $user = User::create([
@@ -49,12 +49,17 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'native_language' => $request->native_language,
             'target_language' => $request->target_language,
-            'proficiency_level' => $request->proficiency_level,
+            'proficiency_level' => $request->proficiency_level ?: null,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
+
+        // If user didn't select a proficiency level, redirect to opt-in page
+        if ($user->proficiency_level === null) {
+            return redirect()->route('proficiency-opt-in.show');
+        }
 
         return redirect('/');
     }
