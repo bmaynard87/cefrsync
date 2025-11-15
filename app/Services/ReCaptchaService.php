@@ -21,11 +21,12 @@ class ReCaptchaService
         }
 
         // Validate secret key is configured
+        // If no secret key, skip verification (for local dev/testing)
         $secretKey = config('services.recaptcha.secret_key');
         if (empty($secretKey)) {
-            Log::warning('reCAPTCHA secret key is not configured');
+            Log::info('reCAPTCHA secret key not configured - skipping verification');
 
-            return false;
+            return true;
         }
 
         try {

@@ -95,11 +95,12 @@ test('verify method returns false with empty token', function () {
     expect($result)->toBeFalse();
 });
 
-test('verify method returns false when secret key is not configured', function () {
+test('verify method passes when secret key is not configured', function () {
     config(['services.recaptcha.secret_key' => null]);
 
     $service = new ReCaptchaService;
     $result = $service->verify('token');
 
-    expect($result)->toBeFalse();
+    // When no secret key is configured, verification should pass (for dev/testing)
+    expect($result)->toBeTrue();
 });
