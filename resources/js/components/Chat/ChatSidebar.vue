@@ -112,13 +112,13 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
         <!-- Chat List -->
         <div data-test="chat-list" class="flex-1 overflow-y-auto p-2">
             <div class="space-y-1">
-                <button
+                <div
                     v-for="chat in chats"
                     :key="chat.id"
                     data-test="chat-item"
                     @click="handleSelectChat(chat.id)"
                     :class="[
-                        'group flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
+                        'group flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors cursor-pointer',
                         activeChat === chat.id
                             ? 'bg-gray-100 hover:bg-gray-200'
                             : 'hover:bg-gray-100',
@@ -220,7 +220,7 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
                             ></path>
                         </svg>
                     </button>
-                </button>
+                </div>
             </div>
         </div>
     </div>
