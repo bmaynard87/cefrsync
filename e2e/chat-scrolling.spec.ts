@@ -10,8 +10,14 @@ test.describe('Chat Scrolling', () => {
     await page.fill('input[type="password"]', 'password');
     await page.click('button[type="submit"]');
     
+    // Debug: log current URL before waiting
+    if (process.env.CI) {
+      const currentUrl = page.url();
+      console.log('[DEBUG] Current URL after login click:', currentUrl);
+    }
+    
     // Wait for navigation after login (redirects to language-chat)
-    await page.waitForURL('/language-chat');
+    await page.waitForURL('/language-chat', { timeout: 10000 });
     await page.waitForLoadState('networkidle');
   });
 
