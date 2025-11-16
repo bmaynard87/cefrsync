@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Production Admin Credentials
+    |--------------------------------------------------------------------------
+    |
+    | These values are used by the ProductionUserSeeder to create the initial
+    | admin user account. Set these in your production .env file.
+    |
+    */
+
+    'admin_email' => env('ADMIN_EMAIL'),
+    'admin_password' => env('ADMIN_PASSWORD'),
+
 ];
