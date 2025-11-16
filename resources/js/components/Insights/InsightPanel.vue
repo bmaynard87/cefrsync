@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
+import Spinner from '@/components/ui/spinner/Spinner.vue';
 
 interface Insight {
     id: number;
