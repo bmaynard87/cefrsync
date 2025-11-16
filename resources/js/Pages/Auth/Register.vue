@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguageOptions } from '@/composables/useLanguageOptions';
 import AuthLayout from '@/components/AuthLayout.vue';
 import FormField from '@/components/FormField.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import LanguageSelect from '@/components/LanguageSelect.vue';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator.vue';
+import GoogleSignInButton from '@/components/GoogleSignInButton.vue';
 import { useRecaptcha } from '@/composables/useRecaptcha';
 
 const { languages, proficiencyLevels } = useLanguageOptions();
@@ -27,6 +30,7 @@ const form = useForm({
 });
 
 const { executeRecaptcha, error: recaptchaError } = useRecaptcha();
+const googleError = ref<string | null>(null);
 
 const submit = async () => {
     try {
@@ -42,6 +46,24 @@ const submit = async () => {
         // You might want to show an error message to the user
     }
 };
+
+const handleGoogleSignIn = (response: { credential: string }) => {
+    googleError.value = null;
+    
+    // Send the credential to our backend
+    router.post(route('auth.google.callback'), {
+        credential: response.credential,
+    }, {
+        onError: (errors) => {
+            googleError.value = errors.credential || 'Authentication failed. Please try again.';
+        },
+    });
+};
+
+const handleGoogleError = (error: { error: string }) => {
+    console.error('Google Sign-In error:', error);
+    googleError.value = 'Google Sign-In failed. Please try again.';
+};
 </script>
 
 <template>
@@ -49,6 +71,30 @@ const submit = async () => {
     <Head title="Register" />
 
     <AuthLayout title="Create your account" subtitle="Start your language learning journey today">
+        <Alert v-if="googleError" class="mb-6 border-red-200 bg-red-50">
+            <AlertDescription class="text-sm text-red-800">
+                {{ googleError }}
+            </AlertDescription>
+        </Alert>
+
+        <div class="mb-6">
+            <GoogleSignInButton
+                v-if="$page.props.auth?.googleClientId"
+                :client-id="$page.props.auth.googleClientId"
+                @signin="handleGoogleSignIn"
+                @error="handleGoogleError"
+            />
+        </div>
+
+        <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center">
+                <Separator />
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="bg-white px-2 text-gray-500">OR</span>
+            </div>
+        </div>
+
         <form @submit.prevent="submit" class="space-y-5">
             <div class="grid grid-cols-2 gap-4">
                 <FormField id="first_name" label="First Name" v-model="form.first_name" :error="form.errors.first_name"

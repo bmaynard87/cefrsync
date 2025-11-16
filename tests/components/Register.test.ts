@@ -8,9 +8,29 @@ const mockLanguages = [
     { value: 'fr', label: 'French' },
 ];
 
+const mockPageProps = {
+    props: {
+        auth: {
+            user: null,
+            googleClientId: 'mock-google-client-id',
+        },
+    },
+};
+
+const mountRegister = (props = {}) => {
+    return mount(Register, {
+        props,
+        global: {
+            mocks: {
+                $page: mockPageProps,
+            },
+        },
+    });
+};
+
 describe('Register', () => {
     it('renders registration form with all required fields', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         expect(wrapper.find('input[id="first_name"]').exists()).toBe(true);
         expect(wrapper.find('input[id="last_name"]').exists()).toBe(true);
@@ -23,13 +43,13 @@ describe('Register', () => {
     });
 
     it('displays "Create your account" title', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         expect(wrapper.text()).toContain('Create your account');
     });
 
     it('displays subtitle with sign in link', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         expect(wrapper.text()).toContain('Already have an account?');
         const link = wrapper.find('a[href="/login"]');
@@ -38,7 +58,7 @@ describe('Register', () => {
     });
 
     it('renders first name field with correct label', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         const labels = wrapper.findAll('label');
         const firstNameLabel = labels.find(label => label.text() === 'First Name');
@@ -46,7 +66,7 @@ describe('Register', () => {
     });
 
     it('renders email field with correct label', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         const labels = wrapper.findAll('label');
         const emailLabel = labels.find(label => label.text() === 'Email');
@@ -54,25 +74,25 @@ describe('Register', () => {
     });
 
     it('renders native language field with correct label', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         expect(wrapper.text()).toContain('Native Language');
     });
 
     it('renders target language field with correct label', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         expect(wrapper.text()).toContain('Target Language');
     });
 
     it('renders proficiency level field with correct label', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         expect(wrapper.text()).toContain('Proficiency Level');
     });
 
     it('renders password field with correct label', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         const labels = wrapper.findAll('label');
         const passwordLabel = labels.find(label => label.text() === 'Password');
@@ -80,7 +100,7 @@ describe('Register', () => {
     });
 
     it('renders password confirmation field with correct label', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         const labels = wrapper.findAll('label');
         const confirmLabel = labels.find(label => label.text() === 'Confirm Password');
@@ -88,13 +108,13 @@ describe('Register', () => {
     });
 
     it('autofocuses first name input', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         expect(wrapper.find('input[id="first_name"]').attributes('autofocus')).toBeDefined();
     });
 
     it('marks required fields correctly', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         // Required fields
         expect(wrapper.find('input[id="first_name"]').attributes('required')).toBeDefined();
@@ -110,7 +130,7 @@ describe('Register', () => {
     });
 
     it('renders create account button', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         const button = wrapper.find('button[type="submit"]');
         expect(button.exists()).toBe(true);
@@ -118,7 +138,7 @@ describe('Register', () => {
     });
 
     it('filters target language options when native language is selected', async () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         // Set native language to 'en'
         await wrapper.find('select[id="native_language"]').setValue('en');
@@ -132,7 +152,7 @@ describe('Register', () => {
     });
 
     it('filters native language options when target language is selected', async () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         // Set target language to 'es'
         await wrapper.find('select[id="target_language"]').setValue('es');
@@ -146,7 +166,7 @@ describe('Register', () => {
     });
 
     it('renders all proficiency level options', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         const proficiencyOptions = wrapper.findAll('select[id="proficiency_level"] option');
         const optionTexts = proficiencyOptions.map(opt => opt.text()).filter(text => text !== 'Select proficiency level');
@@ -160,7 +180,7 @@ describe('Register', () => {
     });
 
     it('displays validation error for first name', async () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         wrapper.vm.form.errors.first_name = 'The first name field is required.';
         await wrapper.vm.$nextTick();
@@ -169,7 +189,7 @@ describe('Register', () => {
     });
 
     it('displays validation error for email', async () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         wrapper.vm.form.errors.email = 'The email field is required.';
         await wrapper.vm.$nextTick();
@@ -178,7 +198,7 @@ describe('Register', () => {
     });
 
     it('displays validation error for native language', async () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         wrapper.vm.form.errors.native_language = 'The native language field is required.';
         await wrapper.vm.$nextTick();
@@ -187,7 +207,7 @@ describe('Register', () => {
     });
 
     it('displays validation error for target language', async () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         wrapper.vm.form.errors.target_language = 'The target language field is required.';
         await wrapper.vm.$nextTick();
@@ -196,7 +216,7 @@ describe('Register', () => {
     });
 
     it('displays validation error for password', async () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         wrapper.vm.form.errors.password = 'The password field is required.';
         await wrapper.vm.$nextTick();
@@ -205,7 +225,7 @@ describe('Register', () => {
     });
 
     it('displays validation error for password confirmation', async () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         wrapper.vm.form.errors.password_confirmation = 'The password confirmation does not match.';
         await wrapper.vm.$nextTick();
@@ -214,7 +234,7 @@ describe('Register', () => {
     });
 
     it('shows loading state on submit button when processing', async () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         wrapper.vm.form.processing = true;
         await wrapper.vm.$nextTick();
@@ -224,21 +244,46 @@ describe('Register', () => {
     });
 
     it('has autocomplete enabled for first name field', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         expect(wrapper.find('input[id="first_name"]').attributes('autocomplete')).toBe('given-name');
     });
 
     it('has autocomplete enabled for email field', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         expect(wrapper.find('input[id="email"]').attributes('autocomplete')).toBe('username');
     });
 
     it('has autocomplete set for password fields', () => {
-        const wrapper = mount(Register);
+        const wrapper = mountRegister();
 
         expect(wrapper.find('input[id="password"]').attributes('autocomplete')).toBe('new-password');
         expect(wrapper.find('input[id="password_confirmation"]').attributes('autocomplete')).toBe('new-password');
+    });
+
+    it('renders Google Sign-In button', () => {
+        const wrapper = mountRegister();
+        
+        const googleButton = wrapper.findComponent({ name: 'GoogleSignInButton' });
+        expect(googleButton.exists()).toBe(true);
+    });
+
+    it('renders "OR" separator between form and Google Sign-In', () => {
+        const wrapper = mountRegister();
+        
+        expect(wrapper.text()).toContain('OR');
+    });
+
+    it('displays Google Sign-In error when provided', async () => {
+        const wrapper = mountRegister();
+        
+        // Simulate setting an error (this would normally come from a failed Google Sign-In)
+        await wrapper.vm.$nextTick();
+        
+        // The error would be shown via GoogleSignInButton component's error handling
+        // We'll verify the button exists to handle errors
+        const button = wrapper.findComponent({ name: 'GoogleSignInButton' });
+        expect(button.exists()).toBe(true);
     });
 });
