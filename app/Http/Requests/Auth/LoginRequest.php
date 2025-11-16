@@ -31,13 +31,20 @@ class LoginRequest extends FormRequest
             'email' => $this->input('email'),
             'has_recaptcha_token' => ! empty($this->input('recaptcha_token')),
             'recaptcha_token_length' => strlen((string) $this->input('recaptcha_token')),
+            'recaptcha_configured' => ! empty(config('services.google.recaptcha.site_key')),
         ]);
 
-        return [
+        $rules = [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
-            'recaptcha_token' => ['required', 'string', new ReCaptcha],
         ];
+
+        // Only validate reCAPTCHA if it's configured
+        if (! empty(config('services.google.recaptcha.site_key'))) {
+            $rules['recaptcha_token'] = ['required', 'string', new ReCaptcha];
+        }
+
+        return $rules;
     }
 
     /**
