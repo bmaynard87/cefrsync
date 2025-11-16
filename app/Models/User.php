@@ -24,10 +24,13 @@ class User extends Authenticatable implements MustVerifyEmail
         'last_name',
         'email',
         'password',
+        'google_id',
+        'email_verified_at',
         'native_language',
         'target_language',
         'proficiency_level',
         'auto_update_proficiency',
+        'localize_insights',
     ];
 
     /**
@@ -59,6 +62,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'auto_update_proficiency' => 'boolean',
+            'localize_insights' => 'boolean',
         ];
     }
 

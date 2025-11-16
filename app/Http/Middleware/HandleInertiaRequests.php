@@ -33,8 +33,12 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'googleClientId' => config('services.google.client_id'),
             ],
             'csrf_token' => csrf_token(),
+            'recaptcha' => [
+                'siteKey' => config('services.recaptcha.site_key'),
+            ],
         ];
     }
 }

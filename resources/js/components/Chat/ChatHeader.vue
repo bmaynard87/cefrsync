@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { Languages, ArrowRight, BarChart3 } from 'lucide-vue-next';
 import InsightPanel from '@/components/Insights/InsightPanel.vue';
 
 interface Props {
@@ -55,46 +56,24 @@ const handleSettings = () => {
                 data-test="native-language"
                 class="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5"
             >
-                <svg
+                <Languages
                     class="h-4 w-4 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-                    ></path>
-                </svg>
+                />
                 <div class="flex items-center gap-1.5 text-sm">
                     <span class="font-medium text-gray-700">Native:</span>
                     <span class="text-gray-900">{{ nativeLanguage }}</span>
                 </div>
             </div>
 
-            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-            </svg>
+            <ArrowRight class="h-4 w-4 text-gray-400" />
 
             <div
                 data-test="target-language"
                 class="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-1.5"
             >
-                <svg
+                <Languages
                     class="h-4 w-4 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-                    ></path>
-                </svg>
+                />
                 <div class="flex items-center gap-1.5 text-sm">
                     <span class="font-medium text-gray-700">Target:</span>
                     <span class="text-gray-900">{{ targetLanguage }}</span>
@@ -107,19 +86,9 @@ const handleSettings = () => {
                 data-test="proficiency-level"
                 class="flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-1.5"
             >
-                <svg
+                <BarChart3
                     class="h-4 w-4 text-purple-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    ></path>
-                </svg>
+                />
                 <div class="flex items-center gap-1.5 text-sm">
                     <span class="font-medium text-gray-700">Level:</span>
                     <span class="text-gray-900">

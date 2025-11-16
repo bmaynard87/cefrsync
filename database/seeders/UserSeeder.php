@@ -62,6 +62,7 @@ class UserSeeder extends Seeder
             'first_name' => 'Test',
             'last_name' => 'User',
             'email' => 'test@example.com',
+            'email_verified_at' => now(),
             'native_language' => 'English',
             'target_language' => 'Japanese',
             'proficiency_level' => 'A2',

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Services\ReCaptchaService;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Notification;
 
@@ -13,19 +14,67 @@ test('reset password link screen can be rendered', function () {
 test('reset password link can be requested', function () {
     Notification::fake();
 
+    // Mock the ReCaptchaService
+    $this->mock(ReCaptchaService::class, function ($mock) {
+        $mock->shouldReceive('verify')
+            ->once()
+            ->andReturn(true);
+    });
+
     $user = User::factory()->create();
 
-    $this->post('/forgot-password', ['email' => $user->email]);
+    $this->post('/forgot-password', [
+        'email' => $user->email,
+        'recaptcha_token' => 'valid-token',
+    ]);
 
     Notification::assertSentTo($user, ResetPassword::class);
+});
+
+test('password reset fails without recaptcha token', function () {
+    $user = User::factory()->create();
+
+    $response = $this->post('/forgot-password', [
+        'email' => $user->email,
+    ]);
+
+    $response->assertSessionHasErrors('recaptcha_token');
+});
+
+test('password reset fails with invalid recaptcha token', function () {
+    // Mock the ReCaptchaService to return false
+    $this->mock(ReCaptchaService::class, function ($mock) {
+        $mock->shouldReceive('verify')
+            ->once()
+            ->andReturn(false);
+    });
+
+    $user = User::factory()->create();
+
+    $response = $this->post('/forgot-password', [
+        'email' => $user->email,
+        'recaptcha_token' => 'invalid-token',
+    ]);
+
+    $response->assertSessionHasErrors('recaptcha_token');
 });
 
 test('reset password screen can be rendered', function () {
     Notification::fake();
 
+    // Mock the ReCaptchaService
+    $this->mock(ReCaptchaService::class, function ($mock) {
+        $mock->shouldReceive('verify')
+            ->once()
+            ->andReturn(true);
+    });
+
     $user = User::factory()->create();
 
-    $this->post('/forgot-password', ['email' => $user->email]);
+    $this->post('/forgot-password', [
+        'email' => $user->email,
+        'recaptcha_token' => 'valid-token',
+    ]);
 
     Notification::assertSentTo($user, ResetPassword::class, function ($notification) {
         $response = $this->get('/reset-password/'.$notification->token);
@@ -39,9 +88,19 @@ test('reset password screen can be rendered', function () {
 test('password can be reset with valid token', function () {
     Notification::fake();
 
+    // Mock the ReCaptchaService
+    $this->mock(ReCaptchaService::class, function ($mock) {
+        $mock->shouldReceive('verify')
+            ->once()
+            ->andReturn(true);
+    });
+
     $user = User::factory()->create();
 
-    $this->post('/forgot-password', ['email' => $user->email]);
+    $this->post('/forgot-password', [
+        'email' => $user->email,
+        'recaptcha_token' => 'valid-token',
+    ]);
 
     Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
         $response = $this->post('/reset-password', [

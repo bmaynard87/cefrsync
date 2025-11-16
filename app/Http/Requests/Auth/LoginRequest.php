@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Rules\ReCaptcha;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -26,10 +27,17 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ];
+
+        // Only validate reCAPTCHA if it's configured
+        if (! empty(config('services.google.recaptcha.site_key'))) {
+            $rules['recaptcha_token'] = ['required', 'string', new ReCaptcha];
+        }
+
+        return $rules;
     }
 
     /**

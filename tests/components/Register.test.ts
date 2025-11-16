@@ -93,17 +93,20 @@ describe('Register', () => {
         expect(wrapper.find('input[id="first_name"]').attributes('autofocus')).toBeDefined();
     });
 
-    it('marks all fields as required', () => {
+    it('marks required fields correctly', () => {
         const wrapper = mount(Register);
 
+        // Required fields
         expect(wrapper.find('input[id="first_name"]').attributes('required')).toBeDefined();
         expect(wrapper.find('input[id="last_name"]').attributes('required')).toBeDefined();
         expect(wrapper.find('input[id="email"]').attributes('required')).toBeDefined();
         expect(wrapper.find('select[id="native_language"]').attributes('required')).toBeDefined();
         expect(wrapper.find('select[id="target_language"]').attributes('required')).toBeDefined();
-        expect(wrapper.find('select[id="proficiency_level"]').attributes('required')).toBeDefined();
         expect(wrapper.find('input[id="password"]').attributes('required')).toBeDefined();
         expect(wrapper.find('input[id="password_confirmation"]').attributes('required')).toBeDefined();
+        
+        // Optional field - proficiency_level is now optional
+        expect(wrapper.find('select[id="proficiency_level"]').attributes('required')).toBeUndefined();
     });
 
     it('renders create account button', () => {

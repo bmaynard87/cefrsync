@@ -26,6 +26,7 @@ const form = useForm({
     target_language: user.target_language || '',
     proficiency_level: user.proficiency_level || '',
     auto_update_proficiency: user.auto_update_proficiency || false,
+    localize_insights: user.localize_insights || false,
 });
 
 const { languages, proficiencyLevels } = useLanguageOptions();
@@ -186,6 +187,28 @@ const availableTargetLanguages = computed(() => {
                             </div>
                         </div>
                         <InputError class="mt-2" :message="form.errors.auto_update_proficiency" />
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input
+                                    id="localize_insights"
+                                    type="checkbox"
+                                    v-model="form.localize_insights"
+                                    class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                />
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="localize_insights" class="font-medium text-gray-700">
+                                    Localize insights to native language
+                                </label>
+                                <p class="text-gray-500">
+                                    Receive grammar and vocabulary feedback in your native language for easier understanding.
+                                </p>
+                            </div>
+                        </div>
+                        <InputError class="mt-2" :message="form.errors.localize_insights" />
                     </div>
                 </div>
             </div>

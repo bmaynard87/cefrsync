@@ -11,7 +11,7 @@ test.describe('Chat Scrolling', () => {
     await page.click('button[type="submit"]');
     
     // Wait for navigation after login (redirects to language-chat)
-    await page.waitForURL('/language-chat');
+    await page.waitForURL('/language-chat', { timeout: 10000 });
     await page.waitForLoadState('networkidle');
   });
 

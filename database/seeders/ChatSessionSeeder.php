@@ -49,7 +49,7 @@ class ChatSessionSeeder extends Seeder
                 'target_language' => $mainUser->target_language,
                 'proficiency_level' => $mainUser->proficiency_level,
                 'title' => $title,
-                'conversation_summary' => 'Practice session focused on ' . strtolower(str_replace('Japanese - ', '', $title)),
+                'conversation_summary' => 'Practice session focused on '.strtolower(str_replace('Japanese - ', '', $title)),
                 'topics_discussed' => ['practice', 'learning', 'conversation'],
                 'last_message_at' => now()->subMinutes($index * 30),
             ]);
@@ -140,7 +140,7 @@ class ChatSessionSeeder extends Seeder
             'last_message_at' => now()->subHours(5),
         ]);
 
-        $this->command->info('✓ Created ' . count($chatTitles) . ' chat sessions for main user with messages');
+        $this->command->info('✓ Created '.count($chatTitles).' chat sessions for main user with messages');
         $this->command->info('✓ Created French conversation (5 messages)');
         $this->command->info('✓ Created German session (empty)');
     }

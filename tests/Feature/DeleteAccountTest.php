@@ -119,6 +119,7 @@ test('user messages are preserved when account is soft deleted', function () {
 
     $message = ChatMessage::create([
         'chat_session_id' => $session->id,
+        'sender_type' => 'user',
         'role' => 'user',
         'content' => 'Hola, ¿cómo estás?',
     ]);
