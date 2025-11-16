@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
+import { Plus, Check, X, Pencil, Trash2 } from 'lucide-vue-next';
 import AppLogo from '@/components/AppLogo.vue';
 
 interface Chat {
@@ -102,9 +103,7 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
                         : 'bg-blue-600 text-white hover:bg-blue-700'
                 ]"
             >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
+                <Plus class="h-4 w-4" />
                 New Chat
             </button>
         </div>
@@ -157,18 +156,14 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
                                 class="p-1 rounded hover:bg-green-100"
                                 title="Save"
                             >
-                                <svg class="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
+                                <Check class="h-4 w-4 text-green-600" />
                             </button>
                             <button
                                 @click="cancelEditing"
                                 class="p-1 rounded hover:bg-red-100"
                                 title="Cancel"
                             >
-                                <svg class="h-4 w-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
+                                <X class="h-4 w-4 text-red-600" />
                             </button>
                         </div>
                         
@@ -191,9 +186,7 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
                                     class="flex-shrink-0 opacity-0 group-hover/title:opacity-100 p-0.5 rounded hover:bg-gray-200"
                                     title="Edit title"
                                 >
-                                    <svg class="h-3 w-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                                    </svg>
+                                    <Pencil class="h-3 w-3 text-gray-500" />
                                 </button>
                             </div>
                             <p class="mt-0.5 truncate text-xs text-gray-500">
@@ -206,19 +199,9 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
                         class="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-50"
                         title="Delete conversation"
                     >
-                        <svg
+                        <Trash2
                             class="h-4 w-4 text-gray-400 hover:text-red-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            ></path>
-                        </svg>
+                        />
                     </button>
                 </div>
             </div>
