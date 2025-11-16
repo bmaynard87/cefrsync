@@ -132,7 +132,7 @@ jobs:
       run: npm run build
     
     - name: Start Application Server
-      run: php artisan serve --host=127.0.0.1 --port=8000 &
+      run: php artisan serve --host=localhost --port=8000 &
     
     - name: Wait for Server
       run: |

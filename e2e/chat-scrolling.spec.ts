@@ -30,7 +30,11 @@ test.describe('Chat Scrolling', () => {
           }
           const headers = request.headers();
           console.log('[DEBUG] X-CSRF-TOKEN:', headers['x-csrf-token'] ? 'present' : 'MISSING');
-          console.log('[DEBUG] Cookie:', headers['cookie'] ? headers['cookie'].substring(0, 100) : 'MISSING');
+          console.log('[DEBUG] Cookie header:', headers['cookie'] ? headers['cookie'].substring(0, 100) : 'MISSING');
+          
+          // Check cookies in context right before request
+          const cookies = await page.context().cookies();
+          console.log('[DEBUG] Cookies in context at request time:', cookies.length, 'cookies');
         }
       });
       
