@@ -29,11 +29,11 @@ const errorTypeLabels: Record<string, string> = {
 };
 
 const errorTypeColors: Record<string, string> = {
-    offensive: 'text-red-700 dark:text-red-400',
-    meaningless: 'text-orange-700 dark:text-orange-400',
-    unnatural: 'text-yellow-700 dark:text-yellow-400',
-    archaic: 'text-blue-700 dark:text-blue-400',
-    dangerous: 'text-red-800 dark:text-red-300'
+    offensive: 'text-red-700 dark:text-red-300',
+    meaningless: 'text-orange-700 dark:text-orange-300',
+    unnatural: 'text-yellow-700 dark:text-yellow-300',
+    archaic: 'text-blue-700 dark:text-blue-300',
+    dangerous: 'text-red-800 dark:text-red-200'
 };
 
 const severityColors: Record<string, string> = {
@@ -84,8 +84,8 @@ const errorIcon = computed(() => {
                 <div class="text-xs font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wide">
                     Original
                 </div>
-                <div class="p-2 rounded bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
-                    <span class="text-sm line-through text-gray-700 dark:text-gray-300">
+                <div class="p-2 rounded bg-gray-100 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600">
+                    <span class="text-sm line-through text-gray-800 dark:text-gray-100">
                         {{ correctionData.original_text }}
                     </span>
                 </div>
@@ -97,7 +97,7 @@ const errorIcon = computed(() => {
                     Suggested
                 </div>
                 <div class="p-2 rounded bg-green-50 dark:bg-green-950/30 border-2 border-green-300 dark:border-green-700">
-                    <span class="text-sm font-medium text-green-700 dark:text-green-300">
+                    <span class="text-sm font-medium text-green-800 dark:text-green-200">
                         {{ correctionData.corrected_text }}
                     </span>
                 </div>
@@ -105,36 +105,36 @@ const errorIcon = computed(() => {
         </div>
 
         <!-- Explanation -->
-        <div class="mb-3">
-            <div class="text-xs font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wide mb-1">
+        <div class="mb-3 p-3 rounded bg-white/50 dark:bg-gray-800/50">
+            <div class="text-xs font-semibold text-gray-800 dark:text-gray-100 uppercase tracking-wide mb-1">
                 Explanation
             </div>
-            <p class="text-sm text-gray-800 dark:text-gray-200">
+            <p class="text-sm text-gray-900 dark:text-gray-50">
                 {{ correctionData.explanation }}
             </p>
         </div>
 
         <!-- Context -->
-        <div class="mb-3">
-            <div class="text-xs font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wide mb-1">
+        <div class="mb-3 p-3 rounded bg-white/50 dark:bg-gray-800/50">
+            <div class="text-xs font-semibold text-gray-800 dark:text-gray-100 uppercase tracking-wide mb-1">
                 Context
             </div>
-            <p class="text-sm text-gray-800 dark:text-gray-200">
+            <p class="text-sm text-gray-900 dark:text-gray-50">
                 {{ correctionData.context }}
             </p>
         </div>
 
         <!-- Recommendations -->
-        <div v-if="correctionData.recommendations && correctionData.recommendations.length > 0" class="mb-2">
+        <div v-if="correctionData.recommendations && correctionData.recommendations.length > 0" class="mb-2 p-3 rounded bg-white/50 dark:bg-gray-800/50">
             <div
-                class="text-xs font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wide mb-2 flex items-center gap-1">
+                class="text-xs font-semibold text-gray-800 dark:text-gray-100 uppercase tracking-wide mb-2 flex items-center gap-1">
                 <Lightbulb class="w-3 h-3" />
                 Recommendations
             </div>
             <ul class="space-y-1">
                 <li v-for="(rec, index) in correctionData.recommendations" :key="index"
-                    class="text-sm text-gray-800 dark:text-gray-200 flex items-start gap-2">
-                    <span class="text-gray-400 dark:text-gray-600">•</span>
+                    class="text-sm text-gray-900 dark:text-gray-50 flex items-start gap-2">
+                    <span class="text-gray-400 dark:text-gray-500">•</span>
                     <span>{{ rec }}</span>
                 </li>
             </ul>
