@@ -32,7 +32,8 @@ interface ChatHistory {
 interface UserSettings {
     native_language: string;
     target_language: string;
-    proficiency_level: string;
+    proficiency_level: string | null;
+    auto_update_proficiency: boolean;
 }
 
 interface Props {
@@ -54,6 +55,7 @@ const chatInputRef = ref<{ focus: () => void } | null>(null);
 const nativeLanguage = ref(props.userSettings.native_language);
 const targetLanguage = ref(props.userSettings.target_language);
 const proficiencyLevel = ref(props.userSettings.proficiency_level);
+const autoUpdateProficiency = ref(props.userSettings.auto_update_proficiency);
 
 const proficiencyLabel = computed(() => {
     const levels: Record<string, string> = {
@@ -315,6 +317,7 @@ onMounted(() => {
                     :target-language="targetLanguage"
                     :proficiency-level="proficiencyLevel"
                     :proficiency-label="proficiencyLabel"
+                    :auto-update-proficiency="autoUpdateProficiency"
                     @settings="handleSettings"
                 />
 

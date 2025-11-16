@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { Languages, ArrowRight, BarChart3 } from 'lucide-vue-next';
+import { computed } from 'vue';
 import InsightPanel from '@/components/Insights/InsightPanel.vue';
 
 interface Props {
     nativeLanguage: string;
     targetLanguage: string;
-    proficiencyLevel: string;
+    proficiencyLevel: string | null;
     proficiencyLabel?: string;
+    autoUpdateProficiency?: boolean;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
     settings: [];
@@ -19,6 +21,20 @@ const emit = defineEmits<{
 const handleSettings = () => {
     emit('settings');
 };
+
+const displayLevel = computed(() => {
+    if (!props.proficiencyLevel) {
+        return 'Not Set';
+    }
+    
+    if (props.autoUpdateProficiency) {
+        const levelText = props.proficiencyLabel 
+            ? `${props.proficiencyLevel} - ${props.proficiencyLabel}`
+            : props.proficiencyLevel;
+        return `Dynamic (${levelText})`;
+    }
+    return props.proficiencyLevel + (props.proficiencyLabel ? ` (${props.proficiencyLabel})` : '');
+});
 </script>
 
 <template>
@@ -91,9 +107,7 @@ const handleSettings = () => {
                 />
                 <div class="flex items-center gap-1.5 text-sm">
                     <span class="font-medium text-gray-700">Level:</span>
-                    <span class="text-gray-900">
-                        {{ proficiencyLevel }}{{ proficiencyLabel ? ` (${proficiencyLabel})` : '' }}
-                    </span>
+                    <span class="text-gray-900">{{ displayLevel }}</span>
                 </div>
             </div>
         </div>

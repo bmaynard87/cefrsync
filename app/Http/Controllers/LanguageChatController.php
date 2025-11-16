@@ -35,7 +35,8 @@ class LanguageChatController extends Controller
         $userSettings = [
             'native_language' => $user->native_language ?? 'Spanish',
             'target_language' => $user->target_language ?? 'English',
-            'proficiency_level' => $user->proficiency_level ?? 'B1',
+            'proficiency_level' => $user->proficiency_level,
+            'auto_update_proficiency' => $user->auto_update_proficiency ?? false,
         ];
 
         return Inertia::render('LanguageChat', [

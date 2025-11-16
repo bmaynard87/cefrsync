@@ -92,4 +92,58 @@ describe('ChatHeader', () => {
         expect(targetBadge.classes()).toContain('bg-green-50');
         expect(levelBadge.classes()).toContain('bg-purple-50');
     });
+
+    it('displays "Dynamic" with level when auto-update proficiency is enabled', () => {
+        const wrapper = mount(ChatHeader, {
+            props: {
+                nativeLanguage: 'Spanish',
+                targetLanguage: 'English',
+                proficiencyLevel: 'B1',
+                proficiencyLabel: 'Intermediate',
+                autoUpdateProficiency: true,
+            },
+        });
+
+        expect(wrapper.text()).toContain('Dynamic (B1 - Intermediate)');
+    });
+
+    it('displays proficiency level normally when auto-update is disabled', () => {
+        const wrapper = mount(ChatHeader, {
+            props: {
+                nativeLanguage: 'Spanish',
+                targetLanguage: 'English',
+                proficiencyLevel: 'B1',
+                proficiencyLabel: 'Intermediate',
+                autoUpdateProficiency: false,
+            },
+        });
+
+        expect(wrapper.text()).toContain('B1 (Intermediate)');
+        expect(wrapper.text()).not.toContain('Dynamic');
+    });
+
+    it('displays proficiency level normally when auto-update is not provided', () => {
+        const wrapper = mount(ChatHeader, {
+            props: {
+                nativeLanguage: 'Spanish',
+                targetLanguage: 'English',
+                proficiencyLevel: 'B1',
+            },
+        });
+
+        expect(wrapper.text()).toContain('B1');
+        expect(wrapper.text()).not.toContain('Dynamic');
+    });
+
+    it('displays "Not Set" when proficiency level is null', () => {
+        const wrapper = mount(ChatHeader, {
+            props: {
+                nativeLanguage: 'Spanish',
+                targetLanguage: 'English',
+                proficiencyLevel: null,
+            },
+        });
+
+        expect(wrapper.text()).toContain('Not Set');
+    });
 });
