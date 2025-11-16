@@ -96,11 +96,29 @@ class LanguageChatController extends Controller
         );
 
         if ($languageDetection['is_target_language']) {
+            // Get recent conversation context (last 3 messages before current one)
+            // For context, we want chronological order (oldest to newest)
+            $allMessages = $chatSession->messages()
+                ->where('message_type', '!=', 'correction')
+                ->orderBy('created_at', 'asc')
+                ->get(['sender_type', 'content']);
+
+            // Take the last 3 messages
+            $contextMessages = $allMessages
+                ->slice(-3)
+                ->map(fn ($msg) => [
+                    'role' => $msg->sender_type === 'user' ? 'user' : 'assistant',
+                    'content' => $msg->content,
+                ])
+                ->values()
+                ->toArray();
+
             // Message is in target language, check for critical errors
             $payload = [
                 'message' => $validated['message'],
                 'target_language' => $chatSession->target_language,
                 'proficiency_level' => $request->user()->proficiency_level ?? $chatSession->proficiency_level ?? 'B1',
+                'context_messages' => $contextMessages,
             ];
 
             // Add native language and localization if user has enabled it
