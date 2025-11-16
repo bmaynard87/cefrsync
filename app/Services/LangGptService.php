@@ -90,6 +90,16 @@ class LangGptService
     }
 
     /**
+     * Check if the LangGPT service is available
+     */
+    public function isAvailable(): bool
+    {
+        $health = $this->health();
+
+        return $health['success'] ?? false;
+    }
+
+    /**
      * Get API features (v2 only)
      */
     public function features(): array

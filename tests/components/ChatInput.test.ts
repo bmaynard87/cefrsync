@@ -144,4 +144,35 @@ describe('ChatInput', () => {
         expect(wrapper.text()).toContain('Press Enter to send');
         expect(wrapper.text()).toContain('Shift+Enter for new line');
     });
+
+    it('prevents sending message when service is down (disabled=true)', async () => {
+        const wrapper = mount(ChatInput, {
+            props: {
+                modelValue: 'Test message',
+                disabled: true,
+            },
+        });
+
+        const sendButton = wrapper.find('[data-test="send-button"]');
+        await sendButton.trigger('click');
+
+        expect(wrapper.emitted('send')).toBeFalsy();
+    });
+
+    it('shows disabled styling when service is unavailable', () => {
+        const wrapper = mount(ChatInput, {
+            props: {
+                modelValue: 'Some text',
+                disabled: true,
+            },
+        });
+
+        const textarea = wrapper.find('textarea');
+        const sendButton = wrapper.find('[data-test="send-button"]');
+        
+        expect(textarea.classes()).toContain('disabled:cursor-not-allowed');
+        expect(textarea.classes()).toContain('disabled:opacity-50');
+        expect(sendButton.classes()).toContain('disabled:cursor-not-allowed');
+        expect(sendButton.classes()).toContain('disabled:opacity-50');
+    });
 });

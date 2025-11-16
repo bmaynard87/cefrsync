@@ -39,9 +39,13 @@ class LanguageChatController extends Controller
             'auto_update_proficiency' => $user->auto_update_proficiency ?? false,
         ];
 
+        // Check if LangGPT service is available
+        $isServiceAvailable = $this->langGptService->isAvailable();
+
         return Inertia::render('LanguageChat', [
             'chatHistory' => $chatHistory,
             'userSettings' => $userSettings,
+            'isServiceAvailable' => $isServiceAvailable,
         ]);
     }
 

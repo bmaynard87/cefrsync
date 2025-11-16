@@ -8,6 +8,7 @@ import ChatMessage from '@/components/Chat/ChatMessage.vue';
 import CorrectionMessage from '@/components/Chat/CorrectionMessage.vue';
 import ChatInput from '@/components/Chat/ChatInput.vue';
 import TypingIndicator from '@/components/Chat/TypingIndicator.vue';
+import ServiceDownBanner from '@/components/Chat/ServiceDownBanner.vue';
 
 // Use Ziggy's route() helper
 declare global {
@@ -59,6 +60,7 @@ interface UserSettings {
 interface Props {
     chatHistory: ChatHistory[];
     userSettings: UserSettings;
+    isServiceAvailable: boolean;
 }
 
 const props = defineProps<Props>();
@@ -68,6 +70,7 @@ const activeChat = ref<number | null>(chats.value[0]?.id || null);
 const messages = ref<Message[]>([]);
 const inputMessage = ref('');
 const isTyping = ref(false);
+const isServiceDown = ref(!props.isServiceAvailable);
 const chatContainer = ref<HTMLElement | null>(null);
 const chatInputRef = ref<{ focus: () => void } | null>(null);
 
@@ -102,6 +105,11 @@ const pageTitle = computed(() => {
 // Check if there's already an unused "New Conversation" chat
 const hasUnusedNewChat = computed(() => {
     return chats.value.some(chat => chat.title === 'New Conversation');
+});
+
+// Determine if input should be disabled
+const isInputDisabled = computed(() => {
+    return isTyping.value || isServiceDown.value;
 });
 
 const scrollToBottom = async () => {
@@ -430,7 +438,8 @@ onMounted(() => {
                     </div>
                 </div>
 
-                <ChatInput v-model="inputMessage" :disabled="isTyping" @send="sendMessage" ref="chatInputRef" />
+                <ServiceDownBanner :is-service-down="isServiceDown" />
+                <ChatInput v-model="inputMessage" :disabled="isInputDisabled" @send="sendMessage" ref="chatInputRef" />
             </div>
         </div>
     </AppShell>
