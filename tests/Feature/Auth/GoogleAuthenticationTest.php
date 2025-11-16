@@ -208,12 +208,13 @@ test('new Google user has verified email', function () {
         ], 200),
     ]);
 
-    postJson(route('auth.google.callback'), [
+    $response = postJson(route('auth.google.callback'), [
         'credential' => 'mock-google-jwt-token',
     ]);
 
     $user = User::where('email', 'test@example.com')->first();
-    expect($user->email_verified_at)->not->toBeNull();
+    expect($user)->not->toBeNull('User should be created');
+    expect($user->email_verified_at)->not->toBeNull('Email should be verified for Google users');
 });
 
 test('linked Google user has email verified', function () {

@@ -131,8 +131,11 @@ class GoogleAuthController extends Controller
         if ($user) {
             $user->update([
                 'google_id' => $googleId,
-                'email_verified_at' => $user->email_verified_at ?? now(),
+                'email_verified_at' => now(), // Google verifies emails, so always mark as verified
             ]);
+
+            // Refresh to get updated attributes from database
+            $user->refresh();
 
             return $user;
         }

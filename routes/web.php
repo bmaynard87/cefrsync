@@ -71,7 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/account', [ProfileController::class, 'destroy'])->name('account.destroy');
 });
 
-Route::middleware(['auth', 'verified'])->prefix('language-chat')->name('language-chat')->group(function () {
+Route::middleware(['auth', 'verified', 'language.preferences'])->prefix('language-chat')->name('language-chat')->group(function () {
     Route::get('/', [\App\Http\Controllers\LanguageChatController::class, 'index'])->name('.index');
     Route::post('/', [\App\Http\Controllers\LanguageChatController::class, 'create'])->name('.create');
     Route::get('/history', [\App\Http\Controllers\LanguageChatController::class, 'history'])->name('.history');

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureUserHasLanguagePreferences;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetSecurityHeaders;
@@ -20,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+        ]);
+
+        $middleware->alias([
+            'language.preferences' => EnsureUserHasLanguagePreferences::class,
         ]);
 
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
