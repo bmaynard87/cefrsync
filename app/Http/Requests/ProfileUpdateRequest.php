@@ -31,6 +31,7 @@ class ProfileUpdateRequest extends FormRequest
             'proficiency_level' => ['nullable', 'string', Rule::in(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])],
             'auto_update_proficiency' => ['nullable', 'boolean'],
             'localize_insights' => ['nullable', 'boolean'],
+            'localize_corrections' => ['nullable', 'boolean'],
         ];
     }
 }

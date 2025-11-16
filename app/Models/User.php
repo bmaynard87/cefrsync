@@ -31,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'proficiency_level',
         'auto_update_proficiency',
         'localize_insights',
+        'localize_corrections',
     ];
 
     /**
@@ -63,6 +64,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'auto_update_proficiency' => 'boolean',
             'localize_insights' => 'boolean',
+            'localize_corrections' => 'boolean',
         ];
     }
 
