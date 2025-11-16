@@ -21,6 +21,9 @@ test.describe('Chat Scrolling', () => {
           if (postData) {
             console.log('[DEBUG] Request body:', postData.substring(0, 300));
           }
+          const headers = request.headers();
+          console.log('[DEBUG] X-CSRF-TOKEN:', headers['x-csrf-token'] ? 'present' : 'MISSING');
+          console.log('[DEBUG] Cookie:', headers['cookie'] ? headers['cookie'].substring(0, 100) : 'MISSING');
         }
       });
       
@@ -31,11 +34,21 @@ test.describe('Chat Scrolling', () => {
           if (headers['location']) {
             console.log('[DEBUG] Redirect location:', headers['location']);
           }
+          if (headers['set-cookie']) {
+            console.log('[DEBUG] Cookies set:', headers['set-cookie'].substring(0, 100));
+          }
           try {
             const body = await response.text();
-            console.log('[DEBUG] Response body:', body.substring(0, 500));
+            if (body) {
+              console.log('[DEBUG] Response body length:', body.length);
+              // Check if it's JSON (Inertia error response)
+              if (body.trim().startsWith('{')) {
+                const json = JSON.parse(body);
+                console.log('[DEBUG] Response JSON:', JSON.stringify(json).substring(0, 500));
+              }
+            }
           } catch (e) {
-            console.log('[DEBUG] Could not read response body');
+            console.log('[DEBUG] Could not read/parse response body:', e.message);
           }
         }
       });
