@@ -148,10 +148,10 @@ jobs:
         CI: true
     
     - name: Show Server Logs on Failure
-      if: failure()
+      if: always()
       run: |
-        echo "=== Server Logs ==="
-        tail -100 server.log || echo "No server logs found"
+        echo "=== Server Logs (last 200 lines) ==="
+        tail -200 server.log 2>/dev/null || echo "No server logs found"
     
     - name: Upload Playwright Report
       uses: actions/upload-artifact@v4

@@ -27,6 +27,12 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
+        \Log::info('[LOGIN DEBUG] Validation rules being applied', [
+            'email' => $this->input('email'),
+            'has_recaptcha_token' => ! empty($this->input('recaptcha_token')),
+            'recaptcha_token_length' => strlen((string) $this->input('recaptcha_token')),
+        ]);
+
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
@@ -45,7 +51,7 @@ class LoginRequest extends FormRequest
 
         \Log::info('[LOGIN DEBUG] Attempting authentication', [
             'email' => $this->input('email'),
-            'has_password' => !empty($this->input('password')),
+            'has_password' => ! empty($this->input('password')),
             'remember' => $this->boolean('remember'),
         ]);
 
