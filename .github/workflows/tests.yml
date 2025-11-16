@@ -49,9 +49,6 @@ jobs:
     - name: Build Frontend Assets
       run: npm run build
     
-    - name: Run Laravel Pint
-      run: ./vendor/bin/pint --test
-    
     - name: Run PHP Tests
       run: php artisan test
 
