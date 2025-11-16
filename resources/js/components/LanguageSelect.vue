@@ -6,7 +6,7 @@ import { useVModel } from '@vueuse/core';
 const props = defineProps<{
     id: string;
     label: string;
-    modelValue: string;
+    modelValue: string | undefined;
     error?: string;
     required?: boolean;
     excludeValue?: string;
