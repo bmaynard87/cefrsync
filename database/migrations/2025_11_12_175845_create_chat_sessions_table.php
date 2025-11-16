@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('native_language');
             $table->string('target_language');
-            $table->string('proficiency_level');
+            $table->string('proficiency_level')->nullable();
             $table->string('title')->nullable();
             $table->timestamp('last_message_at')->nullable();
             $table->timestamps();

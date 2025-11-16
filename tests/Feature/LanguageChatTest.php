@@ -184,7 +184,9 @@ test('validates required fields when creating chat session', function () {
         ->actingAs($user)
         ->post(route('language-chat.create'), []);
 
-    $response->assertSessionHasErrors(['native_language', 'target_language', 'proficiency_level']);
+    // Only native_language and target_language are required
+    // proficiency_level is optional and falls back to user's proficiency level
+    $response->assertSessionHasErrors(['native_language', 'target_language']);
 });
 
 test('validates message content is not empty', function () {
