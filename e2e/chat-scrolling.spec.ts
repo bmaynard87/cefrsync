@@ -6,6 +6,13 @@ test.describe('Chat Scrolling', () => {
     await page.goto('/login');
     await page.waitForSelector('#app');
     
+    // Debug: Check cookies after page load
+    if (process.env.CI) {
+      const cookies = await page.context().cookies();
+      console.log('[DEBUG] Cookies after loading /login:', cookies.length, 'cookies');
+      cookies.forEach(c => console.log(`[DEBUG] Cookie: ${c.name} = ${c.value.substring(0, 20)}...`));
+    }
+    
     await page.fill('input[type="email"]', 'test@example.com');
     await page.fill('input[type="password"]', 'password');
     
