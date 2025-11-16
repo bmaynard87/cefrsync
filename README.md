@@ -1,41 +1,54 @@
 # CefrSync
 
-A comprehensive language learning companion application built with Laravel, Inertia.js, and Vue.js. CefrSync provides AI-powered conversations, progress tracking, and personalized feedback to help users improve their language skills.
+A comprehensive AI-powered language learning platform built with Laravel, Inertia.js, and Vue.js. CefrSync provides intelligent conversations, context-aware corrections, progress tracking, and personalized feedback to accelerate language acquisition.
 
 ## Overview
 
-CefrSync is a full-stack web application that connects learners with AI tutors for language practice. It integrates with the LangGPT microservice for advanced language processing and leverages OpenAI for intelligent conversations.
+CefrSync is a full-stack web application that connects learners with AI tutors for immersive language practice. It integrates with the LangGPT microservice for advanced language processing and leverages OpenAI's GPT-4o-mini for natural, engaging conversations tailored to each learner's proficiency level.
 
 ## Features
 
-- 🗣️ **AI-Powered Conversations**: Chat with an AI tutor in your target language
-- 📊 **Progress Tracking**: Track conversations and learning progress over time
-- 🎯 **CEFR Level Support**: Tailored content for A1 through C2 proficiency levels
-- 💡 **Insights & Feedback**: Get real-time insights on your language usage
-- 👤 **User Authentication**: Secure registration and login with Laravel Breeze
-- 🎨 **Modern UI**: Built with Tailwind CSS and shadcn/ui components
-- 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
+- 🗣️ **AI-Powered Conversations**: Natural dialogues with an adaptive AI tutor in your target language
+- ⚠️ **Context-Aware Corrections**: Real-time detection of critical errors (meaningless, offensive, unnatural, archaic, dangerous) with conversation context
+- 📊 **Progress Tracking**: Comprehensive conversation history and learning analytics
+- 🎯 **CEFR Level Support**: Tailored content for A1 (beginner) through C2 (mastery) proficiency levels
+- 💡 **Intelligent Insights**: Automated analysis of grammar patterns, vocabulary diversity, and common mistakes
+- 🌍 **Multi-Language Support**: Learn any language from any native language
+- 🔄 **Dynamic Proficiency**: Optional auto-adjustment of CEFR level based on performance
+- 🔐 **Secure Authentication**: Laravel Breeze with Google OAuth integration and reCAPTCHA protection
+- 🎨 **Modern UI**: Built with Tailwind CSS, shadcn/ui components, and smooth animations
+- 📱 **Responsive Design**: Seamless experience on desktop, tablet, and mobile devices
+- 🔔 **Real-Time Feedback**: Live insights panel with auto-refresh every 30 seconds
 
 ## Tech Stack
 
 ### Backend
-- **Framework**: Laravel 11
+- **Framework**: Laravel 12
 - **Language**: PHP 8.2+
-- **Authentication**: Laravel Breeze (Inertia stack)
-- **Queue**: Redis/Database
-- **Testing**: Pest PHP
+- **Authentication**: Laravel Breeze (Inertia stack) + Google OAuth
+- **Queue**: Redis/Database for background jobs
+- **Testing**: Pest PHP (208 tests)
+- **Code Style**: Laravel Pint
 
 ### Frontend
-- **Framework**: Vue.js 3 with TypeScript
-- **SSR**: Inertia.js
-- **UI Components**: shadcn/ui
+- **Framework**: Vue.js 3 with Composition API
+- **Language**: TypeScript
+- **SSR**: Inertia.js for server-side rendering
+- **UI Components**: shadcn/ui (Radix Vue)
+- **Icons**: Lucide Vue
 - **Styling**: Tailwind CSS
-- **Build Tool**: Vite
-- **Testing**: Vitest + Vue Test Utils
+- **Build Tool**: Vite 7
+- **Testing**: Vitest (222 tests) + Playwright (15 E2E tests)
 
 ### External Services
-- **LangGPT**: FastAPI microservice for language processing
-- **OpenAI**: GPT-based conversation engine
+- **LangGPT**: FastAPI microservice at `host.docker.internal:8000` for language processing
+- **OpenAI**: GPT-4o-mini for conversation generation
+- **reCAPTCHA**: Google reCAPTCHA v3 for bot protection
+
+### Infrastructure
+- **Docker**: Laravel Sail for local development
+- **Database**: MySQL 8 (or PostgreSQL)
+- **Cache/Queue**: Redis
 
 ## Project Structure
 
@@ -107,11 +120,35 @@ DB_DATABASE=cefrsync
 DB_USERNAME=root
 DB_PASSWORD=
 
-OPENAI_API_KEY=your_openai_api_key_here
+# OpenAI API key for conversation generation
+OPENAI_API_KEY=sk-your_openai_api_key_here
 
+# LangGPT microservice connection
 LANGGPT_BASE_URL=http://host.docker.internal:8000
-LANGGPT_API_KEY=your_langgpt_api_key_here
+LANGGPT_API_KEY=lgpt_your_langgpt_api_key_here
+
+# Google OAuth (optional)
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# reCAPTCHA v3 (optional but recommended)
+RECAPTCHA_SITE_KEY=your_recaptcha_site_key
+RECAPTCHA_SECRET_KEY=your_recaptcha_secret_key
 ```
+
+### Generate LangGPT API Key
+
+```bash
+# From CefrSync directory
+php artisan langgpt:regenerate-key
+```
+
+This command:
+1. Calls LangGPT's `/v2/keys` endpoint to generate a new key
+2. Updates `LANGGPT_API_KEY` in your `.env` file
+3. Clears the config cache
+
+**Note**: Run this command on the host (not inside Docker) to avoid permission issues.
 
 ### Installation
 
@@ -212,27 +249,36 @@ docker-compose up -d
 
 ## Testing
 
-### PHP Tests (Pest)
+CefrSync maintains a comprehensive test suite with **435 total tests** across three layers.
+
+### PHP Tests (Pest) - 208 Tests
 
 Run all PHP tests:
 
 ```bash
 php artisan test
-```
-
-Or using the artisan shorthand:
-
-```bash
+# or using shorthand
 art test
 ```
 
 Run specific test file:
 
 ```bash
-php artisan test --filter=ChatControllerTest
+art test --filter=CorrectionContextTest
 ```
 
-### Frontend Tests (Vitest)
+Run with parallel execution:
+
+```bash
+art test --parallel
+```
+
+**Test coverage:**
+- Feature tests: Authentication, chat system, corrections, insights, language detection
+- Unit tests: Services, models, helpers
+- Database: RefreshDatabase trait for isolated tests
+
+### Frontend Tests (Vitest) - 222 Tests
 
 Run all component tests:
 
@@ -240,27 +286,38 @@ Run all component tests:
 npm test
 ```
 
-Run tests in watch mode:
+Run in watch mode (recommended for development):
 
 ```bash
 npm test -- --watch
 ```
 
-Run with coverage:
+Run with coverage report:
 
 ```bash
 npm test -- --coverage
 ```
 
-### End-to-End Tests (Playwright)
+**Test coverage:**
+- Component rendering and props
+- User interactions and events
+- Composables and utilities
+- TypeScript type checking
 
-Run E2E tests (requires Docker stack and Vite dev server running):
+### End-to-End Tests (Playwright) - 15 Tests
+
+**Prerequisites:**
+1. Start Docker stack: `./vendor/bin/sail up -d`
+2. Start Vite dev server: `npm run dev`
+3. Ensure database is seeded: `./vendor/bin/sail artisan migrate:fresh --seed`
+
+Run E2E tests:
 
 ```bash
 npm run test:e2e
 ```
 
-Run with UI mode (recommended for development):
+Run with UI mode (recommended for debugging):
 
 ```bash
 npm run test:e2e:ui
@@ -278,50 +335,69 @@ Debug specific test:
 npm run test:e2e:debug
 ```
 
-**Prerequisites for E2E tests:**
-1. Start Docker stack: `./vendor/bin/sail up -d`
-2. Start Vite dev server: `npm run dev`
-3. Ensure database is seeded: `./vendor/bin/sail artisan migrate:fresh --seed`
-
-See `e2e/README.md` for more details.
-
-### Test Structure
-
-- **PHP Tests** (`tests/Feature/`, `tests/Unit/`): Backend logic, API endpoints, database
-- **Vue Tests** (`tests/components/`): Component rendering, user interactions, props
-- **E2E Tests** (`e2e/`): Full application workflows across browsers (Chromium, Firefox, WebKit)
-
-All tests use the TDD approach and should be written before implementing features.
+**Test coverage:**
+- Full user workflows across Chromium, Firefox, and WebKit
+- Chat scrolling behavior, message persistence
+- Service down scenarios and error handling
+- See `e2e/README.md` for detailed documentation
 
 ## Key Features Explained
 
+### Context-Aware Error Corrections
+
+The correction system provides intelligent, contextual feedback:
+
+- **Real-Time Detection**: Checks every user message for critical errors (meaningless, offensive, unnatural, archaic, dangerous)
+- **Conversation Context**: Sends last 3 messages to LangGPT for context-aware corrections
+  - Example: "no i love but scared" is understood in context of "Do you have a pet snake?"
+- **Localized Feedback**: Corrections displayed in user's native language when enabled
+- **Severity Levels**: Critical (red), High (orange), Medium (yellow) with visual indicators
+- **Detailed Explanations**: Original text, suggested correction, explanation, context, and recommendations
+- **Non-Intrusive**: Corrections appear as chat messages, don't block conversation flow
+
+Implementation: `LanguageChatController::sendMessage()` → `LangGptService::checkCriticalErrors()`
+
 ### Chat System
 
-The chat interface provides:
-- Real-time messaging with AI tutor
-- Message history persistence
-- Typing indicators
-- Conversation management (create, delete)
-- Mobile-responsive design
+Real-time messaging interface with:
+
+- **Conversation Management**: Create, view, update title, delete chat sessions
+- **Message Persistence**: Full history stored in database with timestamps
+- **Typing Indicators**: Visual feedback while AI generates response
+- **Scroll Behavior**: Auto-scroll to latest message, smooth animations
+- **Mobile-Responsive**: Touch-optimized sidebar, collapsible on small screens
+- **Session Parameters**: Adjustable target language, proficiency level per conversation
+
+Components: `LanguageChat.vue`, `ChatMessage.vue`, `ChatInput.vue`, `ChatSidebar.vue`
 
 ### Insights Panel
 
-Provides real-time feedback on:
-- Grammar usage
-- Vocabulary diversity
-- Common mistakes
-- Learning progress
+Provides automated learning feedback:
 
-Powered by the `AnalyzeRecentMessages` job that processes chat history asynchronously.
+- **Real-Time Updates**: Fetches new insights every 30 seconds
+- **Analysis Triggers**: Runs after every 10 user messages in target language
+- **Insight Types**:
+  - Grammar patterns and common mistakes
+  - Vocabulary diversity and word choice
+  - Proficiency level suggestions
+  - Personalized recommendations
+- **Background Processing**: `AnalyzeRecentMessages` job runs asynchronously
+- **Unread Count**: Badge shows new insights since last check
+- **Mark as Read**: Individual or bulk marking functionality
 
-### Language Configuration
+Implementation: `AnalyzeRecentMessages.php` job → `LangGptService::analyzeMessages()`
 
-Users can configure:
-- **Native Language**: Their mother tongue
-- **Target Language**: Language they want to learn
-- **Proficiency Level**: CEFR level (A1-C2)
+### Dynamic Proficiency Adjustment
 
-These settings personalize the AI tutor's responses.
+Optional automatic CEFR level updates:
+
+- **Opt-In System**: Users choose whether to enable auto-adjustment during registration
+- **Confidence-Based**: Only updates when analysis confidence ≥ 0.7
+- **Never Downgrades**: Proficiency can only increase, never decrease
+- **Progress Suggestions**: Insights notify users when ready for next level
+- **Manual Override**: Users can always manually set their level in settings
+
+Configuration: `ProficiencyOptInController`, `AnalyzeRecentMessages` job
 
 ## API Integration
 
@@ -383,40 +459,70 @@ npm run lint        # Lint code
 
 ## Code Style
 
-### PHP
-- Follow PSR-12 coding standards
-- Use Laravel best practices
-- Type hint everything
-- Write descriptive variable names
+### PHP (Laravel Pint)
 
-### TypeScript/Vue
+Format code automatically:
+
+```bash
+./vendor/bin/pint
+```
+
+Pint follows Laravel's opinionated style guide:
+- PSR-12 compliant
+- Consistent braces and spacing
+- Alphabetically sorted imports
+
+### TypeScript/Vue (ESLint + Prettier)
+
+```bash
+npm run lint          # Check for issues
+npm run type-check    # Validate TypeScript
+```
+
+**Conventions:**
 - Use TypeScript for all new code
-- Follow Vue 3 Composition API patterns
-- Use `<script setup lang="ts">`
-- Props and emits must be typed
+- Follow Vue 3 Composition API with `<script setup lang="ts">`
+- Props and emits must be typed with interfaces
+- Use Tailwind CSS classes, avoid custom CSS when possible
 
-### Testing
-- Follow TDD: write tests first
-- Maintain high test coverage
-- Test user workflows, not implementation details
-- Use descriptive test names
+### Testing (TDD Philosophy)
 
-## Architecture
+1. **Write tests first** before implementation
+2. **Red-Green-Refactor**: Fail → Pass → Improve
+3. **Test behavior**, not implementation details
+4. **Descriptive names**: `it('correction check includes recent conversation context')`
+5. **Arrange-Act-Assert**: Clear test structure
 
-### Backend Pattern
-- **Controllers**: Handle HTTP requests, return Inertia responses
-- **Services**: Business logic, external API calls
-- **Jobs**: Asynchronous processing
-- **Models**: Eloquent ORM with relationships
+## Recent Updates
 
-### Frontend Pattern
-- **Pages**: Top-level Inertia pages
-- **Components**: Reusable Vue components
-- **Composables**: Shared reactive logic
-- **Types**: TypeScript interfaces and types
+### Conversation Context for Corrections (Nov 2024)
 
-### No Dual API Layer
-CefrSync uses Inertia.js, so controllers return `Inertia::render()` instead of JSON. Frontend components receive data as props.
+Critical error checking now uses conversation history for contextual awareness:
+
+- **Context Passing**: Last 3 non-correction messages sent to LangGPT
+- **Format**: `{role: 'user'|'assistant', content: string}[]`
+- **Benefits**: Corrections understand what user is responding to
+- **Example**: "no i love but scared lol" after "Do you have a pet snake?" is correctly interpreted
+- **Testing**: 4 comprehensive tests in `CorrectionContextTest.php`
+
+Files changed:
+- `LangGptService.php`: Added `context_messages` to payload
+- `LanguageChatController.php`: Fetches and formats last 3 messages
+- LangGPT API: Accepts optional `context_messages` field
+
+### Improved Correction Message Styling (Nov 2024)
+
+Enhanced readability in dark mode:
+
+- Lighter backgrounds for explanation, context, and recommendations sections
+- Improved text contrast (`dark:text-gray-50`)
+- Darker error type labels for better visibility
+- Better separation between correction elements
+
+### Fixed Missing Component Import (Nov 2024)
+
+- Added missing `Spinner` import to `InsightPanel.vue`
+- Resolves Vue warning about unresolved component
 
 ## Contributing
 
