@@ -13,7 +13,13 @@ class ChatMessage extends Model
     protected $fillable = [
         'chat_session_id',
         'sender_type',
+        'message_type',
         'content',
+        'correction_data',
+    ];
+
+    protected $casts = [
+        'correction_data' => 'array',
     ];
 
     public function chatSession(): BelongsTo
