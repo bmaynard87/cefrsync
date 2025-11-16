@@ -1,26 +1,45 @@
-steps:
-  - uses: actions/checkout@v3
+name: Build Frontend
 
-  - name: Setup PHP
-    uses: shivammathur/setup-php@v2
-    with:
-      php-version: "8.3"
-      extensions: mbstring, intl, pdo, mysql
+on:
+  push:
+    branches: ["master", "main"]
+  pull_request:
 
-  - name: Install composer deps
-    run: composer install --no-dev --no-interaction --prefer-dist
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-  - name: Generate Ziggy
-    run: php artisan ziggy:generate resources/js/ziggy.js
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-  - name: Setup Node
-    uses: actions/setup-node@v3
-    with:
-      node-version: "22"
-      cache: "npm"
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, intl, pdo, mysql
+          tools: composer
 
-  - name: Install node deps
-    run: npm ci
+      - name: Install composer dependencies
+        run: composer install --no-dev --no-interaction --prefer-dist
 
-  - name: Build assets
-    run: npm run build
+      - name: Generate Ziggy routes
+        run: php artisan ziggy:generate resources/js/ziggy.js
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: public/build
