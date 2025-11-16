@@ -43,7 +43,14 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        \Log::info('[LOGIN DEBUG] Attempting authentication', [
+            'email' => $this->input('email'),
+            'has_password' => !empty($this->input('password')),
+            'remember' => $this->boolean('remember'),
+        ]);
+
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+            \Log::warning('[LOGIN DEBUG] Authentication failed');
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -51,6 +58,7 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        \Log::info('[LOGIN DEBUG] Authentication successful');
         RateLimiter::clear($this->throttleKey());
     }
 

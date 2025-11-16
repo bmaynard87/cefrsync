@@ -132,7 +132,7 @@ jobs:
       run: npm run build
     
     - name: Start Application Server
-      run: php artisan serve --host=localhost --port=8000 &
+      run: php artisan serve --host=localhost --port=8000 > server.log 2>&1 &
     
     - name: Wait for Server
       run: |
@@ -146,6 +146,12 @@ jobs:
       run: npx playwright test --reporter=list
       env:
         CI: true
+    
+    - name: Show Server Logs on Failure
+      if: failure()
+      run: |
+        echo "=== Server Logs ==="
+        tail -100 server.log || echo "No server logs found"
     
     - name: Upload Playwright Report
       uses: actions/upload-artifact@v4
