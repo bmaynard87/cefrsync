@@ -1,6 +1,10 @@
 <?php
 
+use App\Jobs\AnalyzeRecentMessages;
+use App\Models\ChatMessage;
+use App\Models\ChatSession;
 use App\Models\User;
+use Illuminate\Support\Facades\Queue;
 
 test('language chat page can be rendered for authenticated users', function () {
     $user = User::factory()->create();
@@ -480,4 +484,54 @@ test('cannot update another users chat session parameters', function () {
         ]);
 
     $response->assertForbidden();
+});
+
+test('insights analysis job is dispatched every 10 messages', function () {
+    Queue::fake();
+
+    $user = User::factory()->create([
+        'target_language' => 'Spanish',
+        'proficiency_level' => 'B1',
+        'native_language' => 'English',
+    ]);
+
+    // Create a chat session with 8 existing messages
+    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+    ChatMessage::factory()->count(8)->create([
+        'chat_session_id' => $session->id,
+        'sender_type' => 'user',
+    ]);
+
+    expect($session->fresh()->messages()->count())->toBe(8);
+
+    // Send a message - this will create user message + AI response (= 10 total)
+    // which should trigger insights
+    $this->actingAs($user)
+        ->post(route('language-chat.message', $session->id), [
+            'message' => 'Hola, ¿cómo estás?',
+        ]);
+
+    Queue::assertPushed(AnalyzeRecentMessages::class);
+});
+
+test('insights analysis is not dispatched before 10 message threshold', function () {
+    Queue::fake();
+
+    $user = User::factory()->create([
+        'target_language' => 'Spanish',
+        'proficiency_level' => 'B1',
+        'native_language' => 'English',
+    ]);
+
+    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+
+    // Send 4 messages - should NOT trigger insights (will be 8 total with responses)
+    for ($i = 0; $i < 4; $i++) {
+        $this->actingAs($user)
+            ->post(route('language-chat.message', $session->id), [
+                'message' => 'Test message '.($i + 1),
+            ]);
+    }
+
+    Queue::assertNotPushed(AnalyzeRecentMessages::class);
 });
