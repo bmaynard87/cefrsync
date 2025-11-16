@@ -12,7 +12,16 @@ test.describe('Chat Scrolling', () => {
     
     // Wait for navigation after login (redirects to language-chat)
     await page.waitForURL('/language-chat', { timeout: 10000 });
-    await page.waitForLoadState('networkidle');
+    
+    // Instead of waiting for networkidle (which may timeout due to polling),
+    // wait for the main chat interface to be visible
+    await page.waitForSelector('[data-test="chat-container"]', { 
+      state: 'visible',
+      timeout: 10000 
+    });
+    
+    // Give Vue time to finish rendering
+    await page.waitForTimeout(500);
   });
 
   test('chat sidebar should scroll when there are many chats', async ({ page }) => {
