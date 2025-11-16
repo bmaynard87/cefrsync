@@ -4,6 +4,11 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
 test('regenerate langgpt key command successfully updates env file', function () {
+    // Skip this test in CI/Docker environments where .env is read-only
+    if (! is_writable(base_path('.env'))) {
+        $this->markTestSkipped('.env file is not writable in this environment');
+    }
+
     // Mock the HTTP request to LangGPT
     Http::fake([
         '*/api/keys' => Http::response([
@@ -81,6 +86,11 @@ test('regenerate langgpt key command fails when api key is not in response', fun
 });
 
 test('regenerate langgpt key command fails when env file does not have langgpt_api_key', function () {
+    // Skip this test in CI/Docker environments where .env is read-only
+    if (! is_writable(base_path('.env'))) {
+        $this->markTestSkipped('.env file is not writable in this environment');
+    }
+
     // Mock successful HTTP response
     Http::fake([
         '*/api/keys' => Http::response([
