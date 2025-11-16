@@ -6,81 +6,9 @@ test.describe('Chat Scrolling', () => {
     await page.goto('/login');
     await page.waitForSelector('#app');
     
-    // Debug: Check cookies after page load
-    if (process.env.CI) {
-      const cookies = await page.context().cookies();
-      console.log('[DEBUG] Cookies after loading /login:', cookies.length, 'cookies');
-      cookies.forEach(c => {
-        console.log(`[DEBUG] Cookie: ${c.name} = ${c.value.substring(0, 20)}... [domain=${c.domain}, path=${c.path}, sameSite=${c.sameSite}, secure=${c.secure}]`);
-      });
-    }
-    
     await page.fill('input[type="email"]', 'test@example.com');
     await page.fill('input[type="password"]', 'password');
-    
-    // Debug: Check for validation errors before submitting
-    if (process.env.CI) {
-      page.on('console', msg => console.log('[BROWSER]', msg.text()));
-      
-      // Listen to network requests
-      page.on('request', async (request) => {
-        if (request.url().includes('/login') && request.method() === 'POST') {
-          console.log('[DEBUG] POST /login request');
-          const postData = request.postData();
-          if (postData) {
-            console.log('[DEBUG] Request body:', postData.substring(0, 300));
-          }
-          const headers = request.headers();
-          console.log('[DEBUG] X-CSRF-TOKEN:', headers['x-csrf-token'] ? 'present' : 'MISSING');
-          console.log('[DEBUG] Cookie header:', headers['cookie'] ? headers['cookie'].substring(0, 100) : 'MISSING');
-          
-          // Check cookies in context right before request
-          const cookies = await page.context().cookies();
-          console.log('[DEBUG] Cookies in context at request time:', cookies.length, 'cookies');
-        }
-      });
-      
-      page.on('response', async (response) => {
-        if (response.url().includes('/login') && response.request().method() === 'POST') {
-          console.log('[DEBUG] POST /login response status:', response.status());
-          const headers = response.headers();
-          if (headers['location']) {
-            console.log('[DEBUG] Redirect location:', headers['location']);
-          }
-          if (headers['set-cookie']) {
-            console.log('[DEBUG] Cookies set:', headers['set-cookie'].substring(0, 100));
-          }
-          try {
-            const body = await response.text();
-            if (body) {
-              console.log('[DEBUG] Response body length:', body.length);
-              // Check if it's JSON (Inertia error response)
-              if (body.trim().startsWith('{')) {
-                const json = JSON.parse(body);
-                console.log('[DEBUG] Response JSON:', JSON.stringify(json).substring(0, 500));
-              }
-            }
-          } catch (e) {
-            console.log('[DEBUG] Could not read/parse response body:', e.message);
-          }
-        }
-      });
-    }
-    
     await page.click('button[type="submit"]');
-    
-    // Debug: Wait a moment and check for errors
-    if (process.env.CI) {
-      await page.waitForTimeout(2000);
-      const currentUrl = page.url();
-      console.log('[DEBUG] Current URL after login click:', currentUrl);
-      
-      // Check for validation errors on page
-      const errorText = await page.textContent('body').catch(() => 'Could not read body');
-      if (currentUrl.includes('/login')) {
-        console.log('[DEBUG] Still on login page. Page content:', errorText?.substring(0, 500));
-      }
-    }
     
     // Wait for navigation after login (redirects to language-chat)
     await page.waitForURL('/language-chat', { timeout: 10000 });

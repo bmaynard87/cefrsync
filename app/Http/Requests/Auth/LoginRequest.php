@@ -27,13 +27,6 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
-        \Log::info('[LOGIN DEBUG] Validation rules being applied', [
-            'email' => $this->input('email'),
-            'has_recaptcha_token' => ! empty($this->input('recaptcha_token')),
-            'recaptcha_token_length' => strlen((string) $this->input('recaptcha_token')),
-            'recaptcha_configured' => ! empty(config('services.google.recaptcha.site_key')),
-        ]);
-
         $rules = [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
@@ -56,14 +49,7 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        \Log::info('[LOGIN DEBUG] Attempting authentication', [
-            'email' => $this->input('email'),
-            'has_password' => ! empty($this->input('password')),
-            'remember' => $this->boolean('remember'),
-        ]);
-
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            \Log::warning('[LOGIN DEBUG] Authentication failed');
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -71,7 +57,6 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        \Log::info('[LOGIN DEBUG] Authentication successful');
         RateLimiter::clear($this->throttleKey());
     }
 

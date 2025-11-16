@@ -10,19 +10,11 @@ test('login screen can be rendered', function () {
 });
 
 test('users can authenticate using the login screen', function () {
-    // Mock the ReCaptchaService
-    $this->mock(ReCaptchaService::class, function ($mock) {
-        $mock->shouldReceive('verify')
-            ->once()
-            ->andReturn(true);
-    });
-
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
         'email' => $user->email,
         'password' => 'password',
-        'recaptcha_token' => 'valid-token',
     ]);
 
     $this->assertAuthenticated();
@@ -30,25 +22,20 @@ test('users can authenticate using the login screen', function () {
 });
 
 test('users can not authenticate with invalid password', function () {
-    // Mock the ReCaptchaService
-    $this->mock(ReCaptchaService::class, function ($mock) {
-        $mock->shouldReceive('verify')
-            ->once()
-            ->andReturn(true);
-    });
-
     $user = User::factory()->create();
 
     $this->post('/login', [
         'email' => $user->email,
         'password' => 'wrong-password',
-        'recaptcha_token' => 'valid-token',
     ]);
 
     $this->assertGuest();
 });
 
-test('login fails without recaptcha token', function () {
+test('login fails without recaptcha token when recaptcha is configured', function () {
+    // Temporarily set reCAPTCHA site key to make validation required
+    config(['services.google.recaptcha.site_key' => 'test-site-key']);
+
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
@@ -59,7 +46,10 @@ test('login fails without recaptcha token', function () {
     $response->assertSessionHasErrors('recaptcha_token');
 });
 
-test('login fails with invalid recaptcha token', function () {
+test('login fails with invalid recaptcha token when recaptcha is configured', function () {
+    // Temporarily set reCAPTCHA site key to make validation required
+    config(['services.google.recaptcha.site_key' => 'test-site-key']);
+
     // Mock the ReCaptchaService to return false
     $this->mock(ReCaptchaService::class, function ($mock) {
         $mock->shouldReceive('verify')
