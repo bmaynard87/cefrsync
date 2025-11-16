@@ -20,6 +20,7 @@ class ProductionUserSeeder extends Seeder
         // Only run in production environment
         if (config('app.env') !== 'production') {
             $this->command->info('Skipping ProductionUserSeeder - not in production environment');
+
             return;
         }
 
@@ -79,5 +80,4 @@ class ProductionUserSeeder extends Seeder
 
         $this->command->info('Admin user (ID 2) ensured with email: '.$adminEmail);
     }
-
 }
