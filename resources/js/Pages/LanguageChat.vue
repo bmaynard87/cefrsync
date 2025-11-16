@@ -5,6 +5,7 @@ import AppShell from '@/components/AppShell.vue';
 import ChatSidebar from '@/components/Chat/ChatSidebar.vue';
 import ChatHeader from '@/components/Chat/ChatHeader.vue';
 import ChatMessage from '@/components/Chat/ChatMessage.vue';
+import CorrectionMessage from '@/components/Chat/CorrectionMessage.vue';
 import ChatInput from '@/components/Chat/ChatInput.vue';
 import TypingIndicator from '@/components/Chat/TypingIndicator.vue';
 
@@ -13,12 +14,31 @@ declare global {
     function route(name: string, params?: any): string;
 }
 
+interface CorrectionData {
+    error_type: 'offensive' | 'meaningless' | 'unnatural' | 'archaic' | 'dangerous';
+    severity: 'critical' | 'high' | 'medium';
+    original_text: string;
+    corrected_text: string;
+    explanation: string;
+    context: string;
+    recommendations?: string[];
+}
+
+interface CorrectionMessage {
+    id: number;
+    content: string;
+    created_at: string;
+    correction_data: CorrectionData;
+}
+
 interface Message {
     id: number;
     content: string;
-    sender_type: 'user' | 'assistant';
+    sender_type: 'user' | 'assistant' | 'system';
+    message_type?: 'user' | 'assistant' | 'correction';
     created_at: string;
     isAnalyzing?: boolean;
+    correction_data?: CorrectionData;
 }
 
 interface ChatHistory {
@@ -156,6 +176,16 @@ const sendMessage = async () => {
                 ...data.user_message,
                 sender_type: 'user' as const,
             };
+        }
+
+        // Add correction message if present
+        if (data.correction_message) {
+            messages.value.push({
+                ...data.correction_message,
+                sender_type: 'system' as const,
+                message_type: 'correction' as const,
+            });
+            await scrollToBottom();
         }
 
         // Add AI response
@@ -377,14 +407,24 @@ onMounted(() => {
 
                     <!-- Chat Messages -->
                     <div v-else class="mx-auto max-w-3xl space-y-6">
-                        <ChatMessage
-                            v-for="message in messages"
-                            :key="message.id"
-                            :content="message.content"
-                            :role="message.sender_type"
-                            :timestamp="new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })"
-                            :is-analyzing="message.isAnalyzing"
-                        />
+                        <template v-for="message in messages" :key="message.id">
+                            <!-- Correction Messages -->
+                            <CorrectionMessage
+                                v-if="message.message_type === 'correction' && message.correction_data"
+                                :content="message.content"
+                                :correction-data="message.correction_data"
+                                :timestamp="new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })"
+                            />
+                            
+                            <!-- Regular Chat Messages -->
+                            <ChatMessage
+                                v-else
+                                :content="message.content"
+                                :role="message.sender_type"
+                                :timestamp="new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })"
+                                :is-analyzing="message.isAnalyzing"
+                            />
+                        </template>
 
                         <TypingIndicator v-if="isTyping" />
                     </div>
