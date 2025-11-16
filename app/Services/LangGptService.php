@@ -194,4 +194,19 @@ class LangGptService
 
         return $this->makeRequest('POST', 'evaluate-progress', $payload);
     }
+
+    /**
+     * Check a message for critical errors that need immediate correction
+     */
+    public function checkCriticalErrors(array $payload): array
+    {
+        if (! $this->hasApiKey()) {
+            return [
+                'success' => false,
+                'error' => 'API key required for critical error checking',
+            ];
+        }
+
+        return $this->makeRequest('POST', 'check-critical-errors', $payload);
+    }
 }

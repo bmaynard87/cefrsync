@@ -50,13 +50,13 @@ class LanguageChatController extends Controller
         $validated = $request->validate([
             'native_language' => 'required|string|max:255',
             'target_language' => 'required|string|max:255',
-            'proficiency_level' => 'required|string|max:255',
+            'proficiency_level' => 'nullable|string|max:255',
         ]);
 
         $session = $request->user()->chatSessions()->create([
             'native_language' => $validated['native_language'],
             'target_language' => $validated['target_language'],
-            'proficiency_level' => $validated['proficiency_level'],
+            'proficiency_level' => $validated['proficiency_level'] ?? $request->user()->proficiency_level,
             'title' => 'New Conversation',
             'last_message_at' => now(),
         ]);
@@ -84,8 +84,60 @@ class LanguageChatController extends Controller
             'content' => $validated['message'],
         ]);
 
+        // Check if message is in target language and check for critical errors
+        $correctionMessage = null;
+        $languageDetection = $this->openAiService->detectLanguage(
+            $validated['message'],
+            $chatSession->target_language
+        );
+
+        if ($languageDetection['is_target_language']) {
+            // Message is in target language, check for critical errors
+            $payload = [
+                'message' => $validated['message'],
+                'target_language' => $chatSession->target_language,
+                'proficiency_level' => $request->user()->proficiency_level ?? $chatSession->proficiency_level ?? 'B1',
+            ];
+
+            // Add native language and localization if user has enabled it
+            if ($request->user()->localize_corrections && $request->user()->native_language) {
+                $payload['native_language'] = $request->user()->native_language;
+                $payload['localize'] = true;
+            }
+
+            \Log::info('Critical error check payload', [
+                'user_id' => $request->user()->id,
+                'localize_corrections' => $request->user()->localize_corrections,
+                'native_language' => $request->user()->native_language,
+                'payload' => $payload,
+            ]);
+
+            $errorCheck = $this->langGptService->checkCriticalErrors($payload);
+
+            \Log::info('Critical error check result', [
+                'message' => $validated['message'],
+                'error_check' => $errorCheck,
+            ]);
+
+            if ($errorCheck['success'] && isset($errorCheck['data']['has_critical_error']) && $errorCheck['data']['has_critical_error']) {
+                // Create a correction message
+                $correctionMessage = $chatSession->messages()->create([
+                    'sender_type' => 'system',
+                    'message_type' => 'correction',
+                    'content' => $errorCheck['data']['explanation'] ?? 'This message needs correction.',
+                    'correction_data' => $errorCheck['data'],
+                ]);
+
+                \Log::info('Created correction message', [
+                    'correction_message_id' => $correctionMessage->id,
+                    'correction_data' => $correctionMessage->correction_data,
+                ]);
+            }
+        }
+
         // Get conversation history for context
         $conversationHistory = $chatSession->messages()
+            ->where('message_type', '!=', 'correction')  // Exclude correction messages from AI context
             ->orderBy('created_at')
             ->get(['sender_type', 'content'])
             ->toArray();
@@ -156,6 +208,12 @@ class LanguageChatController extends Controller
                 'content' => $aiMessage->content,
                 'created_at' => $aiMessage->created_at,
             ],
+            'correction_message' => $correctionMessage ? [
+                'id' => $correctionMessage->id,
+                'content' => $correctionMessage->content,
+                'created_at' => $correctionMessage->created_at,
+                'correction_data' => $correctionMessage->correction_data,
+            ] : null,
             'new_title' => $newTitle,
         ]);
     }
