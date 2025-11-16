@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Session Expired - {{ config('app.name') }}</title>
+    <title>Page Expired - {{ config('app.name') }}</title>
 
-    @vite(['resources/js/app.ts'])
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="antialiased">
     <div class="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center px-6">

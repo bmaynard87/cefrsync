@@ -120,8 +120,8 @@ class ErrorPagesTest extends TestCase
             // Check for viewport meta tag (mobile responsiveness)
             $this->assertStringContainsString('viewport', $html);
 
-            // Check for Vite assets
-            $this->assertStringContainsString('@vite', $html);
+            // Check for Tailwind CSS (loaded via CDN for error pages)
+            $this->assertStringContainsString('tailwindcss', $html);
         }
     }
 
