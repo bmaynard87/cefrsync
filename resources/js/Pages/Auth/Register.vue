@@ -23,8 +23,8 @@ const form = useForm({
     email: isDev ? 'john.doe@example.com' : '',
     password: isDev ? 'SuperStrongPassword123!@#' : '',
     password_confirmation: isDev ? 'SuperStrongPassword123!@#' : '',
-    native_language: isDev ? 'Japanese' : '',
-    target_language: isDev ? 'English' : '',
+    native_language: isDev ? 'ja' : '',
+    target_language: isDev ? 'en' : '',
     proficiency_level: isDev ? '' : '', // Leave empty to test opt-in flow
     recaptcha_token: '',
 });

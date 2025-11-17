@@ -141,15 +141,32 @@ describe('Register', () => {
     it('filters target language options when native language is selected', async () => {
         const wrapper = mountRegister();
 
-        // Set native language to 'en'
-        await wrapper.find('select[id="native_language"]').setValue('en');
+        // Get the target language select component
+        const targetLanguageSelect = wrapper.findAllComponents({ name: 'LanguageSelect' })
+            .find(c => c.props('id') === 'target_language');
+        
+        // In dev mode, form is prefilled with ja/en
+        // Check initial state depends on DEV mode
+        const initialNative = import.meta.env.DEV ? 'ja' : '';
+        expect(targetLanguageSelect?.props('excludeValue')).toBe(initialNative);
+
+        // Set native language to 'es' via the form
+        wrapper.vm.form.native_language = 'es';
+        await wrapper.vm.$nextTick();
         await wrapper.vm.$nextTick();
 
-        // Check that target language select excludes 'en'
-        const targetSelect = wrapper.findAll('select[id="target_language"] option');
-        const targetValues = targetSelect.map(opt => opt.attributes('value')).filter(val => val);
+        // Now excludeValue should be 'es'
+        expect(targetLanguageSelect?.props('excludeValue')).toBe('es');
         
-        expect(targetValues).not.toContain('en');
+        // The filtered options in the component should not include 'es'
+        const targetSelect = wrapper.findAll('select[id="target_language"] option');
+        const targetValues = targetSelect
+            .map(opt => opt.attributes('value'))
+            .filter(val => val && val !== '');
+        
+        expect(targetValues).not.toContain('es');
+        expect(targetValues).toContain('en');
+        expect(targetValues).toContain('fr');
     });
 
     it('filters native language options when target language is selected', async () => {
@@ -286,5 +303,27 @@ describe('Register', () => {
         // We'll verify the button exists to handle errors
         const button = wrapper.findComponent({ name: 'GoogleSignInButton' });
         expect(button.exists()).toBe(true);
+    });
+
+    it('prefills form with test data in development mode', () => {
+        // Save original NODE_ENV
+        const originalEnv = import.meta.env.DEV;
+        
+        // Mock development environment
+        import.meta.env.DEV = true;
+        
+        const wrapper = mountRegister();
+
+        // Check that form is prefilled with language keys (not names)
+        expect(wrapper.vm.form.first_name).toBe('John');
+        expect(wrapper.vm.form.last_name).toBe('Doe');
+        expect(wrapper.vm.form.email).toBe('john.doe@example.com');
+        expect(wrapper.vm.form.native_language).toBe('ja');
+        expect(wrapper.vm.form.target_language).toBe('en');
+        expect(wrapper.vm.form.password).toBe('SuperStrongPassword123!@#');
+        expect(wrapper.vm.form.password_confirmation).toBe('SuperStrongPassword123!@#');
+        
+        // Restore original environment
+        import.meta.env.DEV = originalEnv;
     });
 });
