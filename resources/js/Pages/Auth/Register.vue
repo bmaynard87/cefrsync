@@ -31,13 +31,10 @@ const formError = ref<string | null>(null);
 
 const submit = async () => {
     formError.value = null;
-    
+
     try {
         // Execute reCAPTCHA before submitting (returns empty string if not configured)
-        console.log('Attempting reCAPTCHA execution...');
-        console.log('Site key available:', !!page.props.recaptcha?.siteKey);
         const token = await executeRecaptcha('register');
-        console.log('reCAPTCHA token received:', token ? 'yes' : 'no');
         form.recaptcha_token = token;
 
         form.post(route('register'), {
@@ -47,16 +44,14 @@ const submit = async () => {
             },
         });
     } catch (err) {
-        console.error('reCAPTCHA error details:', err);
-        console.error('Error type:', typeof err);
-        console.error('Error message:', err instanceof Error ? err.message : String(err));
+        console.error('reCAPTCHA error:', err);
         formError.value = 'Unable to verify reCAPTCHA. Please refresh the page and try again.';
     }
 };
 
 const handleGoogleSignIn = (response: { credential: string }) => {
     googleError.value = null;
-    
+
     // Send the credential to our backend
     router.post(route('auth.google.callback'), {
         credential: response.credential,
@@ -89,7 +84,7 @@ const handleGoogleError = (error: { error: string }) => {
                 {{ formError }}
             </AlertDescription>
         </Alert>
-        
+
         <Alert v-if="googleError" class="mb-6 border-red-200 bg-red-50">
             <AlertDescription class="text-sm text-red-800">
                 {{ googleError }}
@@ -97,12 +92,8 @@ const handleGoogleError = (error: { error: string }) => {
         </Alert>
 
         <div class="mb-6">
-            <GoogleSignInButton
-                v-if="$page.props.auth?.googleClientId"
-                :client-id="$page.props.auth.googleClientId"
-                @signin="handleGoogleSignIn"
-                @error="handleGoogleError"
-            />
+            <GoogleSignInButton v-if="$page.props.auth?.googleClientId" :client-id="$page.props.auth.googleClientId"
+                @signin="handleGoogleSignIn" @error="handleGoogleError" />
         </div>
 
         <div class="relative my-6">

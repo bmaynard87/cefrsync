@@ -34,13 +34,10 @@ export function useRecaptcha() {
                 return;
             }
 
-            console.log('Loading reCAPTCHA with site key:', siteKey);
-            
             // Remove any existing reCAPTCHA scripts that don't match our site key
             const allRecaptchaScripts = document.querySelectorAll('script[src*="google.com/recaptcha"]');
             allRecaptchaScripts.forEach(script => {
                 if (!script.getAttribute('src')?.includes(`render=${siteKey}`)) {
-                    console.log('Removing old reCAPTCHA script:', script.getAttribute('src'));
                     script.remove();
                 }
             });
