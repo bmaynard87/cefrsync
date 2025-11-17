@@ -34,7 +34,10 @@ const submit = async () => {
     
     try {
         // Execute reCAPTCHA before submitting (returns empty string if not configured)
+        console.log('Attempting reCAPTCHA execution...');
+        console.log('Site key available:', !!page.props.recaptcha?.siteKey);
         const token = await executeRecaptcha('register');
+        console.log('reCAPTCHA token received:', token ? 'yes' : 'no');
         form.recaptcha_token = token;
 
         form.post(route('register'), {
@@ -44,7 +47,9 @@ const submit = async () => {
             },
         });
     } catch (err) {
-        console.error('reCAPTCHA error:', err);
+        console.error('reCAPTCHA error details:', err);
+        console.error('Error type:', typeof err);
+        console.error('Error message:', err instanceof Error ? err.message : String(err));
         formError.value = 'Unable to verify reCAPTCHA. Please refresh the page and try again.';
     }
 };
