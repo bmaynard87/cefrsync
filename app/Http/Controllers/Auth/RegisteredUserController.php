@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -68,12 +69,13 @@ class RegisteredUserController extends Controller
             DB::rollBack();
 
             // If email sending fails, rollback user creation and show error
-            \Log::error('Registration failed', [
+            Log::error('Registration failed', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'email' => $request->email,
             ]);
 
-            return back()->with('error', 'Registration failed. Please try again.');
+            return back()->withInput($request->only('first_name', 'last_name', 'email'))->with('error', 'Registration failed. Please try again.');
         }
     }
 }
