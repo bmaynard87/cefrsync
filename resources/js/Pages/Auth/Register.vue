@@ -24,19 +24,25 @@ const form = useForm({
 
 const { executeRecaptcha, error: recaptchaError } = useRecaptcha();
 const googleError = ref<string | null>(null);
+const formError = ref<string | null>(null);
 
 const submit = async () => {
+    formError.value = null;
+    
     try {
-        // Execute reCAPTCHA before submitting
+        // Execute reCAPTCHA before submitting (returns empty string if not configured)
         const token = await executeRecaptcha('register');
         form.recaptcha_token = token;
 
         form.post(route('register'), {
             onFinish: () => form.reset('password', 'password_confirmation'),
+            onError: () => {
+                formError.value = 'Registration failed. Please try again.';
+            },
         });
     } catch (err) {
         console.error('reCAPTCHA error:', err);
-        // You might want to show an error message to the user
+        formError.value = 'Unable to verify reCAPTCHA. Please refresh the page and try again.';
     }
 };
 
@@ -64,6 +70,12 @@ const handleGoogleError = (error: { error: string }) => {
     <Head title="Register" />
 
     <AuthLayout title="Create your account" subtitle="Start your language learning journey today">
+        <Alert v-if="formError" class="mb-6 border-red-200 bg-red-50">
+            <AlertDescription class="text-sm text-red-800">
+                {{ formError }}
+            </AlertDescription>
+        </Alert>
+        
         <Alert v-if="googleError" class="mb-6 border-red-200 bg-red-50">
             <AlertDescription class="text-sm text-red-800">
                 {{ googleError }}
