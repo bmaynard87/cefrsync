@@ -28,20 +28,35 @@ export function useRecaptcha() {
      */
     const loadRecaptchaScript = (): Promise<void> => {
         return new Promise((resolve, reject) => {
-            // Check if already loaded
-            if (window.grecaptcha) {
-                isLoaded.value = true;
-                resolve();
+            // If siteKey is not configured, reject immediately
+            if (!siteKey) {
+                reject(new Error('reCAPTCHA site key not configured'));
                 return;
             }
 
-            // Check if script tag already exists
-            const existingScript = document.querySelector('script[src*="google.com/recaptcha"]');
+            // Check if script tag already exists with our site key
+            const existingScript = document.querySelector(`script[src*="render=${siteKey}"]`);
+            
             if (existingScript) {
-                existingScript.addEventListener('load', () => {
-                    isLoaded.value = true;
-                    resolve();
-                });
+                // Script exists, wait for grecaptcha to be ready
+                if (window.grecaptcha?.ready) {
+                    window.grecaptcha.ready(() => {
+                        isLoaded.value = true;
+                        resolve();
+                    });
+                } else {
+                    // Script tag exists but not loaded yet, wait for it
+                    existingScript.addEventListener('load', () => {
+                        if (window.grecaptcha?.ready) {
+                            window.grecaptcha.ready(() => {
+                                isLoaded.value = true;
+                                resolve();
+                            });
+                        } else {
+                            reject(new Error('reCAPTCHA loaded but grecaptcha not available'));
+                        }
+                    });
+                }
                 return;
             }
 
@@ -52,8 +67,14 @@ export function useRecaptcha() {
             script.defer = true;
             
             script.onload = () => {
-                isLoaded.value = true;
-                resolve();
+                if (window.grecaptcha?.ready) {
+                    window.grecaptcha.ready(() => {
+                        isLoaded.value = true;
+                        resolve();
+                    });
+                } else {
+                    reject(new Error('reCAPTCHA script loaded but grecaptcha not available'));
+                }
             };
             
             script.onerror = () => {
