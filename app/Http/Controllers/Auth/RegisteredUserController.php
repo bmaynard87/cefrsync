@@ -9,6 +9,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
@@ -45,18 +46,34 @@ class RegisteredUserController extends Controller
 
         $request->validate($rules);
 
-        $user = User::create([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        try {
+            DB::beginTransaction();
 
-        event(new Registered($user));
+            $user = User::create([
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
 
-        Auth::login($user);
+            event(new Registered($user));
 
-        // Redirect to home - middleware will handle proficiency opt-in after email verification
-        return redirect('/');
+            Auth::login($user);
+
+            DB::commit();
+
+            // Redirect to home - middleware will handle proficiency opt-in after email verification
+            return redirect('/');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // If email sending fails, rollback user creation and show error
+            \Log::error('Registration failed', [
+                'error' => $e->getMessage(),
+                'email' => $request->email,
+            ]);
+
+            return back()->with('error', 'Registration failed. Please try again.');
+        }
     }
 }
