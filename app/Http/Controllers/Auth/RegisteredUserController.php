@@ -31,7 +31,7 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        $rules = [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
@@ -39,8 +39,14 @@ class RegisteredUserController extends Controller
             'native_language' => 'required|string|max:255',
             'target_language' => 'required|string|max:255|different:native_language',
             'proficiency_level' => 'nullable|string|in:A1,A2,B1,B2,C1,C2',
-            'recaptcha_token' => ['required', 'string', new ReCaptcha],
-        ]);
+        ];
+
+        // Only require reCAPTCHA token if it's configured
+        if (config('services.recaptcha.secret_key')) {
+            $rules['recaptcha_token'] = ['required', 'string', new ReCaptcha];
+        }
+
+        $request->validate($rules);
 
         $user = User::create([
             'first_name' => $request->first_name,

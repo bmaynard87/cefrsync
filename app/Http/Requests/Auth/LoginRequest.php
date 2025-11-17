@@ -33,7 +33,7 @@ class LoginRequest extends FormRequest
         ];
 
         // Only validate reCAPTCHA if it's configured
-        if (! empty(config('services.google.recaptcha.site_key'))) {
+        if (config('services.recaptcha.secret_key')) {
             $rules['recaptcha_token'] = ['required', 'string', new ReCaptcha];
         }
 

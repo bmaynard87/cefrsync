@@ -30,10 +30,16 @@ class PasswordResetLinkController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        $rules = [
             'email' => 'required|email',
-            'recaptcha_token' => ['required', 'string', new ReCaptcha],
-        ]);
+        ];
+
+        // Only require reCAPTCHA token if it's configured
+        if (config('services.recaptcha.secret_key')) {
+            $rules['recaptcha_token'] = ['required', 'string', new ReCaptcha];
+        }
+
+        $request->validate($rules);
 
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
