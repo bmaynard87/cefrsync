@@ -45,7 +45,7 @@ class ProductionUserSeeder extends Seeder
                 'email_verified_at' => now(),
                 'password' => Hash::make(Str::random(64)), // Random unguessable password
                 'native_language' => 'English',
-                'target_language' => 'English',
+                'target_language' => 'Spanish',
                 'proficiency_level' => 'C2',
                 'auto_update_proficiency' => false,
             ]
@@ -72,7 +72,7 @@ class ProductionUserSeeder extends Seeder
                 'email_verified_at' => now(),
                 'password' => Hash::make($adminPassword),
                 'native_language' => 'English',
-                'target_language' => 'English',
+                'target_language' => 'Japanese',
                 'proficiency_level' => 'C2',
                 'auto_update_proficiency' => false,
             ]
