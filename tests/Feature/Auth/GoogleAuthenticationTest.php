@@ -29,7 +29,7 @@ test('user can sign in with Google credential', function () {
         'credential' => 'mock-google-jwt-token',
     ]);
 
-    $response->assertRedirect(route('proficiency-opt-in.show'));
+    $response->assertRedirect(route('learning-profile.show'));
 
     // User should be created
     assertDatabaseHas('users', [
@@ -170,8 +170,8 @@ test('new Google user needs language preferences', function () {
         'credential' => 'mock-google-jwt-token',
     ]);
 
-    // Should redirect to proficiency opt-in (which requires language setup first)
-    $response->assertRedirect(route('proficiency-opt-in.show'));
+    // Should redirect to learning profile setup (which requires language setup first)
+    $response->assertRedirect(route('learning-profile.show'));
 
     $user = User::where('email', 'test@example.com')->first();
 

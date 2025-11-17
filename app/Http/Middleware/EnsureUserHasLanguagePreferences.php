@@ -11,20 +11,25 @@ class EnsureUserHasLanguagePreferences
     /**
      * Handle an incoming request.
      *
-     * Redirects to proficiency opt-in if user doesn't have language preferences set.
+     * Redirects to learning profile setup if user doesn't have language preferences set.
      */
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
 
-        // If user is authenticated but missing language preferences, redirect to opt-in
-        if ($user && ($user->native_language === null || $user->target_language === null)) {
-            return redirect()->route('proficiency-opt-in.show');
+        // Allow unverified users to access verification routes
+        if ($user && ! $user->hasVerifiedEmail()) {
+            return $next($request);
         }
 
-        // If user has languages but no proficiency level and hasn't enabled auto-update, redirect to opt-in
+        // If user is authenticated but missing language setup (native/target languages), redirect to setup
+        if ($user && ($user->native_language === null || $user->target_language === null)) {
+            return redirect()->route('learning-profile.show');
+        }
+
+        // If user has languages but no proficiency level and hasn't enabled auto-update, redirect to setup
         if ($user && $user->proficiency_level === null && ! $user->auto_update_proficiency) {
-            return redirect()->route('proficiency-opt-in.show');
+            return redirect()->route('learning-profile.show');
         }
 
         return $next($request);

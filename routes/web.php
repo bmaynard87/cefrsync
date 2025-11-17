@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\ProficiencyOptInController;
+use App\Http\Controllers\LearningProfileSetupController;
 use App\Http\Controllers\ProfileController;
 use App\Services\LangGptService;
 use Illuminate\Support\Facades\Route;
@@ -22,8 +22,8 @@ Route::get('dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/proficiency-opt-in', [ProficiencyOptInController::class, 'show'])->name('proficiency-opt-in.show');
-    Route::post('/proficiency-opt-in', [ProficiencyOptInController::class, 'store'])->name('proficiency-opt-in.store');
+    Route::get('/learning-profile', [LearningProfileSetupController::class, 'show'])->name('learning-profile.show');
+    Route::post('/learning-profile', [LearningProfileSetupController::class, 'store'])->name('learning-profile.store');
 });
 
 Route::get('/ping-langgpt', function (LangGptService $langGpt) {

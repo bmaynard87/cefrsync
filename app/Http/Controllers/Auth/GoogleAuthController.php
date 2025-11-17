@@ -45,8 +45,8 @@ class GoogleAuthController extends Controller
             $request->session()->regenerate();
 
             // Redirect based on user setup status
-            if ($user->proficiency_level === null) {
-                return redirect()->route('proficiency-opt-in.show');
+            if ($user->native_language === null || $user->target_language === null) {
+                return redirect()->route('learning-profile.show');
             }
 
             return redirect()->intended('/');

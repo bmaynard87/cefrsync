@@ -14,6 +14,8 @@ test('reset password link screen can be rendered', function () {
 test('reset password link can be requested', function () {
     Notification::fake();
 
+    config(['services.recaptcha.secret_key' => 'test-secret-key']);
+
     // Mock the ReCaptchaService
     $this->mock(ReCaptchaService::class, function ($mock) {
         $mock->shouldReceive('verify')
@@ -32,6 +34,8 @@ test('reset password link can be requested', function () {
 });
 
 test('password reset fails without recaptcha token', function () {
+    config(['services.recaptcha.secret_key' => 'test-secret-key']);
+
     $user = User::factory()->create();
 
     $response = $this->post('/forgot-password', [
@@ -42,6 +46,8 @@ test('password reset fails without recaptcha token', function () {
 });
 
 test('password reset fails with invalid recaptcha token', function () {
+    config(['services.recaptcha.secret_key' => 'test-secret-key']);
+
     // Mock the ReCaptchaService to return false
     $this->mock(ReCaptchaService::class, function ($mock) {
         $mock->shouldReceive('verify')
@@ -61,6 +67,8 @@ test('password reset fails with invalid recaptcha token', function () {
 
 test('reset password screen can be rendered', function () {
     Notification::fake();
+
+    config(['services.recaptcha.secret_key' => 'test-secret-key']);
 
     // Mock the ReCaptchaService
     $this->mock(ReCaptchaService::class, function ($mock) {
@@ -87,6 +95,8 @@ test('reset password screen can be rendered', function () {
 
 test('password can be reset with valid token', function () {
     Notification::fake();
+
+    config(['services.recaptcha.secret_key' => 'test-secret-key']);
 
     // Mock the ReCaptchaService
     $this->mock(ReCaptchaService::class, function ($mock) {

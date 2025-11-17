@@ -36,9 +36,6 @@ describe('Register', () => {
         expect(wrapper.find('input[id="first_name"]').exists()).toBe(true);
         expect(wrapper.find('input[id="last_name"]').exists()).toBe(true);
         expect(wrapper.find('input[id="email"]').exists()).toBe(true);
-        expect(wrapper.find('select[id="native_language"]').exists()).toBe(true);
-        expect(wrapper.find('select[id="target_language"]').exists()).toBe(true);
-        expect(wrapper.find('select[id="proficiency_level"]').exists()).toBe(true);
         expect(wrapper.find('input[id="password"]').exists()).toBe(true);
         expect(wrapper.find('input[id="password_confirmation"]').exists()).toBe(true);
     });
@@ -74,24 +71,6 @@ describe('Register', () => {
         expect(emailLabel).toBeDefined();
     });
 
-    it('renders native language field with correct label', () => {
-        const wrapper = mountRegister();
-
-        expect(wrapper.text()).toContain('Native Language');
-    });
-
-    it('renders target language field with correct label', () => {
-        const wrapper = mountRegister();
-
-        expect(wrapper.text()).toContain('Target Language');
-    });
-
-    it('renders proficiency level field with correct label', () => {
-        const wrapper = mountRegister();
-
-        expect(wrapper.text()).toContain('Proficiency Level');
-    });
-
     it('renders password field with correct label', () => {
         const wrapper = mountRegister();
 
@@ -121,13 +100,8 @@ describe('Register', () => {
         expect(wrapper.find('input[id="first_name"]').attributes('required')).toBeDefined();
         expect(wrapper.find('input[id="last_name"]').attributes('required')).toBeDefined();
         expect(wrapper.find('input[id="email"]').attributes('required')).toBeDefined();
-        expect(wrapper.find('select[id="native_language"]').attributes('required')).toBeDefined();
-        expect(wrapper.find('select[id="target_language"]').attributes('required')).toBeDefined();
         expect(wrapper.find('input[id="password"]').attributes('required')).toBeDefined();
         expect(wrapper.find('input[id="password_confirmation"]').attributes('required')).toBeDefined();
-        
-        // Optional field - proficiency_level is now optional
-        expect(wrapper.find('select[id="proficiency_level"]').attributes('required')).toBeUndefined();
     });
 
     it('renders create account button', () => {
@@ -136,65 +110,6 @@ describe('Register', () => {
         const button = wrapper.find('button[type="submit"]');
         expect(button.exists()).toBe(true);
         expect(button.text()).toContain('Create account');
-    });
-
-    it('filters target language options when native language is selected', async () => {
-        const wrapper = mountRegister();
-
-        // Get the target language select component
-        const targetLanguageSelect = wrapper.findAllComponents({ name: 'LanguageSelect' })
-            .find(c => c.props('id') === 'target_language');
-        
-        // In dev mode, form is prefilled with ja/en
-        // Check initial state depends on DEV mode
-        const initialNative = import.meta.env.DEV ? 'ja' : '';
-        expect(targetLanguageSelect?.props('excludeValue')).toBe(initialNative);
-
-        // Set native language to 'es' via the form
-        wrapper.vm.form.native_language = 'es';
-        await wrapper.vm.$nextTick();
-        await wrapper.vm.$nextTick();
-
-        // Now excludeValue should be 'es'
-        expect(targetLanguageSelect?.props('excludeValue')).toBe('es');
-        
-        // The filtered options in the component should not include 'es'
-        const targetSelect = wrapper.findAll('select[id="target_language"] option');
-        const targetValues = targetSelect
-            .map(opt => opt.attributes('value'))
-            .filter(val => val && val !== '');
-        
-        expect(targetValues).not.toContain('es');
-        expect(targetValues).toContain('en');
-        expect(targetValues).toContain('fr');
-    });
-
-    it('filters native language options when target language is selected', async () => {
-        const wrapper = mountRegister();
-
-        // Set target language to 'es'
-        await wrapper.find('select[id="target_language"]').setValue('es');
-        await wrapper.vm.$nextTick();
-
-        // Check that native language select excludes 'es'
-        const nativeSelect = wrapper.findAll('select[id="native_language"] option');
-        const nativeValues = nativeSelect.map(opt => opt.attributes('value')).filter(val => val);
-        
-        expect(nativeValues).not.toContain('es');
-    });
-
-    it('renders all proficiency level options', () => {
-        const wrapper = mountRegister();
-
-        const proficiencyOptions = wrapper.findAll('select[id="proficiency_level"] option');
-        const optionTexts = proficiencyOptions.map(opt => opt.text()).filter(text => text !== 'Select proficiency level');
-
-        expect(optionTexts).toContain('A1 - Beginner');
-        expect(optionTexts).toContain('A2 - Elementary');
-        expect(optionTexts).toContain('B1 - Intermediate');
-        expect(optionTexts).toContain('B2 - Upper Intermediate');
-        expect(optionTexts).toContain('C1 - Advanced');
-        expect(optionTexts).toContain('C2 - Proficient');
     });
 
     it('displays validation error for first name', async () => {
@@ -213,24 +128,6 @@ describe('Register', () => {
         await wrapper.vm.$nextTick();
 
         expect(wrapper.text()).toContain('The email field is required.');
-    });
-
-    it('displays validation error for native language', async () => {
-        const wrapper = mountRegister();
-
-        wrapper.vm.form.errors.native_language = 'The native language field is required.';
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.text()).toContain('The native language field is required.');
-    });
-
-    it('displays validation error for target language', async () => {
-        const wrapper = mountRegister();
-
-        wrapper.vm.form.errors.target_language = 'The target language field is required.';
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.text()).toContain('The target language field is required.');
     });
 
     it('displays validation error for password', async () => {
@@ -314,12 +211,10 @@ describe('Register', () => {
         
         const wrapper = mountRegister();
 
-        // Check that form is prefilled with language keys (not names)
+        // Check that form is prefilled
         expect(wrapper.vm.form.first_name).toBe('John');
         expect(wrapper.vm.form.last_name).toBe('Doe');
         expect(wrapper.vm.form.email).toBe('john.doe@example.com');
-        expect(wrapper.vm.form.native_language).toBe('ja');
-        expect(wrapper.vm.form.target_language).toBe('en');
         expect(wrapper.vm.form.password).toBe('SuperStrongPassword123!@#');
         expect(wrapper.vm.form.password_confirmation).toBe('SuperStrongPassword123!@#');
         

@@ -102,4 +102,16 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * Indicate that the model hasn't completed language setup.
+     */
+    public function withoutLanguageSetup(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'native_language_id' => null,
+            'target_language_id' => null,
+            'proficiency_level' => null,
+        ]);
+    }
 }

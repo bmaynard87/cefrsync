@@ -3,16 +3,12 @@ import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useLanguageOptions } from '@/composables/useLanguageOptions';
 import AuthLayout from '@/components/AuthLayout.vue';
 import FormField from '@/components/FormField.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
-import LanguageSelect from '@/components/LanguageSelect.vue';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator.vue';
 import GoogleSignInButton from '@/components/GoogleSignInButton.vue';
 import { useRecaptcha } from '@/composables/useRecaptcha';
-
-const { languages, proficiencyLevels } = useLanguageOptions();
 
 // Pre-fill form in development mode for easier testing
 const isDev = import.meta.env.DEV;
@@ -23,9 +19,6 @@ const form = useForm({
     email: isDev ? 'john.doe@example.com' : '',
     password: isDev ? 'SuperStrongPassword123!@#' : '',
     password_confirmation: isDev ? 'SuperStrongPassword123!@#' : '',
-    native_language: isDev ? 'ja' : '',
-    target_language: isDev ? 'en' : '',
-    proficiency_level: isDev ? '' : '', // Leave empty to test opt-in flow
     recaptcha_token: '',
 });
 
@@ -106,17 +99,6 @@ const handleGoogleError = (error: { error: string }) => {
 
             <FormField id="email" label="Email" type="email" v-model="form.email" :error="form.errors.email"
                 placeholder="you@example.com" required autocomplete="username" />
-
-            <LanguageSelect id="native_language" label="Native Language" v-model="form.native_language"
-                :error="form.errors.native_language" :exclude-value="form.target_language" :options="languages"
-                placeholder="Select your native language" required />
-
-            <LanguageSelect id="target_language" label="Target Language" v-model="form.target_language"
-                :error="form.errors.target_language" :exclude-value="form.native_language" :options="languages"
-                placeholder="Select language to learn" required />
-
-            <LanguageSelect id="proficiency_level" label="Proficiency Level (CEFR)" v-model="form.proficiency_level"
-                :error="form.errors.proficiency_level" :options="proficiencyLevels" />
 
             <div class="space-y-2">
                 <FormField id="password" label="Password" type="password" v-model="form.password"

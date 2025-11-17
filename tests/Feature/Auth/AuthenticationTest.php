@@ -33,8 +33,8 @@ test('users can not authenticate with invalid password', function () {
 });
 
 test('login fails without recaptcha token when recaptcha is configured', function () {
-    // Temporarily set reCAPTCHA site key to make validation required
-    config(['services.google.recaptcha.site_key' => 'test-site-key']);
+    // Temporarily set reCAPTCHA secret key to make validation required
+    config(['services.recaptcha.secret_key' => 'test-secret-key']);
 
     $user = User::factory()->create();
 
@@ -47,8 +47,8 @@ test('login fails without recaptcha token when recaptcha is configured', functio
 });
 
 test('login fails with invalid recaptcha token when recaptcha is configured', function () {
-    // Temporarily set reCAPTCHA site key to make validation required
-    config(['services.google.recaptcha.site_key' => 'test-site-key']);
+    // Temporarily set reCAPTCHA secret key to make validation required
+    config(['services.recaptcha.secret_key' => 'test-secret-key']);
 
     // Mock the ReCaptchaService to return false
     $this->mock(ReCaptchaService::class, function ($mock) {

@@ -36,9 +36,6 @@ class RegisteredUserController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'native_language' => 'required|string|max:255',
-            'target_language' => 'required|string|max:255|different:native_language',
-            'proficiency_level' => 'nullable|string|in:A1,A2,B1,B2,C1,C2',
         ];
 
         // Only require reCAPTCHA token if it's configured
@@ -53,20 +50,13 @@ class RegisteredUserController extends Controller
             'last_name' => $request->last_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'native_language' => $request->native_language,
-            'target_language' => $request->target_language,
-            'proficiency_level' => $request->proficiency_level ?: null,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        // If user didn't select a proficiency level, redirect to opt-in page
-        if ($user->proficiency_level === null) {
-            return redirect()->route('proficiency-opt-in.show');
-        }
-
+        // Redirect to home - middleware will handle proficiency opt-in after email verification
         return redirect('/');
     }
 }
