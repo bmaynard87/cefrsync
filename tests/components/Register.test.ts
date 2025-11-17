@@ -3,9 +3,9 @@ import { mount } from '@vue/test-utils';
 import Register from '@/Pages/Auth/Register.vue';
 
 const mockLanguages = [
-    { value: 'en', label: 'English' },
-    { value: 'es', label: 'Spanish' },
-    { value: 'fr', label: 'French' },
+    { value: 'en', label: 'English', native_name: 'English' },
+    { value: 'es', label: 'Spanish', native_name: 'Español' },
+    { value: 'fr', label: 'French', native_name: 'Français' },
 ];
 
 const mockPageProps = {
@@ -14,6 +14,7 @@ const mockPageProps = {
             user: null,
             googleClientId: 'mock-google-client-id',
         },
+        languages: mockLanguages,
     },
 };
 

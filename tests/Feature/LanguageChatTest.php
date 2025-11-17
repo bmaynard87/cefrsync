@@ -52,18 +52,18 @@ test('can create a new chat session', function () {
     $response->assertOk();
     $response->assertJsonStructure([
         'id',
-        'native_language',
-        'target_language',
+        'native_language_id',
+        'target_language_id',
         'proficiency_level',
         'created_at',
     ]);
 
-    $this->assertDatabaseHas('chat_sessions', [
-        'user_id' => $user->id,
-        'native_language' => 'Spanish',
-        'target_language' => 'English',
-        'proficiency_level' => 'B1',
-    ]);
+    // Use accessor to check language names
+    $session = \App\Models\ChatSession::where('user_id', $user->id)->first();
+    expect($session)->not->toBeNull();
+    expect($session->native_language)->toBe('Spanish');
+    expect($session->target_language)->toBe('English');
+    expect($session->proficiency_level)->toBe('B1');
 });
 
 test('can send a message in a chat session', function () {
@@ -429,12 +429,12 @@ test('can update chat session parameters', function () {
 
     $response->assertRedirect();
 
-    $this->assertDatabaseHas('chat_sessions', [
-        'id' => $sessionId,
-        'native_language' => 'French',
-        'target_language' => 'German',
-        'proficiency_level' => 'B2',
-    ]);
+    // Refresh the session and check using accessors
+    $session = \App\Models\ChatSession::find($sessionId);
+    expect($session)->not->toBeNull();
+    expect($session->native_language)->toBe('French');
+    expect($session->target_language)->toBe('German');
+    expect($session->proficiency_level)->toBe('B2');
 });
 
 test('validates parameters when updating chat session', function () {

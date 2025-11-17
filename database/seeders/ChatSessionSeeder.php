@@ -45,8 +45,8 @@ class ChatSessionSeeder extends Seeder
         foreach ($chatTitles as $index => $title) {
             $session = ChatSession::create([
                 'user_id' => $mainUser->id,
-                'native_language' => $mainUser->native_language,
-                'target_language' => $mainUser->target_language,
+                'native_language_id' => $mainUser->native_language_id,
+                'target_language_id' => $mainUser->target_language_id,
                 'proficiency_level' => $mainUser->proficiency_level,
                 'title' => $title,
                 'conversation_summary' => 'Practice session focused on '.strtolower(str_replace('Japanese - ', '', $title)),
@@ -105,8 +105,8 @@ class ChatSessionSeeder extends Seeder
         // Alice's French conversation
         $frenchSession = ChatSession::create([
             'user_id' => $aliceUser->id,
-            'native_language' => $aliceUser->native_language,
-            'target_language' => $aliceUser->target_language,
+            'native_language_id' => $aliceUser->native_language_id,
+            'target_language_id' => $aliceUser->target_language_id,
             'proficiency_level' => $aliceUser->proficiency_level,
             'title' => 'First French Conversation',
             'last_message_at' => now()->subDay(),
@@ -132,8 +132,8 @@ class ChatSessionSeeder extends Seeder
         // Bob's German conversation
         $germanSession = ChatSession::create([
             'user_id' => $bobUser->id,
-            'native_language' => $bobUser->native_language,
-            'target_language' => $bobUser->target_language,
+            'native_language_id' => $bobUser->native_language_id,
+            'target_language_id' => $bobUser->target_language_id,
             'proficiency_level' => $bobUser->proficiency_level,
             'title' => 'German Practice',
             'topics_discussed' => ['work', 'family', 'weather'],

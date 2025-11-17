@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\AnalyzeRecentMessages;
 use App\Models\ChatSession;
+use App\Models\Language;
 use App\Services\LangGptService;
 use App\Services\OpenAiService;
 use Illuminate\Http\Request;
@@ -57,9 +58,17 @@ class LanguageChatController extends Controller
             'proficiency_level' => 'nullable|string|max:255',
         ]);
 
+        // Convert language names/keys to IDs
+        $nativeLanguage = Language::where('name', $validated['native_language'])
+            ->orWhere('key', $validated['native_language'])
+            ->first();
+        $targetLanguage = Language::where('name', $validated['target_language'])
+            ->orWhere('key', $validated['target_language'])
+            ->first();
+
         $session = $request->user()->chatSessions()->create([
-            'native_language' => $validated['native_language'],
-            'target_language' => $validated['target_language'],
+            'native_language_id' => $nativeLanguage?->id,
+            'target_language_id' => $targetLanguage?->id,
             'proficiency_level' => $validated['proficiency_level'] ?? $request->user()->proficiency_level,
             'title' => 'New Conversation',
             'last_message_at' => now(),
@@ -67,6 +76,8 @@ class LanguageChatController extends Controller
 
         return response()->json([
             'id' => $session->id,
+            'native_language_id' => $session->native_language_id,
+            'target_language_id' => $session->target_language_id,
             'native_language' => $session->native_language,
             'target_language' => $session->target_language,
             'proficiency_level' => $session->proficiency_level,
@@ -363,11 +374,26 @@ class LanguageChatController extends Controller
             'proficiency_level' => 'required|string|in:A1,A2,B1,B2,C1,C2',
         ]);
 
-        $chatSession->update([
-            'native_language' => $validated['native_language'],
-            'target_language' => $validated['target_language'],
+        // Convert language names/keys to IDs
+        $updateData = [
             'proficiency_level' => $validated['proficiency_level'],
-        ]);
+        ];
+
+        $nativeLanguage = Language::where('name', $validated['native_language'])
+            ->orWhere('key', $validated['native_language'])
+            ->first();
+        if ($nativeLanguage) {
+            $updateData['native_language_id'] = $nativeLanguage->id;
+        }
+
+        $targetLanguage = Language::where('name', $validated['target_language'])
+            ->orWhere('key', $validated['target_language'])
+            ->first();
+        if ($targetLanguage) {
+            $updateData['target_language_id'] = $targetLanguage->id;
+        }
+
+        $chatSession->update($updateData);
 
         return back();
     }

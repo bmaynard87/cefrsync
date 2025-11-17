@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Language;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -61,8 +62,17 @@ class ProficiencyOptInController extends Controller
 
             // Add language data if setting up for the first time
             if ($needsLanguageSetup) {
-                $updateData['native_language'] = $validated['native_language'];
-                $updateData['target_language'] = $validated['target_language'];
+                // Convert language names to IDs
+                $nativeLanguage = Language::where('name', $validated['native_language'])->first();
+                $targetLanguage = Language::where('name', $validated['target_language'])->first();
+
+                if ($nativeLanguage) {
+                    $updateData['native_language_id'] = $nativeLanguage->id;
+                }
+                if ($targetLanguage) {
+                    $updateData['target_language_id'] = $targetLanguage->id;
+                }
+
                 // Only set proficiency_level if provided (i.e., not auto-updating)
                 if (isset($validated['proficiency_level']) && $validated['proficiency_level']) {
                     $updateData['proficiency_level'] = $validated['proficiency_level'];

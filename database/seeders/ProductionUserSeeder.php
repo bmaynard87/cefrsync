@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Language;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -36,6 +37,9 @@ class ProductionUserSeeder extends Seeder
      */
     private function createSystemUser(): void
     {
+        $english = Language::where('key', 'en')->first();
+        $spanish = Language::where('key', 'es')->first();
+
         User::firstOrCreate(
             ['id' => 1],
             [
@@ -44,8 +48,8 @@ class ProductionUserSeeder extends Seeder
                 'last_name' => 'User',
                 'email_verified_at' => now(),
                 'password' => Hash::make(Str::random(64)), // Random unguessable password
-                'native_language' => 'English',
-                'target_language' => 'Spanish',
+                'native_language_id' => $english->id,
+                'target_language_id' => $spanish->id,
                 'proficiency_level' => 'C2',
                 'auto_update_proficiency' => false,
             ]
@@ -60,6 +64,9 @@ class ProductionUserSeeder extends Seeder
      */
     private function createAdminUser(): void
     {
+        $english = Language::where('key', 'en')->first();
+        $japanese = Language::where('key', 'ja')->first();
+
         $adminEmail = config('app.admin_email') ?: 'admin@cefrsync.com';
         $adminPassword = config('app.admin_password') ?: Str::random(32);
 
@@ -71,8 +78,8 @@ class ProductionUserSeeder extends Seeder
                 'last_name' => 'User',
                 'email_verified_at' => now(),
                 'password' => Hash::make($adminPassword),
-                'native_language' => 'English',
-                'target_language' => 'Japanese',
+                'native_language_id' => $english->id,
+                'target_language_id' => $japanese->id,
                 'proficiency_level' => 'C2',
                 'auto_update_proficiency' => false,
             ]

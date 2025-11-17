@@ -140,8 +140,8 @@ test('users with proficiency level skip opt-in page after registration', functio
 test('user can set languages and proficiency preference together', function () {
     $user = User::factory()->create([
         'proficiency_level' => null,
-        'native_language' => null,
-        'target_language' => null,
+        'native_language_id' => null,
+        'target_language_id' => null,
         'auto_update_proficiency' => false,
     ]);
 
@@ -166,8 +166,8 @@ test('user can set languages and proficiency preference together', function () {
 test('language setup requires all fields when languages are null', function () {
     $user = User::factory()->create([
         'proficiency_level' => null,
-        'native_language' => null,
-        'target_language' => null,
+        'native_language_id' => null,
+        'target_language_id' => null,
     ]);
 
     $response = $this
@@ -182,8 +182,8 @@ test('language setup requires all fields when languages are null', function () {
 test('languages must be different', function () {
     $user = User::factory()->create([
         'proficiency_level' => null,
-        'native_language' => null,
-        'target_language' => null,
+        'native_language_id' => null,
+        'target_language_id' => null,
     ]);
 
     $response = $this
@@ -201,8 +201,8 @@ test('languages must be different', function () {
 test('user can set languages with auto update enabled without proficiency level', function () {
     $user = User::factory()->create([
         'proficiency_level' => null,
-        'native_language' => null,
-        'target_language' => null,
+        'native_language_id' => null,
+        'target_language_id' => null,
         'auto_update_proficiency' => false,
     ]);
 

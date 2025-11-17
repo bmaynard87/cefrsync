@@ -16,7 +16,8 @@ class ProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
                 'string',
@@ -25,9 +26,11 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
-            'native_language' => ['required', 'string', 'max:255'],
-            'target_language' => ['required', 'string', 'max:255', 'different:native_language'],
-            'proficiency_level' => ['required', 'string', 'in:A1,A2,B1,B2,C1,C2'],
+            'native_language' => ['nullable', 'string', 'max:255'],
+            'target_language' => ['nullable', 'string', 'max:255', 'different:native_language'],
+            'proficiency_level' => ['nullable', 'string', 'in:A1,A2,B1,B2,C1,C2'],
+            'localize_corrections' => ['nullable', 'boolean'],
+            'auto_update_proficiency' => ['nullable', 'boolean'],
         ];
     }
 }

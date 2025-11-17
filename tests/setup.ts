@@ -51,6 +51,13 @@ vi.mock('@inertiajs/vue3', () => ({
     usePage: () => ({
         props: {
             auth: { user: null },
+            languages: [
+                { value: 'en', label: 'English', native_name: 'English' },
+                { value: 'es', label: 'Spanish', native_name: 'Español' },
+                { value: 'fr', label: 'French', native_name: 'Français' },
+                { value: 'de', label: 'German', native_name: 'Deutsch' },
+                { value: 'ja', label: 'Japanese', native_name: '日本語' },
+            ],
         },
     }),
 }));

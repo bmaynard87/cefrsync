@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Language;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -12,14 +13,22 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        // Get language IDs
+        $english = Language::where('key', 'en')->first();
+        $japanese = Language::where('key', 'ja')->first();
+        $french = Language::where('key', 'fr')->first();
+        $german = Language::where('key', 'de')->first();
+        $spanish = Language::where('key', 'es')->first();
+        $italian = Language::where('key', 'it')->first();
+
         // Create main user
         User::factory()->create([
             'first_name' => 'Brandon',
             'last_name' => 'Maynard',
             'email' => 'bmmaynard87@gmail.com',
             'password' => bcrypt('MySecurePass2025!'),
-            'native_language' => 'English',
-            'target_language' => 'Japanese',
+            'native_language_id' => $english->id,
+            'target_language_id' => $japanese->id,
             'proficiency_level' => 'B2',
             'auto_update_proficiency' => true,
         ]);
@@ -29,8 +38,8 @@ class UserSeeder extends Seeder
             'first_name' => 'Alice',
             'last_name' => 'Johnson',
             'email' => 'alice@example.com',
-            'native_language' => 'English',
-            'target_language' => 'French',
+            'native_language_id' => $english->id,
+            'target_language_id' => $french->id,
             'proficiency_level' => 'A1',
             'auto_update_proficiency' => false,
         ]);
@@ -40,8 +49,8 @@ class UserSeeder extends Seeder
             'first_name' => 'Bob',
             'last_name' => 'Smith',
             'email' => 'bob@example.com',
-            'native_language' => 'English',
-            'target_language' => 'German',
+            'native_language_id' => $english->id,
+            'target_language_id' => $german->id,
             'proficiency_level' => 'B1',
             'auto_update_proficiency' => true,
         ]);
@@ -51,8 +60,8 @@ class UserSeeder extends Seeder
             'first_name' => 'Carlos',
             'last_name' => 'García',
             'email' => 'carlos@example.com',
-            'native_language' => 'Spanish',
-            'target_language' => 'Italian',
+            'native_language_id' => $spanish->id,
+            'target_language_id' => $italian->id,
             'proficiency_level' => 'C1',
             'auto_update_proficiency' => true,
         ]);
@@ -63,8 +72,8 @@ class UserSeeder extends Seeder
             'last_name' => 'User',
             'email' => 'test@example.com',
             'email_verified_at' => now(),
-            'native_language' => 'English',
-            'target_language' => 'Japanese',
+            'native_language_id' => $english->id,
+            'target_language_id' => $japanese->id,
             'proficiency_level' => 'A2',
         ]);
 

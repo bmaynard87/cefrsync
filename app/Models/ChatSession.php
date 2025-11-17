@@ -11,10 +11,17 @@ class ChatSession extends Model
 {
     use HasFactory;
 
+    /**
+     * The relationships that should always be loaded.
+     *
+     * @var array
+     */
+    protected $with = ['nativeLanguage', 'targetLanguage'];
+
     protected $fillable = [
         'user_id',
-        'native_language',
-        'target_language',
+        'native_language_id',
+        'target_language_id',
         'proficiency_level',
         'title',
         'last_message_at',
@@ -32,6 +39,32 @@ class ChatSession extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function nativeLanguage(): BelongsTo
+    {
+        return $this->belongsTo(Language::class, 'native_language_id');
+    }
+
+    public function targetLanguage(): BelongsTo
+    {
+        return $this->belongsTo(Language::class, 'target_language_id');
+    }
+
+    /**
+     * Override getAttribute to provide backward compatibility for language strings
+     */
+    public function getAttribute($key)
+    {
+        if ($key === 'native_language') {
+            return $this->nativeLanguage?->name;
+        }
+
+        if ($key === 'target_language') {
+            return $this->targetLanguage?->name;
+        }
+
+        return parent::getAttribute($key);
     }
 
     public function messages(): HasMany

@@ -22,8 +22,8 @@ const form = useForm({
     first_name: user.first_name,
     last_name: user.last_name,
     email: user.email,
-    native_language: user.native_language || '',
-    target_language: user.target_language || '',
+    native_language: user.native_language_key || '',
+    target_language: user.target_language_key || '',
     proficiency_level: user.proficiency_level || '',
     auto_update_proficiency: user.auto_update_proficiency || false,
     localize_insights: user.localize_insights || false,
@@ -34,13 +34,13 @@ const { languages, proficiencyLevels } = useLanguageOptions();
 
 // Filter out the selected language from the other dropdown
 const availableNativeLanguages = computed(() => {
-    if (!form.target_language) return languages;
-    return languages.filter(lang => lang.value !== form.target_language);
+    if (!form.target_language) return languages.value;
+    return languages.value.filter(lang => lang.value !== form.target_language);
 });
 
 const availableTargetLanguages = computed(() => {
-    if (!form.native_language) return languages;
-    return languages.filter(lang => lang.value !== form.native_language);
+    if (!form.native_language) return languages.value;
+    return languages.value.filter(lang => lang.value !== form.native_language);
 });
 </script>
 

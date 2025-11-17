@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Language;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -39,6 +40,14 @@ class HandleInertiaRequests extends Middleware
             'recaptcha' => [
                 'siteKey' => config('services.recaptcha.site_key'),
             ],
+            'languages' => Language::active()
+                ->orderBy('name')
+                ->get(['id', 'key', 'name', 'native_name'])
+                ->map(fn ($lang) => [
+                    'value' => $lang->key,
+                    'label' => $lang->name,
+                    'native_name' => $lang->native_name,
+                ]),
         ];
     }
 }

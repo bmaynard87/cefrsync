@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Language;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,7 +30,30 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $validated = $request->validated();
+
+        // Convert language names/keys to IDs if provided
+        if (isset($validated['native_language'])) {
+            $nativeLanguage = Language::where('name', $validated['native_language'])
+                ->orWhere('key', $validated['native_language'])
+                ->first();
+            if ($nativeLanguage) {
+                $validated['native_language_id'] = $nativeLanguage->id;
+            }
+            unset($validated['native_language']);
+        }
+
+        if (isset($validated['target_language'])) {
+            $targetLanguage = Language::where('name', $validated['target_language'])
+                ->orWhere('key', $validated['target_language'])
+                ->first();
+            if ($targetLanguage) {
+                $validated['target_language_id'] = $targetLanguage->id;
+            }
+            unset($validated['target_language']);
+        }
+
+        $request->user()->fill($validated);
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;

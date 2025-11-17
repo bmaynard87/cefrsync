@@ -1,6 +1,10 @@
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
 export interface LanguageOption {
     value: string;
     label: string;
+    native_name?: string;
 }
 
 export interface ProficiencyLevelOption {
@@ -9,29 +13,16 @@ export interface ProficiencyLevelOption {
 }
 
 export function useLanguageOptions() {
-    const languages: LanguageOption[] = [
-        { value: '', label: 'Select Language' },
-        { value: 'Arabic', label: 'Arabic' },
-        { value: 'Chinese (Mandarin)', label: 'Chinese (Mandarin)' },
-        { value: 'Chinese (Cantonese)', label: 'Chinese (Cantonese)' },
-        { value: 'Dutch', label: 'Dutch' },
-        { value: 'English', label: 'English' },
-        { value: 'French', label: 'French' },
-        { value: 'German', label: 'German' },
-        { value: 'Greek', label: 'Greek' },
-        { value: 'Hebrew', label: 'Hebrew' },
-        { value: 'Hindi', label: 'Hindi' },
-        { value: 'Italian', label: 'Italian' },
-        { value: 'Japanese', label: 'Japanese' },
-        { value: 'Korean', label: 'Korean' },
-        { value: 'Polish', label: 'Polish' },
-        { value: 'Portuguese', label: 'Portuguese' },
-        { value: 'Russian', label: 'Russian' },
-        { value: 'Spanish', label: 'Spanish' },
-        { value: 'Swedish', label: 'Swedish' },
-        { value: 'Turkish', label: 'Turkish' },
-        { value: 'Vietnamese', label: 'Vietnamese' },
-    ];
+    const page = usePage();
+    
+    // Get languages from shared Inertia props
+    const languages = computed(() => {
+        const langs = (page.props.languages as LanguageOption[]) || [];
+        return [
+            { value: '', label: 'Select Language' },
+            ...langs,
+        ];
+    });
 
     const proficiencyLevels: ProficiencyLevelOption[] = [
         { value: '', label: 'Select Level' },
@@ -49,3 +40,4 @@ export function useLanguageOptions() {
         proficiencyLevels,
     };
 }
+
