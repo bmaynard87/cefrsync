@@ -35,7 +35,7 @@ class ProductionUserSeederTest extends TestCase
         $this->assertEquals('User', $systemUser->last_name);
         $this->assertNotNull($systemUser->email_verified_at);
         $this->assertEquals('English', $systemUser->native_language);
-        $this->assertEquals('English', $systemUser->target_language);
+        $this->assertEquals('Spanish', $systemUser->target_language);
         $this->assertEquals('C2', $systemUser->proficiency_level);
         $this->assertFalse($systemUser->auto_update_proficiency);
     }
@@ -54,7 +54,7 @@ class ProductionUserSeederTest extends TestCase
         $this->assertNotNull($adminUser->email_verified_at);
         $this->assertTrue(Hash::check('test-password-123', $adminUser->password));
         $this->assertEquals('English', $adminUser->native_language);
-        $this->assertEquals('English', $adminUser->target_language);
+        $this->assertEquals('Japanese', $adminUser->target_language);
         $this->assertEquals('C2', $adminUser->proficiency_level);
         $this->assertFalse($adminUser->auto_update_proficiency);
     }
