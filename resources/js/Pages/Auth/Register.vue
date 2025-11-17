@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import AuthLayout from '@/components/AuthLayout.vue';
@@ -12,6 +12,9 @@ import { useRecaptcha } from '@/composables/useRecaptcha';
 
 // Pre-fill form in development mode for easier testing
 const isDev = import.meta.env.DEV;
+
+const page = usePage();
+const serverError = computed(() => page.props.error as string | undefined);
 
 const form = useForm({
     first_name: isDev ? 'John' : '',
@@ -70,6 +73,12 @@ const handleGoogleError = (error: { error: string }) => {
     <Head title="Register" />
 
     <AuthLayout title="Create your account" subtitle="Start your language learning journey today">
+        <Alert v-if="serverError" class="mb-6 border-red-200 bg-red-50">
+            <AlertDescription class="text-sm text-red-800">
+                {{ serverError }}
+            </AlertDescription>
+        </Alert>
+
         <Alert v-if="formError" class="mb-6 border-red-200 bg-red-50">
             <AlertDescription class="text-sm text-red-800">
                 {{ formError }}

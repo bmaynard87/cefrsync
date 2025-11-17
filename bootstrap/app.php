@@ -30,5 +30,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->respond(function ($response, $exception, $request) {
+            // For Inertia requests that encounter server errors, redirect back with error message
+            if ($request->inertia() && $response->getStatusCode() >= 500) {
+                return back()->with([
+                    'error' => 'An unexpected error occurred. Please try again.',
+                ]);
+            }
+
+            return $response;
+        });
     })->create();
