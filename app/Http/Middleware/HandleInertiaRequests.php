@@ -48,6 +48,9 @@ class HandleInertiaRequests extends Middleware
                     'label' => $lang->name,
                     'native_name' => $lang->native_name,
                 ]),
+            'flash' => [
+                'error' => $request->session()->get('error'),
+            ],
         ];
     }
 }

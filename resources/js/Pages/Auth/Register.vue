@@ -14,7 +14,7 @@ import { useRecaptcha } from '@/composables/useRecaptcha';
 const isDev = import.meta.env.DEV;
 
 const page = usePage();
-const serverError = computed(() => page.props.error as string | undefined);
+const serverError = computed(() => (page.props.flash as any)?.error as string | undefined);
 
 const form = useForm({
     first_name: isDev ? 'John' : '',
