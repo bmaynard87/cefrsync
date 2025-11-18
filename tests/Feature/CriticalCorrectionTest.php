@@ -15,6 +15,7 @@ beforeEach(function () {
             'is_target_language' => true,
             'detected_language' => 'Spanish',
         ]);
+        $mock->shouldReceive('translateWithParenthetical')->andReturn('Great job! (¡Buen trabajo!) Keep practicing. (Sigue practicando.)');
     });
 });
 
@@ -214,7 +215,9 @@ test('correction is returned in API response', function () {
 });
 
 test('correction only checks messages in target language', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'proficiency_level' => 'B1',
+    ]);
 
     $session = ChatSession::factory()->create([
         'user_id' => $user->id,

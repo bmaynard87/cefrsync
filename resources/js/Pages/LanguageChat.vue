@@ -37,8 +37,10 @@ interface Message {
     content: string;
     sender_type: 'user' | 'assistant' | 'system';
     message_type?: 'user' | 'assistant' | 'correction';
+    translation?: string | null;
     created_at: string;
     isAnalyzing?: boolean;
+    disableTypewriter?: boolean;
     correction_data?: CorrectionData;
 }
 
@@ -68,13 +70,11 @@ const props = defineProps<Props>();
 const chats = ref<ChatHistory[]>(props.chatHistory);
 const activeChat = ref<number | null>(chats.value[0]?.id || null);
 const messages = ref<Message[]>([]);
-const newestMessageId = ref<number | null>(null); // Track the newest message for typewriter effect
 const inputMessage = ref('');
 const isTyping = ref(false);
 const isServiceDown = ref(!props.isServiceAvailable);
 const chatContainer = ref<HTMLElement | null>(null);
 const chatInputRef = ref<{ focus: () => void } | null>(null);
-const isSidebarOpen = ref(false);
 
 // Use user settings from props
 const nativeLanguage = ref(props.userSettings.native_language);
@@ -134,8 +134,11 @@ const loadMessages = async (chatId: number) => {
     try {
         const response = await fetch(route('language-chat.messages', { chatSession: chatId }));
         const data = await response.json();
-        messages.value = data.messages;
-        newestMessageId.value = null; // Reset when loading existing messages
+        // Disable typewriter for historical messages
+        messages.value = data.messages.map((msg: Message) => ({
+            ...msg,
+            disableTypewriter: true,
+        }));
         await scrollToBottom();
     } catch (error) {
         console.error('Error loading messages:', error);
@@ -209,12 +212,10 @@ const sendMessage = async () => {
         }
 
         // Add AI response
-        const aiMessage = {
+        messages.value.push({
             ...data.ai_response,
             sender_type: 'assistant' as const,
-        };
-        messages.value.push(aiMessage);
-        newestMessageId.value = aiMessage.id; // Track newest message for typewriter
+        });
 
         isTyping.value = false;
         await scrollToBottom();
@@ -350,14 +351,6 @@ const handleSettings = () => {
     router.visit('/profile');
 };
 
-const toggleSidebar = () => {
-    isSidebarOpen.value = !isSidebarOpen.value;
-};
-
-const closeSidebar = () => {
-    isSidebarOpen.value = false;
-};
-
 // Load messages for the first chat on mount
 onMounted(() => {
     if (activeChat.value) {
@@ -367,19 +360,17 @@ onMounted(() => {
 </script>
 
 <template>
-    <Head title="Language Chat" />
-    <AppShell variant="header">
-        <div data-test="main-container" class="flex h-[100dvh] w-full overflow-hidden bg-gray-50">
+    <Head :title="pageTitle" />
+    <AppShell>
+        <div data-test="main-container" class="flex h-screen w-full overflow-hidden bg-gray-50">
             <ChatSidebar 
                 :chats="chats" 
                 :active-chat="activeChat"
                 :has-unused-new-chat="hasUnusedNewChat"
-                :is-open="isSidebarOpen"
                 @new-chat="handleNewChat" 
                 @select-chat="handleSelectChat"
                 @delete-chat="handleDeleteChat"
                 @update-title="handleUpdateTitle"
-                @close="closeSidebar"
             />
 
             <div data-test="chat-area" class="flex min-w-0 flex-1 flex-col">
@@ -390,57 +381,56 @@ onMounted(() => {
                     :proficiency-label="proficiencyLabel"
                     :auto-update-proficiency="autoUpdateProficiency"
                     @settings="handleSettings"
-                    @menu-click="toggleSidebar"
                 />
 
-                <div ref="chatContainer" data-test="chat-container" class="flex-1 overflow-y-auto px-3 py-2 sm:px-4 sm:py-4 md:py-6">
+                <div ref="chatContainer" data-test="chat-container" class="flex-1 overflow-y-auto px-4 py-6">
                     <!-- Empty State -->
-                    <div v-if="!activeChat && chats.length === 0" class="flex h-full items-center justify-center px-4">
-                        <div class="text-center max-w-2xl w-full">
-                            <div class="mx-auto mb-3 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mb-4 sm:h-14 sm:w-14">
-                                <svg class="h-6 w-6 text-blue-600 sm:h-7 sm:w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div v-if="!activeChat && chats.length === 0" class="flex h-full items-center justify-center">
+                        <div class="text-center">
+                            <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-blue-100">
+                                <svg class="h-10 w-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                 </svg>
                             </div>
-                            <h2 class="mb-1.5 text-base font-semibold text-gray-900 sm:mb-2 sm:text-lg md:text-xl">Start Your Language Journey</h2>
-                            <p class="mb-3 text-xs text-gray-600 sm:mb-4 sm:text-sm">Practice {{ targetLanguage }} with AI-powered conversations tailored to your level</p>
-                            <div class="space-y-2.5 sm:space-y-3">
+                            <h2 class="mb-2 text-2xl font-semibold text-gray-900">Start Your Language Journey</h2>
+                            <p class="mb-8 text-gray-600">Practice {{ targetLanguage }} with AI-powered conversations tailored to your level</p>
+                            <div class="space-y-4">
                                 <button
                                     @click="handleNewChat"
-                                    class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 sm:w-auto sm:px-5 sm:py-2.5"
+                                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-blue-700"
                                 >
-                                    <svg class="h-4 w-4 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                     </svg>
                                     Start New Conversation
                                 </button>
-                                <div class="mt-3 grid grid-cols-1 gap-2 sm:mt-4 sm:gap-2.5 md:grid-cols-3">
-                                    <div class="rounded-lg border border-gray-200 bg-white p-2.5 sm:p-3">
-                                        <div class="mb-1 flex h-7 w-7 items-center justify-center rounded-full bg-green-100 mx-auto sm:mb-1.5 sm:h-8 sm:w-8">
-                                            <svg class="h-3.5 w-3.5 text-green-600 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                    <div class="rounded-lg border border-gray-200 bg-white p-4">
+                                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-green-100 mx-auto">
+                                            <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
                                         </div>
-                                        <h3 class="mb-0.5 text-xs font-medium text-gray-900 text-center sm:text-sm">Adaptive Learning</h3>
-                                        <p class="text-[10px] leading-tight text-gray-600 text-center sm:text-xs">AI adjusts to your {{ proficiencyLevel }} level</p>
+                                        <h3 class="mb-1 font-medium text-gray-900 text-center">Adaptive Learning</h3>
+                                        <p class="text-sm text-gray-600 text-center">AI adjusts to your {{ proficiencyLevel }} level</p>
                                     </div>
-                                    <div class="rounded-lg border border-gray-200 bg-white p-2.5 sm:p-3">
-                                        <div class="mb-1 flex h-7 w-7 items-center justify-center rounded-full bg-purple-100 mx-auto sm:mb-1.5 sm:h-8 sm:w-8">
-                                            <svg class="h-3.5 w-3.5 text-purple-600 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="rounded-lg border border-gray-200 bg-white p-4">
+                                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 mx-auto">
+                                            <svg class="h-5 w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
                                             </svg>
                                         </div>
-                                        <h3 class="mb-0.5 text-xs font-medium text-gray-900 text-center sm:text-sm">Natural Conversation</h3>
-                                        <p class="text-[10px] leading-tight text-gray-600 text-center sm:text-xs">Practice real-world dialogue</p>
+                                        <h3 class="mb-1 font-medium text-gray-900 text-center">Natural Conversation</h3>
+                                        <p class="text-sm text-gray-600 text-center">Practice real-world dialogue</p>
                                     </div>
-                                    <div class="rounded-lg border border-gray-200 bg-white p-2.5 sm:p-3">
-                                        <div class="mb-1 flex h-7 w-7 items-center justify-center rounded-full bg-orange-100 mx-auto sm:mb-1.5 sm:h-8 sm:w-8">
-                                            <svg class="h-3.5 w-3.5 text-orange-600 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="rounded-lg border border-gray-200 bg-white p-4">
+                                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 mx-auto">
+                                            <svg class="h-5 w-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                             </svg>
                                         </div>
-                                        <h3 class="mb-0.5 text-xs font-medium text-gray-900 text-center sm:text-sm">Instant Feedback</h3>
-                                        <p class="text-[10px] leading-tight text-gray-600 text-center sm:text-xs">Get corrections and suggestions</p>
+                                        <h3 class="mb-1 font-medium text-gray-900 text-center">Instant Feedback</h3>
+                                        <p class="text-sm text-gray-600 text-center">Get corrections and suggestions</p>
                                     </div>
                                 </div>
                             </div>
@@ -462,10 +452,11 @@ onMounted(() => {
                             <ChatMessage
                                 v-else
                                 :content="message.content"
+                                :translation="message.translation"
                                 :role="message.sender_type"
                                 :timestamp="new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })"
                                 :is-analyzing="message.isAnalyzing"
-                                :disable-typewriter="message.sender_type !== 'assistant' || message.id !== newestMessageId"
+                                :disable-typewriter="message.disableTypewriter"
                             />
                         </template>
 

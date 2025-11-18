@@ -91,11 +91,6 @@ Your goals:
 - Adapt your complexity based on their responses
 - IMPORTANT: Maintain conversation continuity - remember what has already been discussed and avoid asking questions about information already shared in this conversation
 
-TRANSLATION REQUESTS:
-- If the learner asks for a translation or clarification in their native language, provide a brief, helpful response
-- IMMEDIATELY return to using ONLY {$targetLanguage} in your very next message
-- Example: If asked \"What does X mean in English?\", answer briefly, then continue the conversation in {$targetLanguage}
-
 Keep your responses conversational and concise (2-4 sentences usually). Focus on helping them practice the language naturally.";
 
         // Add session-specific context if available
@@ -292,6 +287,55 @@ Respond ONLY with the JSON object, nothing else.";
                 'is_target_language' => true,
                 'detected_language' => $targetLanguage,
             ];
+        }
+    }
+
+    /**
+     * Translate text from target language to native language with parenthetical format
+     *
+     * @param  string  $text  The text to translate (in target language)
+     * @param  string  $targetLanguage  The source language
+     * @param  string  $nativeLanguage  The destination language
+     * @return string The original text with parenthetical translations
+     */
+    public function translateWithParenthetical(string $text, string $targetLanguage, string $nativeLanguage): string
+    {
+        try {
+            $systemPrompt = "You are a translation assistant for language learners. Your task is to add parenthetical translations to help beginner-level learners (A1-A2) understand {$targetLanguage} text in their native {$nativeLanguage}.
+
+Instructions:
+- Add {$nativeLanguage} translations in parentheses after key words, phrases, or full sentences
+- Focus on vocabulary and expressions that A1-A2 learners might not know
+- Keep translations concise and natural
+- Don't translate every single word - focus on important content words
+- Maintain the original text structure and formatting
+- Make it helpful but not overwhelming
+
+Example for Spanish to English:
+Input: \"Hola, ¿cómo estás? Me alegro de verte.\"
+Output: \"Hola (hello), ¿cómo estás? (how are you?) Me alegro de verte (I'm happy to see you).\"";
+
+            $response = OpenAI::chat()->create([
+                'model' => config('services.openai.model'),
+                'messages' => [
+                    ['role' => 'system', 'content' => $systemPrompt],
+                    ['role' => 'user', 'content' => "Add {$nativeLanguage} parenthetical translations to this {$targetLanguage} text:\n\n{$text}"],
+                ],
+                'max_tokens' => 500,
+                'temperature' => 0.3,
+            ]);
+
+            return $response->choices[0]->message->content;
+        } catch (\Exception $e) {
+            Log::error('Translation Error', [
+                'error' => $e->getMessage(),
+                'text' => $text,
+                'target_language' => $targetLanguage,
+                'native_language' => $nativeLanguage,
+            ]);
+
+            // Fallback: return original text
+            return $text;
         }
     }
 }

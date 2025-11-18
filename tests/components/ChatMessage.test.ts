@@ -185,4 +185,40 @@ describe('ChatMessage', () => {
         // Should show immediately when disabled
         expect(messageContent.text()).toContain('Instant message');
     });
+
+    it('displays translation when provided', () => {
+        const wrapper = mount(ChatMessage, {
+            props: {
+                content: 'Hola',
+                translation: 'Hola (Hello)',
+                role: 'assistant',
+                timestamp: '2:30 PM',
+                disableTypewriter: true,
+            },
+        });
+
+        const messageContent = wrapper.find('[data-test="message-content"]');
+        
+        // Should show translation instead of original content
+        expect(messageContent.text()).toContain('Hola (Hello)');
+        expect(messageContent.text()).not.toContain('Hola\n');
+    });
+
+    it('falls back to content when translation is null', () => {
+        const wrapper = mount(ChatMessage, {
+            props: {
+                content: 'Hello',
+                translation: null,
+                role: 'assistant',
+                timestamp: '2:30 PM',
+                disableTypewriter: true,
+            },
+        });
+
+        const messageContent = wrapper.find('[data-test="message-content"]');
+        
+        // Should show original content when translation is null
+        expect(messageContent.text()).toContain('Hello');
+    });
 });
+

@@ -44,20 +44,6 @@ test('system prompt includes learner name in user context', function () {
     expect($prompt)->toContain('Learner name: Brandon');
 });
 
-test('system prompt includes translation request handling instructions', function () {
-    $service = new OpenAiService;
-
-    $reflection = new ReflectionClass($service);
-    $method = $reflection->getMethod('buildSystemPrompt');
-    $method->setAccessible(true);
-
-    $prompt = $method->invoke($service, 'Spanish', 'B1');
-
-    expect($prompt)->toContain('TRANSLATION REQUESTS');
-    expect($prompt)->toContain('IMMEDIATELY return to using ONLY Spanish');
-    expect($prompt)->toContain('asks for a translation or clarification');
-});
-
 test('conversation history is properly formatted for OpenAI', function () {
     $user = User::factory()->create();
     $session = ChatSession::factory()->create(['user_id' => $user->id]);

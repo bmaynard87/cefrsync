@@ -541,3 +541,131 @@ test('insights analysis is not dispatched before 10 user message threshold', fun
 
     Queue::assertNotPushed(AnalyzeRecentMessages::class);
 });
+
+test('A1 users receive assistant messages with parenthetical translations', function () {
+    $user = User::factory()->create([
+        'proficiency_level' => 'A1',
+        'native_language' => 'Spanish',
+        'target_language' => 'English',
+    ]);
+
+    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+
+    $response = $this->actingAs($user)
+        ->post(route('language-chat.message', $session->id), [
+            'message' => 'Hello',
+        ]);
+
+    $response->assertOk();
+    $response->assertJsonStructure([
+        'ai_response' => [
+            'id',
+            'content',
+            'translation',
+            'created_at',
+        ],
+    ]);
+
+    // Verify translation is stored in database
+    $aiMessage = ChatMessage::where('sender_type', 'assistant')
+        ->where('chat_session_id', $session->id)
+        ->first();
+
+    expect($aiMessage->translation)->not->toBeNull();
+    expect($aiMessage->translation)->toBeString();
+});
+
+test('A2 users receive assistant messages with parenthetical translations', function () {
+    $user = User::factory()->create([
+        'proficiency_level' => 'A2',
+        'native_language' => 'Spanish',
+        'target_language' => 'English',
+    ]);
+
+    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+
+    $response = $this->actingAs($user)
+        ->post(route('language-chat.message', $session->id), [
+            'message' => 'Hello',
+        ]);
+
+    $response->assertOk();
+    $response->assertJsonStructure([
+        'ai_response' => [
+            'id',
+            'content',
+            'translation',
+            'created_at',
+        ],
+    ]);
+
+    // Verify translation is stored in database
+    $aiMessage = ChatMessage::where('sender_type', 'assistant')
+        ->where('chat_session_id', $session->id)
+        ->first();
+
+    expect($aiMessage->translation)->not->toBeNull();
+});
+
+test('B1 and higher users do not receive translations', function () {
+    $user = User::factory()->create([
+        'proficiency_level' => 'B1',
+        'native_language' => 'Spanish',
+        'target_language' => 'English',
+    ]);
+
+    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+
+    $response = $this->actingAs($user)
+        ->post(route('language-chat.message', $session->id), [
+            'message' => 'Hello',
+        ]);
+
+    $response->assertOk();
+
+    // Verify translation is null
+    $aiMessage = ChatMessage::where('sender_type', 'assistant')
+        ->where('chat_session_id', $session->id)
+        ->first();
+
+    expect($aiMessage->translation)->toBeNull();
+});
+
+test('B1+ users still see existing translations from when they were A1/A2', function () {
+    // Create an A1 user and send a message (which will have translation)
+    $a1User = User::factory()->create([
+        'proficiency_level' => 'A1',
+        'native_language' => 'Spanish',
+        'target_language' => 'English',
+    ]);
+
+    $session = ChatSession::factory()->create(['user_id' => $a1User->id]);
+
+    $this->actingAs($a1User)
+        ->post(route('language-chat.message', $session->id), [
+            'message' => 'Hello',
+        ]);
+
+    // Verify translation was created
+    $aiMessage = ChatMessage::where('sender_type', 'assistant')
+        ->where('chat_session_id', $session->id)
+        ->first();
+
+    expect($aiMessage->translation)->not->toBeNull();
+
+    // Now upgrade user to B1
+    $a1User->update(['proficiency_level' => 'B1']);
+
+    // Retrieve messages as B1 user
+    $response = $this->actingAs($a1User)
+        ->get(route('language-chat.messages', $session->id));
+
+    $response->assertOk();
+
+    // Verify translation field is STILL included in response (existing translations preserved)
+    $messages = $response->json('messages');
+    $assistantMessage = collect($messages)->firstWhere('sender_type', 'assistant');
+
+    expect($assistantMessage)->toHaveKey('translation');
+    expect($assistantMessage['translation'])->not->toBeNull();
+});

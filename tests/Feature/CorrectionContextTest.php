@@ -90,6 +90,17 @@ test('correction check includes multiple context messages', function () {
     $session->messages()->create(['sender_type' => 'assistant', 'content' => '¡Hola! ¿Cómo estás?']);
     $session->messages()->create(['sender_type' => 'user', 'content' => 'Bien, gracias']);
 
+    // Mock OpenAI service
+    $this->mock(OpenAiService::class, function ($mock) {
+        $mock->shouldReceive('formatConversationHistory')->andReturn([]);
+        $mock->shouldReceive('generateChatResponse')->andReturn('¡Muy bien!');
+        $mock->shouldReceive('detectLanguage')->andReturn([
+            'is_target_language' => true,
+            'detected_language' => 'Spanish',
+        ]);
+        $mock->shouldReceive('translateWithParenthetical')->andReturn('¡Muy bien! (Very good!)');
+    });
+
     // Mock LangGPT service to verify multiple context messages
     $this->mock(LangGptService::class, function ($mock) {
         $mock->shouldReceive('checkCriticalErrors')

@@ -208,6 +208,31 @@ class LanguageChatController extends Controller
             'content' => $aiResponseContent,
         ]);
 
+        // Add parenthetical translation for A1 and A2 users
+        $shouldTranslate = in_array($proficiencyLevel, ['A1', 'A2']) && $request->user()->native_language;
+
+        \Log::info('Translation check', [
+            'proficiency_level' => $proficiencyLevel,
+            'is_a1_or_a2' => in_array($proficiencyLevel, ['A1', 'A2']),
+            'native_language' => $request->user()->native_language,
+            'should_translate' => $shouldTranslate,
+        ]);
+
+        if ($shouldTranslate) {
+            $translation = $this->openAiService->translateWithParenthetical(
+                $aiResponseContent,
+                $chatSession->target_language,
+                $request->user()->native_language
+            );
+
+            \Log::info('Translation generated', [
+                'original_length' => strlen($aiResponseContent),
+                'translation_length' => strlen($translation),
+            ]);
+
+            $aiMessage->update(['translation' => $translation]);
+        }
+
         // Update session timestamp
         $chatSession->update([
             'last_message_at' => now(),
@@ -240,6 +265,7 @@ class LanguageChatController extends Controller
             'ai_response' => [
                 'id' => $aiMessage->id,
                 'content' => $aiMessage->content,
+                'translation' => $aiMessage->translation,
                 'created_at' => $aiMessage->created_at,
             ],
             'correction_message' => $correctionMessage ? [

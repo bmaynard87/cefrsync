@@ -15,6 +15,7 @@ class ChatMessage extends Model
         'sender_type',
         'message_type',
         'content',
+        'translation',
         'correction_data',
     ];
 

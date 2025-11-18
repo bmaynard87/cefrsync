@@ -6,12 +6,14 @@ interface Props {
     content: string;
     role: 'user' | 'assistant';
     timestamp: string;
+    translation?: string | null;
     isAnalyzing?: boolean;
     disableTypewriter?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
     disableTypewriter: false,
+    translation: null,
 });
 </script>
 
@@ -49,10 +51,10 @@ withDefaults(defineProps<Props>(), {
             <p class="whitespace-pre-wrap break-words text-sm leading-relaxed">
                 <TypewriterText
                     v-if="role === 'assistant' && !disableTypewriter"
-                    :text="content"
+                    :text="translation || content"
                     :speed="30"
                 />
-                <span v-else>{{ content }}</span>
+                <span v-else>{{ translation || content }}</span>
             </p>
             <div
                 class="mt-2 flex items-center gap-2 text-xs"
