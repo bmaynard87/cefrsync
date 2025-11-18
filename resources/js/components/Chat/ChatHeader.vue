@@ -100,7 +100,7 @@ const displayLevel = computed(() => {
 
             <div
                 data-test="proficiency-level"
-                class="flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-1.5"
+                class="flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-1.5 transition-all"
             >
                 <BarChart3
                     class="h-4 w-4 text-purple-600"

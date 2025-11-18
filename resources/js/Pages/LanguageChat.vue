@@ -358,8 +358,8 @@ onMounted(() => {
 </script>
 
 <template>
-    <Head :title="pageTitle" />
-    <AppShell>
+    <Head title="Language Chat" />
+    <AppShell variant="header">
         <div data-test="main-container" class="flex h-screen w-full overflow-hidden bg-gray-50">
             <ChatSidebar 
                 :chats="chats" 

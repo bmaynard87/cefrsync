@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import Spinner from '@/components/ui/spinner/Spinner.vue';
@@ -28,7 +28,23 @@ let pollInterval: number | null = null;
 
 const isAuthenticated = computed(() => !!page.props.auth?.user);
 
-const fetchInsights = async (silent = false) => {
+// Pulsing animation for unread count changes
+const isPulsing = ref(false);
+let pulseTimeout: ReturnType<typeof setTimeout> | null = null;
+const hasInitiallyLoaded = ref(false);
+
+    watch(unreadCount, (newValue, oldValue) => {
+        // Only pulse if the count increased AND we've completed initial load
+        if (hasInitiallyLoaded.value && newValue > oldValue) {
+            isPulsing.value = true;
+            if (pulseTimeout) {
+                clearTimeout(pulseTimeout);
+            }
+            pulseTimeout = setTimeout(() => {
+                isPulsing.value = false;
+            }, 4000);
+        }
+    });const fetchInsights = async (silent = false) => {
     // Don't fetch if user is not authenticated
     if (!isAuthenticated.value) {
         return;
@@ -39,7 +55,7 @@ const fetchInsights = async (silent = false) => {
     }
     try {
         const { data } = await axios.get<InsightsData>('/insights');
-        
+
         // Only update if data has changed to prevent unnecessary re-renders
         if (JSON.stringify(insights.value) !== JSON.stringify(data.insights)) {
             insights.value = data.insights;
@@ -67,7 +83,7 @@ const fetchInsights = async (silent = false) => {
 const markAsRead = async (insightId: number) => {
     try {
         await axios.patch(`/insights/${insightId}/read`);
-        
+
         const insight = insights.value.find(i => i.id === insightId);
         if (insight) {
             insight.is_read = true;
@@ -81,7 +97,7 @@ const markAsRead = async (insightId: number) => {
 const markAllAsRead = async () => {
     try {
         await axios.post('/insights/mark-all-read');
-        
+
         insights.value.forEach(insight => {
             insight.is_read = true;
         });
@@ -94,7 +110,7 @@ const markAllAsRead = async () => {
 const deleteInsight = async (insightId: number) => {
     try {
         await axios.delete(`/insights/${insightId}`);
-        
+
         const index = insights.value.findIndex(i => i.id === insightId);
         if (index !== -1) {
             const wasUnread = !insights.value[index].is_read;
@@ -144,9 +160,16 @@ const togglePanel = () => {
 onMounted(() => {
     // Only start polling if user is authenticated
     if (isAuthenticated.value) {
-        fetchInsights();
+        fetchInsights().finally(() => {
+            // Set flag after initial fetch completes (whether successful or not)
+            // This allows subsequent count changes to trigger pulse animation
+            hasInitiallyLoaded.value = true;
+        });
         // Poll for new insights every 30 seconds (silently to avoid flash)
         pollInterval = setInterval(() => fetchInsights(true), 30000) as unknown as number;
+    } else {
+        // If not authenticated, still set the flag so tests can work
+        hasInitiallyLoaded.value = true;
     }
 });
 
@@ -156,46 +179,42 @@ onUnmounted(() => {
         clearInterval(pollInterval);
         pollInterval = null;
     }
+
+    // Clean up pulse timeout
+    if (pulseTimeout) {
+        clearTimeout(pulseTimeout);
+    }
 });
 </script>
 
 <template>
     <div class="relative">
         <!-- Notification Badge Button -->
-        <button
-            @click="togglePanel"
-            class="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
-            :class="{ 'text-blue-600': isOpen }"
-        >
+        <button @click="togglePanel" class="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
+            :class="{ 'text-blue-600': isOpen }">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                </path>
             </svg>
-            <span v-if="unreadCount > 0" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+            <span v-if="unreadCount > 0"
+                class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/5 -translate-y-1/5 bg-red-600 rounded-full transition-all origin-center"
+                :class="{ 'animate-pulse-subtle': isPulsing }">
                 {{ unreadCount }}
             </span>
         </button>
 
         <!-- Insights Panel -->
-        <transition
-            enter-active-class="transition ease-out duration-200"
-            enter-from-class="opacity-0 scale-95"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition ease-in duration-150"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-95"
-        >
-            <div
-                v-if="isOpen"
-                class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[600px] flex flex-col"
-            >
+        <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 scale-95"
+            enter-to-class="opacity-100 scale-100" leave-active-class="transition ease-in duration-150"
+            leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+            <div v-if="isOpen"
+                class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[600px] flex flex-col">
                 <!-- Header -->
                 <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
                     <h3 class="text-lg font-semibold text-gray-900">LangGPT Insights</h3>
-                    <button
-                        v-if="insights.length > 0 && unreadCount > 0"
-                        @click="markAllAsRead"
-                        class="text-sm text-blue-600 hover:text-blue-800"
-                    >
+                    <button v-if="insights.length > 0 && unreadCount > 0" @click="markAllAsRead"
+                        class="text-sm text-blue-600 hover:text-blue-800">
                         Mark all read
                     </button>
                 </div>
@@ -214,12 +233,9 @@ onUnmounted(() => {
                     </div>
 
                     <div v-else class="divide-y divide-gray-200">
-                        <div
-                            v-for="insight in insights"
-                            :key="insight.id"
+                        <div v-for="insight in insights" :key="insight.id"
                             class="p-4 hover:bg-gray-50 transition-colors"
-                            :class="{ 'bg-blue-50/30': !insight.is_read }"
-                        >
+                            :class="{ 'bg-blue-50/30': !insight.is_read }">
                             <div class="flex items-start gap-3">
                                 <div class="text-2xl flex-shrink-0">
                                     {{ getInsightIcon(insight.insight_type) }}
@@ -230,23 +246,20 @@ onUnmounted(() => {
                                             {{ insight.title }}
                                         </h4>
                                         <div class="flex items-center gap-1 flex-shrink-0">
-                                            <button
-                                                v-if="!insight.is_read"
-                                                @click="markAsRead(insight.id)"
-                                                class="text-blue-600 hover:text-blue-800 p-1"
-                                                title="Mark as read"
-                                            >
-                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            <button v-if="!insight.is_read" @click="markAsRead(insight.id)"
+                                                class="text-blue-600 hover:text-blue-800 p-1" title="Mark as read">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M5 13l4 4L19 7"></path>
                                                 </svg>
                                             </button>
-                                            <button
-                                                @click="deleteInsight(insight.id)"
-                                                class="text-gray-400 hover:text-red-600 p-1"
-                                                title="Dismiss"
-                                            >
-                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            <button @click="deleteInsight(insight.id)"
+                                                class="text-gray-400 hover:text-red-600 p-1" title="Dismiss">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                 </svg>
                                             </button>
                                         </div>
@@ -266,10 +279,6 @@ onUnmounted(() => {
         </transition>
 
         <!-- Backdrop -->
-        <div
-            v-if="isOpen"
-            @click="isOpen = false"
-            class="fixed inset-0 z-40"
-        ></div>
+        <div v-if="isOpen" @click="isOpen = false" class="fixed inset-0 z-40"></div>
     </div>
 </template>
