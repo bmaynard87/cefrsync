@@ -26,20 +26,20 @@ class UserFactory extends Factory
     {
         // Get random languages for native and target
         $allLanguages = Language::active()->pluck('id')->toArray();
-        $nativeLanguageId = fake()->randomElement($allLanguages);
+        $nativeLanguageId = $this->faker->randomElement($allLanguages);
         // Ensure target is different from native
-        $targetLanguageId = fake()->randomElement(array_diff($allLanguages, [$nativeLanguageId]));
+        $targetLanguageId = $this->faker->randomElement(array_diff($allLanguages, [$nativeLanguageId]));
 
         return [
-            'first_name' => fake()->firstName(),
-            'last_name' => fake()->lastName(),
-            'email' => fake()->unique()->safeEmail(),
+            'first_name' => $this->faker->firstName(),
+            'last_name' => $this->faker->lastName(),
+            'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= 'password',
             'remember_token' => Str::random(10),
             'native_language_id' => $nativeLanguageId,
             'target_language_id' => $targetLanguageId,
-            'proficiency_level' => fake()->randomElement(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
+            'proficiency_level' => $this->faker->randomElement(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
         ];
     }
 

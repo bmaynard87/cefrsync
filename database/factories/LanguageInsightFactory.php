@@ -19,16 +19,16 @@ class LanguageInsightFactory extends Factory
     public function definition(): array
     {
         $types = ['grammar_pattern', 'vocabulary_strength', 'proficiency_suggestion'];
-        $type = fake()->randomElement($types);
+        $type = $this->faker->randomElement($types);
 
         return [
             'user_id' => User::factory(),
             'chat_session_id' => ChatSession::factory(),
             'insight_type' => $type,
             'title' => $this->getTitleForType($type),
-            'message' => fake()->sentence(12),
+            'message' => $this->faker->sentence(12),
             'data' => $this->getDataForType($type),
-            'is_read' => fake()->boolean(30), // 30% chance of being read
+            'is_read' => $this->faker->boolean(30), // 30% chance of being read
         ];
     }
 
@@ -130,25 +130,25 @@ class LanguageInsightFactory extends Factory
             'grammar_pattern' => [
                 'patterns' => [
                     [
-                        'pattern' => fake()->sentence(3),
-                        'frequency' => fake()->randomElement(['rare', 'occasional', 'common']),
-                        'examples' => [fake()->sentence(5), fake()->sentence(6)],
-                        'severity' => fake()->randomElement(['minor', 'moderate', 'significant']),
+                        'pattern' => $this->faker->sentence(3),
+                        'frequency' => $this->faker->randomElement(['rare', 'occasional', 'common']),
+                        'examples' => [$this->faker->sentence(5), $this->faker->sentence(6)],
+                        'severity' => $this->faker->randomElement(['minor', 'moderate', 'significant']),
                     ],
                 ],
             ],
             'vocabulary_strength' => [
                 'insights' => [
-                    'complexity_level' => fake()->randomElement(['beginner', 'intermediate', 'advanced']),
-                    'variety_score' => fake()->randomFloat(2, 0, 1),
-                    'advanced_words_used' => [fake()->word(), fake()->word(), fake()->word()],
-                    'recommendations' => [fake()->sentence(), fake()->sentence()],
+                    'complexity_level' => $this->faker->randomElement(['beginner', 'intermediate', 'advanced']),
+                    'variety_score' => $this->faker->randomFloat(2, 0, 1),
+                    'advanced_words_used' => [$this->faker->word(), $this->faker->word(), $this->faker->word()],
+                    'recommendations' => [$this->faker->sentence(), $this->faker->sentence()],
                 ],
             ],
             'proficiency_suggestion' => [
-                'current_level' => fake()->randomElement(['A1', 'A2', 'B1', 'B2', 'C1']),
-                'suggested_level' => fake()->randomElement(['A2', 'B1', 'B2', 'C1', 'C2']),
-                'reasoning' => fake()->sentence(),
+                'current_level' => $this->faker->randomElement(['A1', 'A2', 'B1', 'B2', 'C1']),
+                'suggested_level' => $this->faker->randomElement(['A2', 'B1', 'B2', 'C1', 'C2']),
+                'reasoning' => $this->faker->sentence(),
             ],
             default => [],
         };

@@ -20,17 +20,17 @@ class ChatSessionFactory extends Factory
     public function definition(): array
     {
         $allLanguages = Language::active()->pluck('id')->toArray();
-        $nativeLanguageId = fake()->randomElement($allLanguages);
+        $nativeLanguageId = $this->faker->randomElement($allLanguages);
         // Ensure target is different from native
-        $targetLanguageId = fake()->randomElement(array_diff($allLanguages, [$nativeLanguageId]));
+        $targetLanguageId = $this->faker->randomElement(array_diff($allLanguages, [$nativeLanguageId]));
 
         return [
             'user_id' => User::factory(),
             'native_language_id' => $nativeLanguageId,
             'target_language_id' => $targetLanguageId,
-            'proficiency_level' => fake()->randomElement(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
-            'title' => fake()->sentence(3),
-            'last_message_at' => fake()->dateTimeBetween('-1 week', 'now'),
+            'proficiency_level' => $this->faker->randomElement(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
+            'title' => $this->faker->sentence(3),
+            'last_message_at' => $this->faker->dateTimeBetween('-1 week', 'now'),
         ];
     }
 

@@ -19,8 +19,8 @@ class ChatMessageFactory extends Factory
     {
         return [
             'chat_session_id' => ChatSession::factory(),
-            'sender_type' => fake()->randomElement(['user', 'assistant']),
-            'content' => fake()->paragraph(),
+            'sender_type' => $this->faker->randomElement(['user', 'assistant']),
+            'content' => $this->faker->paragraph(),
         ];
     }
 
