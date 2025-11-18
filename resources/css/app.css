@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Hide reCAPTCHA badge on authenticated pages (it's only needed for login/register) */
+body:has([data-authenticated]) .grecaptcha-badge {
+    visibility: hidden !important;
+}
