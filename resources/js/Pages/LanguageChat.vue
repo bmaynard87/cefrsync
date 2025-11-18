@@ -418,7 +418,7 @@ onMounted(() => {
 <template>
     <Head :title="pageTitle" />
     <AppShell>
-        <div data-test="main-container" class="flex h-screen w-full overflow-hidden bg-gray-50">
+        <div data-test="main-container" class="flex h-dvh w-full overflow-hidden bg-gray-50">
             <ChatSidebar 
                 :chats="chats" 
                 :active-chat="activeChat"
