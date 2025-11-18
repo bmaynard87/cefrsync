@@ -19,13 +19,13 @@ beforeEach(function () {
 });
 
 test('correction check includes recent conversation context', function () {
-    $user = User::factory()->create([
-        'proficiency_level' => 'B1',
-    ]);
+    $user = User::factory()->create();
 
     $session = ChatSession::factory()->create([
         'user_id' => $user->id,
-        'target_language' => 'English',
+        'target_language_id' => \App\Models\Language::findByKey('en')->id,
+        'native_language_id' => \App\Models\Language::findByKey('es')->id,
+        'proficiency_level' => 'B1',
     ]);
 
     // Create conversation history
@@ -76,13 +76,13 @@ test('correction check includes recent conversation context', function () {
 });
 
 test('correction check includes multiple context messages', function () {
-    $user = User::factory()->create([
-        'proficiency_level' => 'A2',
-    ]);
+    $user = User::factory()->create();
 
     $session = ChatSession::factory()->create([
         'user_id' => $user->id,
-        'target_language' => 'Spanish',
+        'target_language_id' => \App\Models\Language::findByKey('es')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
+        'proficiency_level' => 'A2',
     ]);
 
     // Create multi-turn conversation
@@ -132,6 +132,7 @@ test('correction check handles empty conversation context', function () {
     $session = ChatSession::factory()->create([
         'user_id' => $user->id,
         'target_language' => 'French',
+        'proficiency_level' => 'B1',
     ]);
 
     // No previous messages - first message in conversation
@@ -175,6 +176,7 @@ test('correction context excludes correction messages', function () {
     $session = ChatSession::factory()->create([
         'user_id' => $user->id,
         'target_language' => 'German',
+        'proficiency_level' => 'B2',
     ]);
 
     // Create conversation with correction message

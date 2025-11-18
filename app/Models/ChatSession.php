@@ -23,6 +23,8 @@ class ChatSession extends Model
         'native_language_id',
         'target_language_id',
         'proficiency_level',
+        'localize_insights',
+        'localize_corrections',
         'title',
         'last_message_at',
         'conversation_summary',
@@ -34,6 +36,8 @@ class ChatSession extends Model
         'last_message_at' => 'datetime',
         'topics_discussed' => 'array',
         'user_context' => 'array',
+        'localize_insights' => 'boolean',
+        'localize_corrections' => 'boolean',
     ];
 
     public function user(): BelongsTo

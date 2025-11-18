@@ -20,13 +20,12 @@ beforeEach(function () {
 });
 
 test('critical correction message is created when user makes critical error', function () {
-    $user = User::factory()->create([
-        'proficiency_level' => 'A1',
-    ]);
+    $user = User::factory()->create();
 
     $session = ChatSession::factory()->create([
         'user_id' => $user->id,
-        'target_language' => 'Spanish',
+        'target_language_id' => \App\Models\Language::findByKey('es')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
         'proficiency_level' => 'A1',
     ]);
 
@@ -69,13 +68,12 @@ test('critical correction message is created when user makes critical error', fu
 });
 
 test('no correction message created when message is acceptable', function () {
-    $user = User::factory()->create([
-        'proficiency_level' => 'A1',
-    ]);
+    $user = User::factory()->create();
 
     $session = ChatSession::factory()->create([
         'user_id' => $user->id,
-        'target_language' => 'Spanish',
+        'target_language_id' => \App\Models\Language::findByKey('es')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
         'proficiency_level' => 'A1',
     ]);
 
@@ -109,13 +107,12 @@ test('no correction message created when message is acceptable', function () {
 });
 
 test('correction message includes all necessary data', function () {
-    $user = User::factory()->create([
-        'proficiency_level' => 'B1',
-    ]);
+    $user = User::factory()->create();
 
     $session = ChatSession::factory()->create([
         'user_id' => $user->id,
-        'target_language' => 'Spanish',
+        'target_language_id' => \App\Models\Language::findByKey('es')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
         'proficiency_level' => 'B1',
     ]);
 
@@ -169,7 +166,8 @@ test('correction is returned in API response', function () {
 
     $session = ChatSession::factory()->create([
         'user_id' => $user->id,
-        'target_language' => 'French',
+        'target_language_id' => \App\Models\Language::findByKey('fr')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
     ]);
 
     // Mock LangGPT to return critical error
@@ -222,6 +220,7 @@ test('correction only checks messages in target language', function () {
     $session = ChatSession::factory()->create([
         'user_id' => $user->id,
         'target_language' => 'Spanish',
+        'proficiency_level' => 'B1',
     ]);
 
     // Mock OpenAI language detection to say it's NOT in target language

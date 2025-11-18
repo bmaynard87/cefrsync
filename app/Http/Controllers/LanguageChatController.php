@@ -70,6 +70,8 @@ class LanguageChatController extends Controller
             'native_language_id' => $nativeLanguage?->id,
             'target_language_id' => $targetLanguage?->id,
             'proficiency_level' => $validated['proficiency_level'] ?? $request->user()->proficiency_level,
+            'localize_insights' => $request->user()->localize_insights ?? false,
+            'localize_corrections' => $request->user()->localize_corrections ?? false,
             'title' => 'New Conversation',
             'last_message_at' => now(),
         ]);
@@ -128,20 +130,21 @@ class LanguageChatController extends Controller
             $payload = [
                 'message' => $validated['message'],
                 'target_language' => $chatSession->target_language,
-                'proficiency_level' => $request->user()->proficiency_level ?? $chatSession->proficiency_level ?? 'B1',
+                'proficiency_level' => $chatSession->proficiency_level ?? 'B1',
                 'context_messages' => $contextMessages,
             ];
 
-            // Add native language and localization if user has enabled it
-            if ($request->user()->localize_corrections && $request->user()->native_language) {
-                $payload['native_language'] = $request->user()->native_language;
+            // Add native language and localization if session has enabled it
+            if ($chatSession->localize_corrections && $chatSession->native_language) {
+                $payload['native_language'] = $chatSession->native_language;
                 $payload['localize'] = true;
             }
 
             \Log::info('Critical error check payload', [
                 'user_id' => $request->user()->id,
-                'localize_corrections' => $request->user()->localize_corrections,
-                'native_language' => $request->user()->native_language,
+                'session_id' => $chatSession->id,
+                'localize_corrections' => $chatSession->localize_corrections,
+                'native_language' => $chatSession->native_language,
                 'payload' => $payload,
             ]);
 
@@ -183,8 +186,8 @@ class LanguageChatController extends Controller
         // Build user context (can be enhanced later with user preferences)
         $userContext = $this->buildUserContext($request->user());
 
-        // Use user's proficiency level instead of session's
-        $proficiencyLevel = $request->user()->proficiency_level ?? 'B1';
+        // Use session's proficiency level
+        $proficiencyLevel = $chatSession->proficiency_level ?? 'B1';
 
         // Log for debugging
         \Log::info('Generating chat response', [
@@ -209,12 +212,12 @@ class LanguageChatController extends Controller
         ]);
 
         // Add parenthetical translation for A1 and A2 users
-        $shouldTranslate = in_array($proficiencyLevel, ['A1', 'A2']) && $request->user()->native_language;
+        $shouldTranslate = in_array($proficiencyLevel, ['A1', 'A2']) && $chatSession->native_language;
 
         \Log::info('Translation check', [
             'proficiency_level' => $proficiencyLevel,
             'is_a1_or_a2' => in_array($proficiencyLevel, ['A1', 'A2']),
-            'native_language' => $request->user()->native_language,
+            'native_language' => $chatSession->native_language,
             'should_translate' => $shouldTranslate,
         ]);
 
@@ -222,7 +225,7 @@ class LanguageChatController extends Controller
             $translation = $this->openAiService->translateWithParenthetical(
                 $aiResponseContent,
                 $chatSession->target_language,
-                $request->user()->native_language
+                $chatSession->native_language
             );
 
             \Log::info('Translation generated', [

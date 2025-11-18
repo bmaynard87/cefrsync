@@ -43,17 +43,13 @@ test('job does nothing if no user messages exist', function () {
 });
 
 test('job filters out non-target language messages', function () {
-    $user = User::factory()->create([
-        'native_language' => 'English',
-        'target_language' => 'Japanese',
-        'proficiency_level' => 'B1',
-    ]);
+    $user = User::factory()->create();
 
     $session = ChatSession::factory()->create([
         'user_id' => $user->id,
-        'native_language' => $user->native_language,
-        'target_language' => $user->target_language,
-        'proficiency_level' => $user->proficiency_level,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
+        'target_language_id' => \App\Models\Language::findByKey('ja')->id,
+        'proficiency_level' => 'B1',
     ]);
 
     // Create messages in different languages
@@ -102,12 +98,14 @@ test('job filters out non-target language messages', function () {
 });
 
 test('job creates grammar pattern insights', function () {
-    $user = User::factory()->create([
-        'target_language' => 'Spanish',
+    $user = User::factory()->create();
+
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
+        'target_language_id' => \App\Models\Language::findByKey('es')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
         'proficiency_level' => 'A2',
     ]);
-
-    $session = ChatSession::factory()->create(['user_id' => $user->id]);
 
     ChatMessage::factory()->create([
         'chat_session_id' => $session->id,
@@ -190,12 +188,15 @@ test('job creates vocabulary strength insights', function () {
 
 test('job creates proficiency suggestion when level changes', function () {
     $user = User::factory()->create([
-        'proficiency_level' => 'B1',
-        'target_language' => 'Spanish',
         'auto_update_proficiency' => false, // Don't auto-update for this test
     ]);
 
-    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
+        'proficiency_level' => 'B1',
+        'target_language_id' => \App\Models\Language::findByKey('es')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
+    ]);
 
     ChatMessage::factory()->count(10)->create([
         'chat_session_id' => $session->id,
@@ -232,12 +233,15 @@ test('job creates proficiency suggestion when level changes', function () {
 
 test('job updates proficiency when user opted in and confidence is high', function () {
     $user = User::factory()->create([
-        'proficiency_level' => 'A2',
-        'target_language' => 'German',
         'auto_update_proficiency' => true,
     ]);
 
-    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
+        'proficiency_level' => 'A2',
+        'target_language_id' => \App\Models\Language::findByKey('de')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
+    ]);
 
     ChatMessage::factory()->count(10)->create([
         'chat_session_id' => $session->id,
@@ -264,17 +268,20 @@ test('job updates proficiency when user opted in and confidence is high', functi
     $job = new AnalyzeRecentMessages($session);
     $job->handle($langGptService, $openAiService);
 
-    expect($user->fresh()->proficiency_level)->toBe('B1');
+    expect($session->fresh()->proficiency_level)->toBe('B1');
 });
 
 test('job does not update proficiency when user opted out', function () {
     $user = User::factory()->create([
-        'proficiency_level' => 'A2',
-        'target_language' => 'Italian',
         'auto_update_proficiency' => false,
     ]);
 
-    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
+        'proficiency_level' => 'A2',
+        'target_language_id' => \App\Models\Language::findByKey('it')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
+    ]);
 
     ChatMessage::factory()->count(10)->create([
         'chat_session_id' => $session->id,
@@ -301,17 +308,20 @@ test('job does not update proficiency when user opted out', function () {
     $job = new AnalyzeRecentMessages($session);
     $job->handle($langGptService, $openAiService);
 
-    expect($user->fresh()->proficiency_level)->toBe('A2');
+    expect($session->fresh()->proficiency_level)->toBe('A2');
 });
 
 test('job does not update proficiency when confidence is low', function () {
     $user = User::factory()->create([
-        'proficiency_level' => 'A2',
-        'target_language' => 'Portuguese',
         'auto_update_proficiency' => true,
     ]);
 
-    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
+        'proficiency_level' => 'A2',
+        'target_language_id' => \App\Models\Language::findByKey('pt')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
+    ]);
 
     ChatMessage::factory()->count(10)->create([
         'chat_session_id' => $session->id,
@@ -338,17 +348,20 @@ test('job does not update proficiency when confidence is low', function () {
     $job = new AnalyzeRecentMessages($session);
     $job->handle($langGptService, $openAiService);
 
-    expect($user->fresh()->proficiency_level)->toBe('A2');
+    expect($session->fresh()->proficiency_level)->toBe('A2');
 });
 
 test('job does not downgrade proficiency level', function () {
     $user = User::factory()->create([
-        'proficiency_level' => 'B2',
-        'target_language' => 'Russian',
         'auto_update_proficiency' => true,
     ]);
 
-    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
+        'proficiency_level' => 'B2',
+        'target_language_id' => \App\Models\Language::findByKey('ru')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
+    ]);
 
     ChatMessage::factory()->count(10)->create([
         'chat_session_id' => $session->id,
@@ -376,18 +389,19 @@ test('job does not downgrade proficiency level', function () {
     $job->handle($langGptService, $openAiService);
 
     // Should remain at B2
-    expect($user->fresh()->proficiency_level)->toBe('B2');
+    expect($session->fresh()->proficiency_level)->toBe('B2');
 });
 
 test('job sends localize_insights flag when user has it enabled', function () {
-    $user = User::factory()->create([
-        'native_language' => 'Spanish',
-        'target_language' => 'French',
+    $user = User::factory()->create();
+
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
+        'native_language_id' => \App\Models\Language::findByKey('es')->id,
+        'target_language_id' => \App\Models\Language::findByKey('fr')->id,
         'proficiency_level' => 'A2',
         'localize_insights' => true,
     ]);
-
-    $session = ChatSession::factory()->create(['user_id' => $user->id]);
 
     ChatMessage::factory()->create([
         'chat_session_id' => $session->id,
@@ -466,12 +480,15 @@ test('job does not send localize_insights when user has it disabled', function (
 
 test('job creates proficiency insight on initial proficiency assignment', function () {
     $user = User::factory()->create([
-        'proficiency_level' => null, // No proficiency level set
-        'target_language' => 'Spanish',
         'auto_update_proficiency' => true,
     ]);
 
-    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
+        'proficiency_level' => null, // No proficiency level set
+        'target_language_id' => \App\Models\Language::findByKey('es')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
+    ]);
 
     ChatMessage::factory()->create([
         'chat_session_id' => $session->id,
@@ -504,17 +521,16 @@ test('job creates proficiency insight on initial proficiency assignment', functi
     $job = new AnalyzeRecentMessages($session);
     $job->handle($langGptService, $openAiService);
 
-    // User should have proficiency level set
-    $user->refresh();
-    expect($user->proficiency_level)->toBe('B1');
+    // Session should have proficiency level set
+    $session->refresh();
+    expect($session->proficiency_level)->toBe('B1');
 
     // All 3 insight types should be created, including proficiency suggestion
     expect(LanguageInsight::where('chat_session_id', $session->id)->count())->toBe(3);
 
     $proficiencyInsight = LanguageInsight::where('insight_type', 'proficiency_suggestion')->first();
     expect($proficiencyInsight)->not->toBeNull();
-    expect($proficiencyInsight->title)->toContain('Initial Proficiency Assessment');
-    expect($proficiencyInsight->title)->toContain($session->target_language);
+    expect($proficiencyInsight->title)->toBe('Initial Proficiency Assessment');
     expect($proficiencyInsight->data['current_level'])->toBe('B1');
     expect($proficiencyInsight->data['suggested_level'])->toBe('B1');
 });

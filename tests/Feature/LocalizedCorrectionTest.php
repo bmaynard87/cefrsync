@@ -9,18 +9,14 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->user = User::factory()->create([
-        'native_language' => 'Spanish',
-        'target_language' => 'English',
-        'proficiency_level' => 'B1',
-        'localize_corrections' => true, // New field
-    ]);
+    $this->user = User::factory()->create();
 
     $this->session = ChatSession::factory()->create([
         'user_id' => $this->user->id,
-        'native_language' => 'Spanish',
-        'target_language' => 'English',
+        'native_language_id' => \App\Models\Language::findByKey('es')->id,
+        'target_language_id' => \App\Models\Language::findByKey('en')->id,
         'proficiency_level' => 'B1',
+        'localize_corrections' => true,
     ]);
 
     $this->openAiService = Mockery::mock(OpenAiService::class);
@@ -105,7 +101,7 @@ test('correction message is sent in native language when localize_corrections is
 });
 
 test('correction message is in English when localize_corrections is disabled', function () {
-    $this->user->update(['localize_corrections' => false]);
+    $this->session->update(['localize_corrections' => false]);
 
     // Mock language detection
     $this->openAiService
@@ -156,9 +152,8 @@ test('correction message is in English when localize_corrections is disabled', f
 });
 
 test('correction message defaults to English when native language is not passed', function () {
-    // User has native language but localize_corrections is false
-    $this->user->update([
-        'native_language' => 'Spanish',
+    // Session has native language but localize_corrections is false
+    $this->session->update([
         'localize_corrections' => false, // Localization disabled
     ]);
 

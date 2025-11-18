@@ -76,7 +76,12 @@ const isServiceDown = ref(!props.isServiceAvailable);
 const chatContainer = ref<HTMLElement | null>(null);
 const chatInputRef = ref<{ focus: () => void } | null>(null);
 
-// Use user settings from props
+// Store session-level settings (current active chat)
+const sessionNativeLanguage = ref<string | null>(null);
+const sessionTargetLanguage = ref<string | null>(null);
+const sessionProficiencyLevel = ref<string | null>(null);
+
+// Use user settings from props as defaults
 const nativeLanguage = ref(props.userSettings.native_language);
 const targetLanguage = ref(props.userSettings.target_language);
 const proficiencyLevel = ref(props.userSettings.proficiency_level);
@@ -92,6 +97,7 @@ watch(() => props.userSettings.auto_update_proficiency, (newValue) => {
 });
 
 const proficiencyLabel = computed(() => {
+    const level = sessionProficiencyLevel.value || proficiencyLevel.value || '';
     const levels: Record<string, string> = {
         'A1': 'Beginner',
         'A2': 'Elementary',
@@ -100,7 +106,7 @@ const proficiencyLabel = computed(() => {
         'C1': 'Advanced',
         'C2': 'Proficient',
     };
-    return levels[proficiencyLevel.value] || proficiencyLevel.value;
+    return levels[level] || level;
 });
 
 const pageTitle = computed(() => {
@@ -139,6 +145,14 @@ const loadMessages = async (chatId: number) => {
             ...msg,
             disableTypewriter: true,
         }));
+        
+        // Update session-level settings from the loaded session
+        if (data.session) {
+            sessionNativeLanguage.value = data.session.native_language;
+            sessionTargetLanguage.value = data.session.target_language;
+            sessionProficiencyLevel.value = data.session.proficiency_level;
+        }
+        
         await scrollToBottom();
     } catch (error) {
         console.error('Error loading messages:', error);

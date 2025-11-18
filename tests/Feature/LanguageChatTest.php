@@ -489,13 +489,14 @@ test('cannot update another users chat session parameters', function () {
 test('insights analysis is dispatched after 10 user messages', function () {
     Queue::fake();
 
-    $user = User::factory()->create([
-        'target_language' => 'Spanish',
-        'proficiency_level' => 'B1',
-        'native_language' => 'English',
-    ]);
+    $user = User::factory()->create();
 
-    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
+        'target_language_id' => \App\Models\Language::findByKey('es')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
+        'proficiency_level' => 'B1',
+    ]);
 
     // Create 9 user messages (will have 9 assistant messages too = 18 total)
     ChatMessage::factory()->count(9)->create([
@@ -523,13 +524,14 @@ test('insights analysis is dispatched after 10 user messages', function () {
 test('insights analysis is not dispatched before 10 user message threshold', function () {
     Queue::fake();
 
-    $user = User::factory()->create([
-        'target_language' => 'Spanish',
-        'proficiency_level' => 'B1',
-        'native_language' => 'English',
-    ]);
+    $user = User::factory()->create();
 
-    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
+        'target_language_id' => \App\Models\Language::findByKey('es')->id,
+        'native_language_id' => \App\Models\Language::findByKey('en')->id,
+        'proficiency_level' => 'B1',
+    ]);
 
     // Send 5 user messages - should NOT trigger insights
     for ($i = 0; $i < 5; $i++) {
@@ -543,13 +545,14 @@ test('insights analysis is not dispatched before 10 user message threshold', fun
 });
 
 test('A1 users receive assistant messages with parenthetical translations', function () {
-    $user = User::factory()->create([
-        'proficiency_level' => 'A1',
-        'native_language' => 'Spanish',
-        'target_language' => 'English',
-    ]);
+    $user = User::factory()->create();
 
-    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
+        'proficiency_level' => 'A1',
+        'native_language_id' => \App\Models\Language::findByKey('es')->id,
+        'target_language_id' => \App\Models\Language::findByKey('en')->id,
+    ]);
 
     $response = $this->actingAs($user)
         ->post(route('language-chat.message', $session->id), [
@@ -576,13 +579,14 @@ test('A1 users receive assistant messages with parenthetical translations', func
 });
 
 test('A2 users receive assistant messages with parenthetical translations', function () {
-    $user = User::factory()->create([
-        'proficiency_level' => 'A2',
-        'native_language' => 'Spanish',
-        'target_language' => 'English',
-    ]);
+    $user = User::factory()->create();
 
-    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
+        'proficiency_level' => 'A2',
+        'native_language_id' => \App\Models\Language::findByKey('es')->id,
+        'target_language_id' => \App\Models\Language::findByKey('en')->id,
+    ]);
 
     $response = $this->actingAs($user)
         ->post(route('language-chat.message', $session->id), [
@@ -608,13 +612,14 @@ test('A2 users receive assistant messages with parenthetical translations', func
 });
 
 test('B1 and higher users do not receive translations', function () {
-    $user = User::factory()->create([
-        'proficiency_level' => 'B1',
-        'native_language' => 'Spanish',
-        'target_language' => 'English',
-    ]);
+    $user = User::factory()->create();
 
-    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
+        'proficiency_level' => 'B1',
+        'native_language_id' => \App\Models\Language::findByKey('es')->id,
+        'target_language_id' => \App\Models\Language::findByKey('en')->id,
+    ]);
 
     $response = $this->actingAs($user)
         ->post(route('language-chat.message', $session->id), [
@@ -632,16 +637,17 @@ test('B1 and higher users do not receive translations', function () {
 });
 
 test('B1+ users still see existing translations from when they were A1/A2', function () {
-    // Create an A1 user and send a message (which will have translation)
-    $a1User = User::factory()->create([
+    // Create a user with an A1 session and send a message (which will have translation)
+    $user = User::factory()->create();
+
+    $session = ChatSession::factory()->create([
+        'user_id' => $user->id,
         'proficiency_level' => 'A1',
-        'native_language' => 'Spanish',
-        'target_language' => 'English',
+        'native_language_id' => \App\Models\Language::findByKey('es')->id,
+        'target_language_id' => \App\Models\Language::findByKey('en')->id,
     ]);
 
-    $session = ChatSession::factory()->create(['user_id' => $a1User->id]);
-
-    $this->actingAs($a1User)
+    $this->actingAs($user)
         ->post(route('language-chat.message', $session->id), [
             'message' => 'Hello',
         ]);
@@ -653,11 +659,11 @@ test('B1+ users still see existing translations from when they were A1/A2', func
 
     expect($aiMessage->translation)->not->toBeNull();
 
-    // Now upgrade user to B1
-    $a1User->update(['proficiency_level' => 'B1']);
+    // Now upgrade session to B1
+    $session->update(['proficiency_level' => 'B1']);
 
-    // Retrieve messages as B1 user
-    $response = $this->actingAs($a1User)
+    // Retrieve messages with upgraded session
+    $response = $this->actingAs($user)
         ->get(route('language-chat.messages', $session->id));
 
     $response->assertOk();

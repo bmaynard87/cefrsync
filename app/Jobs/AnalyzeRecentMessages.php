@@ -48,7 +48,7 @@ class AnalyzeRecentMessages implements ShouldQueue
         foreach ($messages as $msg) {
             $detection = $openAiService->detectLanguage(
                 $msg->content,
-                $user->target_language
+                $this->chatSession->target_language
             );
 
             // Only include messages that are in the target language
@@ -70,17 +70,16 @@ class AnalyzeRecentMessages implements ShouldQueue
             return;
         }
 
-        // If user doesn't have a proficiency level set, use suggested level from LangGPT
-        // or default to B1 for the analysis
-        $currentLevel = $user->proficiency_level ?? 'B1';
+        // If session doesn't have a proficiency level set, use user's or default to B1
+        $currentLevel = $this->chatSession->proficiency_level ?? $user->proficiency_level ?? 'B1';
 
         // Call LangGPT to evaluate progress
         $payload = [
             'messages' => $validMessages,
             'current_level' => $currentLevel,
-            'target_language' => $user->target_language,
-            'native_language' => $user->native_language,
-            'localize_insights' => $user->localize_insights ?? false,
+            'target_language' => $this->chatSession->target_language,
+            'native_language' => $this->chatSession->native_language,
+            'localize_insights' => $this->chatSession->localize_insights ?? false,
         ];
 
         try {
@@ -107,13 +106,14 @@ class AnalyzeRecentMessages implements ShouldQueue
             // Track if this is the first proficiency level assignment
             $isInitialProficiencyAssignment = false;
 
-            // If user didn't have a proficiency level, set it to the suggested level
-            if (! $user->proficiency_level && isset($analysis['suggested_level'])) {
-                $user->update(['proficiency_level' => $analysis['suggested_level']]);
+            // If session didn't have a proficiency level, set it to the suggested level
+            if (! $this->chatSession->proficiency_level && isset($analysis['suggested_level'])) {
+                $this->chatSession->update(['proficiency_level' => $analysis['suggested_level']]);
                 $isInitialProficiencyAssignment = true;
 
                 Log::info('Set initial proficiency level from LangGPT analysis', [
                     'user_id' => $user->id,
+                    'chat_session_id' => $this->chatSession->id,
                     'proficiency_level' => $analysis['suggested_level'],
                 ]);
             }
@@ -138,15 +138,13 @@ class AnalyzeRecentMessages implements ShouldQueue
      */
     private function storeInsights(User $user, array $analysis, bool $isInitialProficiencyAssignment = false): void
     {
-        $targetLanguage = $this->chatSession->target_language;
-
         // Store grammar patterns insight
         if (! empty($analysis['grammar_patterns'])) {
             LanguageInsight::create([
                 'user_id' => $user->id,
                 'chat_session_id' => $this->chatSession->id,
                 'insight_type' => 'grammar_pattern',
-                'title' => "Grammar Patterns Detected ({$targetLanguage})",
+                'title' => 'Grammar Patterns Detected',
                 'message' => $analysis['grammar_summary'] ?? 'We noticed some patterns in your grammar usage.',
                 'data' => ['patterns' => $analysis['grammar_patterns']],
             ]);
@@ -158,24 +156,24 @@ class AnalyzeRecentMessages implements ShouldQueue
                 'user_id' => $user->id,
                 'chat_session_id' => $this->chatSession->id,
                 'insight_type' => 'vocabulary_strength',
-                'title' => "Vocabulary Assessment ({$targetLanguage})",
+                'title' => 'Vocabulary Assessment',
                 'message' => $analysis['vocabulary_summary'] ?? 'Your vocabulary usage shows interesting patterns.',
                 'data' => ['insights' => $analysis['vocabulary_assessment']],
             ]);
         }
 
         // Store proficiency suggestion if different from current OR if this is the initial assignment
-        if (isset($analysis['suggested_level']) && ($isInitialProficiencyAssignment || $analysis['suggested_level'] !== $user->proficiency_level)) {
+        if (isset($analysis['suggested_level']) && ($isInitialProficiencyAssignment || $analysis['suggested_level'] !== $this->chatSession->proficiency_level)) {
             LanguageInsight::create([
                 'user_id' => $user->id,
                 'chat_session_id' => $this->chatSession->id,
                 'insight_type' => 'proficiency_suggestion',
-                'title' => $isInitialProficiencyAssignment ? "Initial Proficiency Assessment ({$targetLanguage})" : "Proficiency Level Update ({$targetLanguage})",
+                'title' => $isInitialProficiencyAssignment ? 'Initial Proficiency Assessment' : 'Proficiency Level Update',
                 'message' => $isInitialProficiencyAssignment
                     ? ($analysis['proficiency_message'] ?? "Based on your conversation, we've assessed your level as {$analysis['suggested_level']}.")
                     : ($analysis['proficiency_message'] ?? "Based on your recent progress, you might be ready for {$analysis['suggested_level']}!"),
                 'data' => [
-                    'current_level' => $user->fresh()->proficiency_level, // Get fresh value after potential update
+                    'current_level' => $this->chatSession->fresh()->proficiency_level, // Get fresh value after potential update
                     'suggested_level' => $analysis['suggested_level'],
                     'reasoning' => $analysis['reasoning'] ?? null,
                 ],
@@ -198,7 +196,7 @@ class AnalyzeRecentMessages implements ShouldQueue
         }
 
         $suggestedLevel = $analysis['suggested_level'];
-        $currentLevel = $user->proficiency_level;
+        $currentLevel = $this->chatSession->proficiency_level;
 
         // Only allow progression, not regression
         $levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -206,10 +204,11 @@ class AnalyzeRecentMessages implements ShouldQueue
         $suggestedIndex = array_search($suggestedLevel, $levels);
 
         if ($suggestedIndex > $currentIndex) {
-            $user->update(['proficiency_level' => $suggestedLevel]);
+            $this->chatSession->update(['proficiency_level' => $suggestedLevel]);
 
-            Log::info('User proficiency updated automatically', [
+            Log::info('Session proficiency updated automatically', [
                 'user_id' => $user->id,
+                'chat_session_id' => $this->chatSession->id,
                 'from' => $currentLevel,
                 'to' => $suggestedLevel,
                 'confidence' => $analysis['confidence'],
