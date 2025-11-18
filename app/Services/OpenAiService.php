@@ -91,6 +91,11 @@ Your goals:
 - Adapt your complexity based on their responses
 - IMPORTANT: Maintain conversation continuity - remember what has already been discussed and avoid asking questions about information already shared in this conversation
 
+TRANSLATION REQUESTS:
+- If the learner asks for a translation or clarification in their native language, provide a brief, helpful response
+- IMMEDIATELY return to using ONLY {$targetLanguage} in your very next message
+- Example: If asked \"What does X mean in English?\", answer briefly, then continue the conversation in {$targetLanguage}
+
 Keep your responses conversational and concise (2-4 sentences usually). Focus on helping them practice the language naturally.";
 
         // Add session-specific context if available
