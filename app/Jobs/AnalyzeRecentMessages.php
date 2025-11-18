@@ -70,10 +70,14 @@ class AnalyzeRecentMessages implements ShouldQueue
             return;
         }
 
+        // If user doesn't have a proficiency level set, use suggested level from LangGPT
+        // or default to B1 for the analysis
+        $currentLevel = $user->proficiency_level ?? 'B1';
+
         // Call LangGPT to evaluate progress
         $payload = [
             'messages' => $validMessages,
-            'current_level' => $user->proficiency_level ?? 'B1', // Default to B1 if not set
+            'current_level' => $currentLevel,
             'target_language' => $user->target_language,
             'native_language' => $user->native_language,
             'localize_insights' => $user->localize_insights ?? false,
@@ -81,6 +85,13 @@ class AnalyzeRecentMessages implements ShouldQueue
 
         try {
             $response = $langGptService->evaluateProgress($payload);
+
+            Log::info('LangGPT evaluate-progress response', [
+                'chat_session_id' => $this->chatSession->id,
+                'success' => $response['success'] ?? null,
+                'has_data' => isset($response['data']),
+                'status' => $response['status'] ?? null,
+            ]);
 
             if (! $response['success']) {
                 Log::warning('LangGPT progress evaluation failed', [
@@ -93,8 +104,22 @@ class AnalyzeRecentMessages implements ShouldQueue
 
             $analysis = $response['data'];
 
+            // Track if this is the first proficiency level assignment
+            $isInitialProficiencyAssignment = false;
+
+            // If user didn't have a proficiency level, set it to the suggested level
+            if (! $user->proficiency_level && isset($analysis['suggested_level'])) {
+                $user->update(['proficiency_level' => $analysis['suggested_level']]);
+                $isInitialProficiencyAssignment = true;
+
+                Log::info('Set initial proficiency level from LangGPT analysis', [
+                    'user_id' => $user->id,
+                    'proficiency_level' => $analysis['suggested_level'],
+                ]);
+            }
+
             // Store insights
-            $this->storeInsights($user, $analysis);
+            $this->storeInsights($user, $analysis, $isInitialProficiencyAssignment);
 
             // Update proficiency if user opted in and LangGPT suggests a change
             if ($user->auto_update_proficiency && isset($analysis['suggested_level'])) {
@@ -109,9 +134,9 @@ class AnalyzeRecentMessages implements ShouldQueue
     }
 
     /**
-     * Store insights from the analysis
+     * Store generated insights in database
      */
-    private function storeInsights(User $user, array $analysis): void
+    private function storeInsights(User $user, array $analysis, bool $isInitialProficiencyAssignment = false): void
     {
         // Store grammar patterns insight
         if (! empty($analysis['grammar_patterns'])) {
@@ -137,16 +162,18 @@ class AnalyzeRecentMessages implements ShouldQueue
             ]);
         }
 
-        // Store proficiency suggestion if different from current
-        if (isset($analysis['suggested_level']) && $analysis['suggested_level'] !== $user->proficiency_level) {
+        // Store proficiency suggestion if different from current OR if this is the initial assignment
+        if (isset($analysis['suggested_level']) && ($isInitialProficiencyAssignment || $analysis['suggested_level'] !== $user->proficiency_level)) {
             LanguageInsight::create([
                 'user_id' => $user->id,
                 'chat_session_id' => $this->chatSession->id,
                 'insight_type' => 'proficiency_suggestion',
-                'title' => 'Proficiency Level Update',
-                'message' => $analysis['proficiency_message'] ?? "Based on your recent progress, you might be ready for {$analysis['suggested_level']}!",
+                'title' => $isInitialProficiencyAssignment ? 'Initial Proficiency Assessment' : 'Proficiency Level Update',
+                'message' => $isInitialProficiencyAssignment
+                    ? ($analysis['proficiency_message'] ?? "Based on your conversation, we've assessed your level as {$analysis['suggested_level']}.")
+                    : ($analysis['proficiency_message'] ?? "Based on your recent progress, you might be ready for {$analysis['suggested_level']}!"),
                 'data' => [
-                    'current_level' => $user->proficiency_level,
+                    'current_level' => $user->fresh()->proficiency_level, // Get fresh value after potential update
                     'suggested_level' => $analysis['suggested_level'],
                     'reasoning' => $analysis['reasoning'] ?? null,
                 ],

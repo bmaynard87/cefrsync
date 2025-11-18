@@ -24,7 +24,7 @@ const handleSettings = () => {
 
 const displayLevel = computed(() => {
     if (!props.proficiencyLevel) {
-        return 'Not Set';
+        return props.autoUpdateProficiency ? 'Dynamic (Not Set)' : 'Not Set';
     }
     
     if (props.autoUpdateProficiency) {

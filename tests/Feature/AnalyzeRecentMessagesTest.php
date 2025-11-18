@@ -463,3 +463,57 @@ test('job does not send localize_insights when user has it disabled', function (
     $job = new AnalyzeRecentMessages($session);
     $job->handle($langGptService, $openAiService);
 });
+
+test('job creates proficiency insight on initial proficiency assignment', function () {
+    $user = User::factory()->create([
+        'proficiency_level' => null, // No proficiency level set
+        'target_language' => 'Spanish',
+        'auto_update_proficiency' => true,
+    ]);
+
+    $session = ChatSession::factory()->create(['user_id' => $user->id]);
+
+    ChatMessage::factory()->create([
+        'chat_session_id' => $session->id,
+        'sender_type' => 'user',
+        'content' => 'Hola, ¿cómo estás?',
+    ]);
+
+    $openAiService = $this->mock(OpenAiService::class);
+    $langGptService = $this->mock(LangGptService::class);
+
+    $openAiService->shouldReceive('detectLanguage')
+        ->andReturn(['is_target_language' => true]);
+
+    $langGptService->shouldReceive('evaluateProgress')
+        ->once()
+        ->andReturn([
+            'success' => true,
+            'data' => [
+                'grammar_patterns' => ['pattern1'],
+                'grammar_summary' => 'Good grammar',
+                'vocabulary_assessment' => ['assessment1'],
+                'vocabulary_summary' => 'Nice vocabulary',
+                'suggested_level' => 'B1',
+                'confidence' => 0.8,
+                'proficiency_message' => 'You are at B1 level',
+                'reasoning' => 'Based on conversation analysis',
+            ],
+        ]);
+
+    $job = new AnalyzeRecentMessages($session);
+    $job->handle($langGptService, $openAiService);
+
+    // User should have proficiency level set
+    $user->refresh();
+    expect($user->proficiency_level)->toBe('B1');
+
+    // All 3 insight types should be created, including proficiency suggestion
+    expect(LanguageInsight::where('chat_session_id', $session->id)->count())->toBe(3);
+
+    $proficiencyInsight = LanguageInsight::where('insight_type', 'proficiency_suggestion')->first();
+    expect($proficiencyInsight)->not->toBeNull();
+    expect($proficiencyInsight->title)->toBe('Initial Proficiency Assessment');
+    expect($proficiencyInsight->data['current_level'])->toBe('B1');
+    expect($proficiencyInsight->data['suggested_level'])->toBe('B1');
+});

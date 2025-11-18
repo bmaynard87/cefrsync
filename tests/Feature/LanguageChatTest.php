@@ -486,7 +486,7 @@ test('cannot update another users chat session parameters', function () {
     $response->assertForbidden();
 });
 
-test('insights analysis job is dispatched every 10 messages', function () {
+test('insights analysis is dispatched after 10 user messages', function () {
     Queue::fake();
 
     $user = User::factory()->create([
@@ -495,17 +495,23 @@ test('insights analysis job is dispatched every 10 messages', function () {
         'native_language' => 'English',
     ]);
 
-    // Create a chat session with 8 existing messages
     $session = ChatSession::factory()->create(['user_id' => $user->id]);
-    ChatMessage::factory()->count(8)->create([
+
+    // Create 9 user messages (will have 9 assistant messages too = 18 total)
+    ChatMessage::factory()->count(9)->create([
         'chat_session_id' => $session->id,
         'sender_type' => 'user',
     ]);
 
-    expect($session->fresh()->messages()->count())->toBe(8);
+    ChatMessage::factory()->count(9)->create([
+        'chat_session_id' => $session->id,
+        'sender_type' => 'assistant',
+    ]);
 
-    // Send a message - this will create user message + AI response (= 10 total)
-    // which should trigger insights
+    expect($session->fresh()->messages()->where('sender_type', 'user')->count())->toBe(9);
+    expect($session->fresh()->messages()->count())->toBe(18);
+
+    // Send 10th user message - this should trigger insights
     $this->actingAs($user)
         ->post(route('language-chat.message', $session->id), [
             'message' => 'Hola, ¿cómo estás?',
@@ -514,7 +520,7 @@ test('insights analysis job is dispatched every 10 messages', function () {
     Queue::assertPushed(AnalyzeRecentMessages::class);
 });
 
-test('insights analysis is not dispatched before 10 message threshold', function () {
+test('insights analysis is not dispatched before 10 user message threshold', function () {
     Queue::fake();
 
     $user = User::factory()->create([
@@ -525,8 +531,8 @@ test('insights analysis is not dispatched before 10 message threshold', function
 
     $session = ChatSession::factory()->create(['user_id' => $user->id]);
 
-    // Send 4 messages - should NOT trigger insights (will be 8 total with responses)
-    for ($i = 0; $i < 4; $i++) {
+    // Send 5 user messages - should NOT trigger insights
+    for ($i = 0; $i < 5; $i++) {
         $this->actingAs($user)
             ->post(route('language-chat.message', $session->id), [
                 'message' => 'Test message '.($i + 1),

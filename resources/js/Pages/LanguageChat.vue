@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, computed, onMounted } from 'vue';
+import { ref, nextTick, computed, onMounted, watch } from 'vue';
 import { router, Head } from '@inertiajs/vue3';
 import AppShell from '@/components/AppShell.vue';
 import ChatSidebar from '@/components/Chat/ChatSidebar.vue';
@@ -79,6 +79,15 @@ const nativeLanguage = ref(props.userSettings.native_language);
 const targetLanguage = ref(props.userSettings.target_language);
 const proficiencyLevel = ref(props.userSettings.proficiency_level);
 const autoUpdateProficiency = ref(props.userSettings.auto_update_proficiency);
+
+// Watch for changes in userSettings prop and update refs
+watch(() => props.userSettings.proficiency_level, (newValue) => {
+    proficiencyLevel.value = newValue;
+});
+
+watch(() => props.userSettings.auto_update_proficiency, (newValue) => {
+    autoUpdateProficiency.value = newValue;
+});
 
 const proficiencyLabel = computed(() => {
     const levels: Record<string, string> = {
@@ -212,6 +221,15 @@ const sendMessage = async () => {
             if (data.new_title) {
                 chats.value[chatIndex].title = data.new_title;
             }
+        }
+
+        // Check if we should poll for proficiency updates (every 10 user messages)
+        const userMessageCount = messages.value.filter(m => m.sender_type === 'user').length;
+        if (userMessageCount % 10 === 0 && autoUpdateProficiency.value) {
+            // Reload only userSettings prop after a delay (job needs time to process)
+            setTimeout(() => {
+                router.reload({ only: ['userSettings'] });
+            }, 20000); // 20 second delay
         }
     } catch (error) {
         console.error('Error sending message:', error);

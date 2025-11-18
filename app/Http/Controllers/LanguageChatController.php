@@ -222,8 +222,9 @@ class LanguageChatController extends Controller
             $newTitle = $title;
         }
 
-        // Periodically update conversation summary (every 10 messages)
-        if ($chatSession->messages()->count() % 10 === 0) {
+        // Periodically update conversation summary (every 10 user messages)
+        $userMessageCount = $chatSession->messages()->where('sender_type', 'user')->count();
+        if ($userMessageCount % 10 === 0) {
             $this->updateSessionSummary($chatSession, $formattedHistory);
 
             // Dispatch job to analyze recent messages for insights
