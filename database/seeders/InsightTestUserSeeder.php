@@ -20,6 +20,7 @@ class InsightTestUserSeeder extends Seeder
             'first_name' => 'Insight',
             'last_name' => 'Tester',
             'email' => 'insight.test@example.com',
+            'password' => bcrypt('InsightTest2024!SecurePass'),
             'native_language' => 'English',
             'target_language' => 'Spanish',
             'proficiency_level' => null, // No proficiency set - will be assigned by LangGPT
@@ -94,6 +95,6 @@ class InsightTestUserSeeder extends Seeder
         $this->command->info("✅ Created test user: {$user->email}");
         $this->command->info('✅ Created chat session with 9 user messages (18 total)');
         $this->command->info('💡 Send one more message to trigger insight generation!');
-        $this->command->info("🔗 Login with: {$user->email} / password");
+        $this->command->info("🔗 Login with: {$user->email} / InsightTest2024!SecurePass");
     }
 }
