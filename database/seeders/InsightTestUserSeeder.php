@@ -15,25 +15,27 @@ class InsightTestUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create test user
-        $user = User::factory()->create([
+        // Create test user directly (no factory in production)
+        $user = User::create([
             'first_name' => 'Insight',
             'last_name' => 'Tester',
             'email' => 'insight.test@example.com',
             'password' => bcrypt('InsightTest2024!SecurePass'),
-            'native_language' => 'English',
-            'target_language' => 'Spanish',
+            'email_verified_at' => now(),
+            'native_language_key' => 'en',
+            'target_language_key' => 'es',
             'proficiency_level' => null, // No proficiency set - will be assigned by LangGPT
             'auto_update_proficiency' => true,
         ]);
 
-        // Create a chat session
-        $session = ChatSession::factory()->create([
+        // Create a chat session directly (no factory in production)
+        $session = ChatSession::create([
             'user_id' => $user->id,
             'title' => 'Spanish Practice - Insight Test',
-            'native_language' => $user->native_language,
-            'target_language' => $user->target_language,
+            'native_language_id' => $user->native_language_id,
+            'target_language_id' => $user->target_language_id,
             'proficiency_level' => $user->proficiency_level,
+            'last_message_at' => now(),
         ]);
 
         // Create 9 user messages with corresponding assistant responses
@@ -77,18 +79,22 @@ class InsightTestUserSeeder extends Seeder
         ];
 
         foreach ($conversations as $conversation) {
-            // Create user message
-            ChatMessage::factory()->create([
+            // Create user message directly (no factory in production)
+            ChatMessage::create([
                 'chat_session_id' => $session->id,
                 'sender_type' => 'user',
                 'content' => $conversation['user'],
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
-            // Create assistant response
-            ChatMessage::factory()->create([
+            // Create assistant response directly (no factory in production)
+            ChatMessage::create([
                 'chat_session_id' => $session->id,
                 'sender_type' => 'assistant',
                 'content' => $conversation['assistant'],
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 
