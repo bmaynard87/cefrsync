@@ -11,7 +11,7 @@ describe('ChatSidebar', () => {
             },
         });
 
-        const newChatButton = wrapper.find('button');
+        const newChatButton = wrapper.find('[data-test="new-chat-button"]');
         expect(newChatButton.exists()).toBe(true);
         expect(newChatButton.text()).toContain('New Chat');
     });

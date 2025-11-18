@@ -15,15 +15,19 @@ interface Props {
     chats: Chat[];
     activeChat: number | null;
     hasUnusedNewChat?: boolean;
+    isOpen?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    isOpen: false,
+});
 
 const emit = defineEmits<{
     'new-chat': [];
     'select-chat': [chatId: number];
     'delete-chat': [chatId: number];
     'update-title': [chatId: number, newTitle: string];
+    'close': [];
 }>();
 
 const editingChatId = ref<number | null>(null);
@@ -40,6 +44,7 @@ const handleNewChat = () => {
 const handleSelectChat = (chatId: number) => {
     if (editingChatId.value !== chatId) {
         emit('select-chat', chatId);
+        emit('close'); // Close drawer on mobile after selection
     }
 };
 
@@ -82,12 +87,34 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
 </script>
 
 <template>
-    <div class="flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
-        <!-- Logo -->
+    <!-- Mobile Overlay -->
+    <div 
+        v-if="isOpen" 
+        class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+        @click="emit('close')"
+    ></div>
+    
+    <!-- Sidebar -->
+    <div 
+        :class="[
+            'fixed lg:static inset-y-0 left-0 z-50 flex h-screen w-64 flex-col border-r border-gray-200 bg-white transform transition-transform duration-300 lg:translate-x-0',
+            isOpen ? 'translate-x-0' : '-translate-x-full'
+        ]"
+    >
+        <!-- Logo and Mobile Close -->
         <div class="border-b border-gray-200 px-4 py-4">
-            <Link :href="route('language-chat.index')">
-                <AppLogo size="sm" />
-            </Link>
+            <div class="flex items-center justify-between">
+                <Link :href="route('language-chat.index')">
+                    <AppLogo size="sm" />
+                </Link>
+                <button
+                    @click="emit('close')"
+                    class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    aria-label="Close sidebar"
+                >
+                    <X class="h-5 w-5 text-gray-600" />
+                </button>
+            </div>
         </div>
         
         <!-- Sidebar Header -->

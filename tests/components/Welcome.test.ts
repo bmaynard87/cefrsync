@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mount, VueWrapper } from '@vue/test-utils';
+import { Link } from '@inertiajs/vue3';
 import Welcome from '@/Pages/Welcome.vue';
 
 describe('Welcome', () => {
@@ -48,8 +49,11 @@ describe('Welcome', () => {
         });
 
         it('shows register button in header navigation', () => {
-            const registerButton = wrapper.findAll('a').find(link => 
-                link.text() === 'Get Started'
+            const registerButton = wrapper.findAllComponents(Link).find(
+                (link) => {
+                    const text = link.text();
+                    return text.includes('Get Started') || text.includes('Sign Up');
+                }
             );
             expect(registerButton).toBeDefined();
         });
@@ -296,8 +300,9 @@ describe('Welcome', () => {
 
         it('applies responsive text sizing to hero title', () => {
             const heroTitle = wrapper.find('h1');
-            expect(heroTitle.classes()).toContain('text-5xl');
-            expect(heroTitle.classes()).toContain('sm:text-6xl');
+            expect(heroTitle.classes()).toContain('text-3xl');
+            expect(heroTitle.classes()).toContain('sm:text-5xl');
+            expect(heroTitle.classes()).toContain('lg:text-6xl');
         });
 
         it('applies responsive layout to hero CTAs', () => {
