@@ -357,9 +357,11 @@ class LanguageChatController extends Controller
             'messages' => $messages,
             'session' => [
                 'id' => $chatSession->id,
-                'native_language' => $chatSession->native_language,
-                'target_language' => $chatSession->target_language,
+                'native_language' => $chatSession->nativeLanguage?->key,
+                'target_language' => $chatSession->targetLanguage?->key,
                 'proficiency_level' => $chatSession->proficiency_level,
+                'localize_corrections' => $chatSession->localize_corrections,
+                'localize_insights' => $chatSession->localize_insights,
             ],
         ]);
     }
@@ -402,12 +404,22 @@ class LanguageChatController extends Controller
             'native_language' => 'required|string|max:255',
             'target_language' => 'required|string|max:255',
             'proficiency_level' => 'required|string|in:A1,A2,B1,B2,C1,C2',
+            'localize_corrections' => 'sometimes|boolean',
+            'localize_insights' => 'sometimes|boolean',
         ]);
 
         // Convert language names/keys to IDs
         $updateData = [
             'proficiency_level' => $validated['proficiency_level'],
         ];
+
+        if (isset($validated['localize_corrections'])) {
+            $updateData['localize_corrections'] = $validated['localize_corrections'];
+        }
+
+        if (isset($validated['localize_insights'])) {
+            $updateData['localize_insights'] = $validated['localize_insights'];
+        }
 
         $nativeLanguage = Language::where('name', $validated['native_language'])
             ->orWhere('key', $validated['native_language'])

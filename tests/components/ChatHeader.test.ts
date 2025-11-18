@@ -46,7 +46,7 @@ describe('ChatHeader', () => {
         expect(wrapper.text()).toContain('B1 (Intermediate)');
     });
 
-    it('renders settings button', () => {
+    it('renders chat settings button', () => {
         const wrapper = mount(ChatHeader, {
             props: {
                 nativeLanguage: 'Spanish',
@@ -55,12 +55,12 @@ describe('ChatHeader', () => {
             },
         });
 
-        const settingsButton = wrapper.find('[data-test="settings-button"]');
+        const settingsButton = wrapper.find('[data-test="chat-settings-button"]');
         expect(settingsButton.exists()).toBe(true);
-        expect(settingsButton.text()).toContain('Settings');
+        expect(settingsButton.text()).toContain('Chat Settings');
     });
 
-    it('emits settings event when settings button is clicked', async () => {
+    it('emits settings event when chat settings button is clicked', async () => {
         const wrapper = mount(ChatHeader, {
             props: {
                 nativeLanguage: 'Spanish',
@@ -69,7 +69,7 @@ describe('ChatHeader', () => {
             },
         });
 
-        const settingsButton = wrapper.find('[data-test="settings-button"]');
+        const settingsButton = wrapper.find('[data-test="chat-settings-button"]');
         await settingsButton.trigger('click');
 
         expect(wrapper.emitted()).toHaveProperty('settings');

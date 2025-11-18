@@ -425,6 +425,8 @@ test('can update chat session parameters', function () {
             'native_language' => 'French',
             'target_language' => 'German',
             'proficiency_level' => 'B2',
+            'localize_corrections' => false,
+            'localize_insights' => true,
         ]);
 
     $response->assertRedirect();
@@ -435,6 +437,8 @@ test('can update chat session parameters', function () {
     expect($session->native_language)->toBe('French');
     expect($session->target_language)->toBe('German');
     expect($session->proficiency_level)->toBe('B2');
+    expect($session->localize_corrections)->toBe(false);
+    expect($session->localize_insights)->toBe(true);
 });
 
 test('validates parameters when updating chat session', function () {

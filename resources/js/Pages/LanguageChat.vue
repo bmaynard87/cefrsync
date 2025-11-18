@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, nextTick, computed, onMounted, watch } from 'vue';
-import { router, Head } from '@inertiajs/vue3';
+import { router, Head, usePage } from '@inertiajs/vue3';
 import AppShell from '@/components/AppShell.vue';
 import ChatSidebar from '@/components/Chat/ChatSidebar.vue';
 import ChatHeader from '@/components/Chat/ChatHeader.vue';
@@ -9,6 +9,7 @@ import CorrectionMessage from '@/components/Chat/CorrectionMessage.vue';
 import ChatInput from '@/components/Chat/ChatInput.vue';
 import TypingIndicator from '@/components/Chat/TypingIndicator.vue';
 import ServiceDownBanner from '@/components/Chat/ServiceDownBanner.vue';
+import ChatSettingsModal from '@/components/Chat/ChatSettingsModal.vue';
 
 // Use Ziggy's route() helper
 declare global {
@@ -80,12 +81,17 @@ const chatInputRef = ref<{ focus: () => void } | null>(null);
 const sessionNativeLanguage = ref<string | null>(null);
 const sessionTargetLanguage = ref<string | null>(null);
 const sessionProficiencyLevel = ref<string | null>(null);
+const sessionLocalizeCorrections = ref<boolean>(true);
+const sessionLocalizeInsights = ref<boolean>(true);
 
 // Use user settings from props as defaults
 const nativeLanguage = ref(props.userSettings.native_language);
 const targetLanguage = ref(props.userSettings.target_language);
 const proficiencyLevel = ref(props.userSettings.proficiency_level);
 const autoUpdateProficiency = ref(props.userSettings.auto_update_proficiency);
+
+// Settings modal state
+const isSettingsModalOpen = ref(false);
 
 // Watch for changes in userSettings prop and update refs
 watch(() => props.userSettings.proficiency_level, (newValue) => {
@@ -94,6 +100,22 @@ watch(() => props.userSettings.proficiency_level, (newValue) => {
 
 watch(() => props.userSettings.auto_update_proficiency, (newValue) => {
     autoUpdateProficiency.value = newValue;
+});
+
+// Helper to convert language key to name for display
+const getLanguageName = (key: string | null): string => {
+    if (!key) return '';
+    const languages = (usePage().props.languages as Array<{ value: string; label: string }>) || [];
+    const lang = languages.find(l => l.value === key);
+    return lang?.label || key;
+};
+
+const displayNativeLanguage = computed(() => {
+    return getLanguageName(sessionNativeLanguage.value) || nativeLanguage.value;
+});
+
+const displayTargetLanguage = computed(() => {
+    return getLanguageName(sessionTargetLanguage.value) || targetLanguage.value;
 });
 
 const proficiencyLabel = computed(() => {
@@ -151,6 +173,8 @@ const loadMessages = async (chatId: number) => {
             sessionNativeLanguage.value = data.session.native_language;
             sessionTargetLanguage.value = data.session.target_language;
             sessionProficiencyLevel.value = data.session.proficiency_level;
+            sessionLocalizeCorrections.value = data.session.localize_corrections ?? true;
+            sessionLocalizeInsights.value = data.session.localize_insights ?? true;
         }
         
         await scrollToBottom();
@@ -362,7 +386,14 @@ const handleUpdateTitle = async (chatId: number, newTitle: string) => {
 };
 
 const handleSettings = () => {
-    router.visit('/profile');
+    isSettingsModalOpen.value = true;
+};
+
+const handleSettingsUpdated = async () => {
+    // Reload messages to get updated session settings
+    if (activeChat.value) {
+        await loadMessages(activeChat.value);
+    }
 };
 
 // Load messages for the first chat on mount
@@ -389,9 +420,9 @@ onMounted(() => {
 
             <div data-test="chat-area" class="flex min-w-0 flex-1 flex-col">
                 <ChatHeader
-                    :native-language="nativeLanguage"
-                    :target-language="targetLanguage"
-                    :proficiency-level="proficiencyLevel"
+                    :native-language="displayNativeLanguage"
+                    :target-language="displayTargetLanguage"
+                    :proficiency-level="sessionProficiencyLevel || proficiencyLevel"
                     :proficiency-label="proficiencyLabel"
                     :auto-update-proficiency="autoUpdateProficiency"
                     @settings="handleSettings"
@@ -482,5 +513,18 @@ onMounted(() => {
                 <ChatInput v-model="inputMessage" :disabled="isInputDisabled" @send="sendMessage" ref="chatInputRef" />
             </div>
         </div>
+
+        <!-- Settings Modal -->
+        <ChatSettingsModal
+            v-if="activeChat"
+            v-model:open="isSettingsModalOpen"
+            :chat-session-id="activeChat"
+            :native-language="sessionNativeLanguage || nativeLanguage"
+            :target-language="sessionTargetLanguage || targetLanguage"
+            :proficiency-level="sessionProficiencyLevel || proficiencyLevel"
+            :localize-corrections="sessionLocalizeCorrections"
+            :localize-insights="sessionLocalizeInsights"
+            @updated="handleSettingsUpdated"
+        />
     </AppShell>
 </template>
