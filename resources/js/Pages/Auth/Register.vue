@@ -14,6 +14,12 @@ import { useRecaptcha } from '@/composables/useRecaptcha';
 const isDev = import.meta.env.DEV;
 
 const page = usePage();
+
+// Check if user is already authenticated and redirect immediately
+if (page.props.auth?.user) {
+    router.replace(route('language-chat.index'));
+}
+
 const serverError = computed(() => (page.props.flash as any)?.error as string | undefined);
 
 const form = useForm({

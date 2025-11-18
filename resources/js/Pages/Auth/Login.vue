@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/vue3';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
@@ -14,6 +14,12 @@ defineProps<{
     canResetPassword?: boolean;
     status?: string;
 }>();
+
+// Check if user is already authenticated and redirect immediately
+const page = usePage();
+if (page.props.auth?.user) {
+    router.replace(route('language-chat.index'));
+}
 
 // Pre-fill form in development mode for easier testing
 const isDev = import.meta.env.DEV;
