@@ -513,7 +513,8 @@ test('job creates proficiency insight on initial proficiency assignment', functi
 
     $proficiencyInsight = LanguageInsight::where('insight_type', 'proficiency_suggestion')->first();
     expect($proficiencyInsight)->not->toBeNull();
-    expect($proficiencyInsight->title)->toBe('Initial Proficiency Assessment');
+    expect($proficiencyInsight->title)->toContain('Initial Proficiency Assessment');
+    expect($proficiencyInsight->title)->toContain($session->target_language);
     expect($proficiencyInsight->data['current_level'])->toBe('B1');
     expect($proficiencyInsight->data['suggested_level'])->toBe('B1');
 });

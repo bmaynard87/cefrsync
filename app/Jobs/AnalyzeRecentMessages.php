@@ -138,13 +138,15 @@ class AnalyzeRecentMessages implements ShouldQueue
      */
     private function storeInsights(User $user, array $analysis, bool $isInitialProficiencyAssignment = false): void
     {
+        $targetLanguage = $this->chatSession->target_language;
+
         // Store grammar patterns insight
         if (! empty($analysis['grammar_patterns'])) {
             LanguageInsight::create([
                 'user_id' => $user->id,
                 'chat_session_id' => $this->chatSession->id,
                 'insight_type' => 'grammar_pattern',
-                'title' => 'Grammar Patterns Detected',
+                'title' => "Grammar Patterns Detected ({$targetLanguage})",
                 'message' => $analysis['grammar_summary'] ?? 'We noticed some patterns in your grammar usage.',
                 'data' => ['patterns' => $analysis['grammar_patterns']],
             ]);
@@ -156,7 +158,7 @@ class AnalyzeRecentMessages implements ShouldQueue
                 'user_id' => $user->id,
                 'chat_session_id' => $this->chatSession->id,
                 'insight_type' => 'vocabulary_strength',
-                'title' => 'Vocabulary Assessment',
+                'title' => "Vocabulary Assessment ({$targetLanguage})",
                 'message' => $analysis['vocabulary_summary'] ?? 'Your vocabulary usage shows interesting patterns.',
                 'data' => ['insights' => $analysis['vocabulary_assessment']],
             ]);
@@ -168,7 +170,7 @@ class AnalyzeRecentMessages implements ShouldQueue
                 'user_id' => $user->id,
                 'chat_session_id' => $this->chatSession->id,
                 'insight_type' => 'proficiency_suggestion',
-                'title' => $isInitialProficiencyAssignment ? 'Initial Proficiency Assessment' : 'Proficiency Level Update',
+                'title' => $isInitialProficiencyAssignment ? "Initial Proficiency Assessment ({$targetLanguage})" : "Proficiency Level Update ({$targetLanguage})",
                 'message' => $isInitialProficiencyAssignment
                     ? ($analysis['proficiency_message'] ?? "Based on your conversation, we've assessed your level as {$analysis['suggested_level']}.")
                     : ($analysis['proficiency_message'] ?? "Based on your recent progress, you might be ready for {$analysis['suggested_level']}!"),

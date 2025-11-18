@@ -16,13 +16,14 @@ class LanguageInsightSeeder extends Seeder
     {
         $mainUser = User::where('email', 'bmmaynard87@gmail.com')->first();
         $session = ChatSession::where('user_id', $mainUser->id)->first();
+        $targetLanguage = $session->target_language;
 
         // Grammar patterns insight
         LanguageInsight::create([
             'user_id' => $mainUser->id,
             'chat_session_id' => $session->id,
             'insight_type' => 'grammar_pattern',
-            'title' => 'Grammar Patterns Detected',
+            'title' => "Grammar Patterns Detected ({$targetLanguage})",
             'message' => 'Your use of particles (は、が、を、に) is mostly correct. You\'re effectively using polite forms (です/ます) and showing good command of basic grammar structures.',
             'data' => [
                 'patterns' => [
@@ -49,7 +50,7 @@ class LanguageInsightSeeder extends Seeder
             'user_id' => $mainUser->id,
             'chat_session_id' => $session->id,
             'insight_type' => 'vocabulary_strength',
-            'title' => 'Vocabulary Assessment',
+            'title' => "Vocabulary Assessment ({$targetLanguage})",
             'message' => 'Your vocabulary demonstrates strong intermediate-level Japanese with good use of compound words and topic-specific terms. You\'re incorporating cultural vocabulary appropriately.',
             'data' => [
                 'insights' => [
