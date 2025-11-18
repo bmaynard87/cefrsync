@@ -25,20 +25,25 @@ CefrSync is a full-stack web application that connects learners with AI tutors f
 ### Backend
 - **Framework**: Laravel 12
 - **Language**: PHP 8.2+
+- **ORM**: Eloquent (included with Laravel)
 - **Authentication**: Laravel Breeze (Inertia stack) + Google OAuth
 - **Queue**: Redis/Database for background jobs
-- **Testing**: Pest PHP (208 tests)
+- **Testing**: Pest PHP 4.1 (208 tests)
 - **Code Style**: Laravel Pint
+- **API Client**: HTTP Facades, OpenAI PHP client
 
 ### Frontend
-- **Framework**: Vue.js 3 with Composition API
-- **Language**: TypeScript
-- **SSR**: Inertia.js for server-side rendering
-- **UI Components**: shadcn/ui (Radix Vue)
-- **Icons**: Lucide Vue
-- **Styling**: Tailwind CSS
-- **Build Tool**: Vite 7
-- **Testing**: Vitest (222 tests) + Playwright (15 E2E tests)
+- **Framework**: Vue.js 3.5.13 with Composition API
+- **Language**: TypeScript 5.2.2
+- **SSR**: Inertia.js 2.0 for server-side rendering
+- **Build Tool**: Vite 7.0.4
+- **CSS Framework**: Tailwind CSS 3.2.1 + 4.1.1
+- **UI Components**: shadcn/ui (Reka UI 2.4.1, Radix Vue)
+- **Icons**: Lucide Vue Next 0.468.0
+- **Testing**: Vitest 4.0.8 (222 tests) + Playwright 1.56.1 (15 E2E tests)
+- **Utilities**: VueUse Core, Class Variance Authority, clsx, Tailwind Merge
+- **Code Formatting**: Prettier with Tailwind plugin
+- **Linting**: ESLint with Vue config
 
 ### External Services
 - **LangGPT**: FastAPI microservice at `host.docker.internal:8000` for language processing
@@ -55,42 +60,75 @@ CefrSync is a full-stack web application that connects learners with AI tutors f
 ```
 cefrsync/
 ├── app/
+│   ├── Console/
+│   │   └── Commands/         # Artisan commands (LangGptGenerateKey)
 │   ├── Http/
-│   │   ├── Controllers/      # Application controllers
-│   │   ├── Middleware/       # Custom middleware
-│   │   └── Requests/         # Form requests
+│   │   ├── Controllers/      # Application controllers (Chat, Auth, Profile, Settings)
+│   │   ├── Middleware/       # Custom middleware (HandleInertiaRequests, etc.)
+│   │   └── Requests/         # Form validation requests
 │   ├── Jobs/
-│   │   └── AnalyzeRecentMessages.php  # Queue jobs
-│   ├── Models/               # Eloquent models
-│   ├── Services/
-│   │   └── LangGptService.php  # LangGPT integration
-│   └── Providers/            # Service providers
+│   │   └── AnalyzeRecentMessages.php  # Background queue jobs
+│   ├── Models/               # Eloquent models (User, ChatSession, ChatMessage, Language, LanguageInsight)
+│   ├── Notifications/        # Email notifications
+│   ├── Policies/             # Authorization policies
+│   ├── Providers/            # Service providers
+│   └── Services/
+│       ├── LangGptService.php    # LangGPT API integration
+│       ├── OpenAiService.php     # OpenAI GPT integration
+│       └── ReCaptchaService.php  # ReCAPTCHA validation
 ├── resources/
 │   ├── js/
-│   │   ├── components/       # Vue components
+│   │   ├── Pages/            # Inertia page components (14 pages)
+│   │   │   ├── Auth/         # Authentication pages
+│   │   │   ├── Chat/         # Chat interface pages
+│   │   │   └── Profile/      # User profile pages
+│   │   ├── components/       # Reusable Vue components
 │   │   │   ├── Chat/         # Chat-related components
-│   │   │   ├── Insights/     # Insight components
-│   │   │   └── ui/           # shadcn/ui components
-│   │   ├── composables/      # Vue composables
-│   │   ├── Pages/            # Inertia pages
-│   │   └── types/            # TypeScript definitions
+│   │   │   ├── Insights/     # Insight display components
+│   │   │   └── ui/           # shadcn/ui component library
+│   │   ├── composables/      # Vue composition functions
+│   │   ├── types/            # TypeScript type definitions
+│   │   ├── app.ts            # Main application entry
+│   │   └── ssr.ts            # Server-side rendering entry
 │   ├── css/
-│   │   └── app.css           # Global styles
+│   │   └── app.css           # Global Tailwind styles
 │   └── views/                # Blade templates
+│       └── app.blade.php     # Main application template
 ├── routes/
-│   ├── web.php               # Web routes
-│   ├── auth.php              # Auth routes
-│   └── settings.php          # Settings routes
+│   ├── web.php               # Main web routes
+│   ├── auth.php              # Authentication routes
+│   ├── settings.php          # Settings management routes
+│   └── console.php           # Console command routes
 ├── tests/
-│   ├── Feature/              # Feature tests (PHP)
-│   ├── Unit/                 # Unit tests (PHP)
-│   └── components/           # Component tests (Vue/TypeScript)
-├── config/                   # Configuration files
+│   ├── Feature/              # PHP integration tests (208)
+│   ├── Unit/                 # PHP unit tests
+│   ├── components/           # Vue component tests (222)
+│   └── e2e/                  # Playwright E2E tests (15)
+├── config/                   # Laravel configuration (12 files)
+│   ├── app.php               # Application settings
+│   ├── database.php          # Database connections
+│   ├── services.php          # External service config
+│   ├── cache.php             # Cache configuration
+│   ├── queue.php             # Queue connections
+│   └── ...                   # Additional config files
 ├── database/
-│   ├── migrations/           # Database migrations
+│   ├── migrations/           # 20+ database migrations
 │   ├── seeders/              # Database seeders
-│   └── factories/            # Model factories
-└── public/                   # Public assets
+│   └── factories/            # Model factories for testing
+├── public/                   # Public assets
+├── storage/                  # Application storage
+├── bootstrap/                # Bootstrap files
+├── vendor/                   # Composer dependencies
+├── node_modules/             # NPM dependencies
+├── composer.json             # PHP dependencies
+├── package.json              # JavaScript dependencies
+├── vite.config.ts            # Vite configuration
+├── tsconfig.json             # TypeScript configuration
+├── tailwind.config.js        # Tailwind CSS configuration
+├── phpunit.xml               # PHPUnit/Pest configuration
+├── vitest.config.ts          # Vitest configuration
+├── playwright.config.ts      # Playwright configuration
+└── compose.yaml              # Docker Compose for Sail
 ```
 
 ## Getting Started
@@ -249,7 +287,7 @@ docker-compose up -d
 
 ## Testing
 
-CefrSync maintains a comprehensive test suite with **435 total tests** across three layers.
+CefrSync maintains a comprehensive test suite with **445 total tests** across three layers.
 
 ### PHP Tests (Pest) - 208 Tests
 
