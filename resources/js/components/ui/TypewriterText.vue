@@ -35,7 +35,10 @@ function detectTextDirection(text: string): 'ltr' | 'rtl' | 'auto' {
     const hasRtl = rtlPattern.test(text);
     const hasLtr = ltrPattern.test(text);
     
-    if (hasRtl) {
+    // Returns 'auto' for mixed content to let the browser handle direction
+    if (hasRtl && hasLtr) {
+        return 'auto';
+    } else if (hasRtl) {
         return 'rtl';
     } else if (hasLtr) {
         return 'ltr';

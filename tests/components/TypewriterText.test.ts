@@ -157,6 +157,18 @@ describe('TypewriterText', () => {
         expect(visibleText.text()).toBe('Second');
     });
 
+    it('detects pure Arabic text as RTL', async () => {
+        const wrapper = mount(TypewriterText, {
+            props: {
+                text: 'مرحبا كيف حالك اليوم؟',
+                speed: 10,
+            },
+        });
+
+        const textElement = wrapper.find('[data-test="typewriter-text"]');
+        expect(textElement.attributes('dir')).toBe('rtl');
+    });
+
     it('detects mixed RTL content with Arabic characters', async () => {
         const wrapper = mount(TypewriterText, {
             props: {
@@ -166,8 +178,8 @@ describe('TypewriterText', () => {
         });
 
         const textElement = wrapper.find('[data-test="typewriter-text"]');
-        // Should be RTL if it contains RTL characters
-        expect(textElement.attributes('dir')).toBe('rtl');
+        // Should be auto for mixed content to let the browser handle direction
+        expect(textElement.attributes('dir')).toBe('auto');
     });
 
     it('applies auto direction when language cannot be determined', async () => {
