@@ -73,7 +73,7 @@ class AnalyzeRecentMessages implements ShouldQueue
         // Call LangGPT to evaluate progress
         $payload = [
             'messages' => $validMessages,
-            'current_level' => $user->proficiency_level,
+            'current_level' => $user->proficiency_level ?? 'B1', // Default to B1 if not set
             'target_language' => $user->target_language,
             'native_language' => $user->native_language,
             'localize_insights' => $user->localize_insights ?? false,
