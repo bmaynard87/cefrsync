@@ -93,6 +93,9 @@ const autoUpdateProficiency = ref(props.userSettings.auto_update_proficiency);
 // Settings modal state
 const isSettingsModalOpen = ref(false);
 
+// Mobile sidebar state
+const isSidebarOpen = ref(false);
+
 // Watch for changes in userSettings prop and update refs
 watch(() => props.userSettings.proficiency_level, (newValue) => {
     proficiencyLevel.value = newValue;
@@ -389,6 +392,14 @@ const handleSettings = () => {
     isSettingsModalOpen.value = true;
 };
 
+const toggleSidebar = () => {
+    isSidebarOpen.value = !isSidebarOpen.value;
+};
+
+const closeSidebar = () => {
+    isSidebarOpen.value = false;
+};
+
 const handleSettingsUpdated = async () => {
     // Reload messages to get updated session settings
     if (activeChat.value) {
@@ -412,10 +423,12 @@ onMounted(() => {
                 :chats="chats" 
                 :active-chat="activeChat"
                 :has-unused-new-chat="hasUnusedNewChat"
+                :is-open="isSidebarOpen"
                 @new-chat="handleNewChat" 
                 @select-chat="handleSelectChat"
                 @delete-chat="handleDeleteChat"
                 @update-title="handleUpdateTitle"
+                @close="closeSidebar"
             />
 
             <div data-test="chat-area" class="flex min-w-0 flex-1 flex-col">
@@ -426,6 +439,7 @@ onMounted(() => {
                     :proficiency-label="proficiencyLabel"
                     :auto-update-proficiency="autoUpdateProficiency"
                     @settings="handleSettings"
+                    @toggle-sidebar="toggleSidebar"
                 />
 
                 <div ref="chatContainer" data-test="chat-container" class="flex-1 overflow-y-auto px-4 py-6">
