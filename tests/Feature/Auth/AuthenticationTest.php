@@ -10,6 +10,9 @@ test('login screen can be rendered', function () {
 });
 
 test('users can authenticate using the login screen', function () {
+    // Ensure reCAPTCHA is not configured for this test
+    config(['services.recaptcha.secret_key' => null]);
+    
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
@@ -22,6 +25,9 @@ test('users can authenticate using the login screen', function () {
 });
 
 test('users can not authenticate with invalid password', function () {
+    // Ensure reCAPTCHA is not configured for this test
+    config(['services.recaptcha.secret_key' => null]);
+    
     $user = User::factory()->create();
 
     $this->post('/login', [
