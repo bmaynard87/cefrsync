@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import Spinner from '@/components/ui/spinner/Spinner.vue';
+import TypewriterText from '@/components/ui/TypewriterText.vue';
 
 interface Props {
     content: string;
     role: 'user' | 'assistant';
     timestamp: string;
     isAnalyzing?: boolean;
+    disableTypewriter?: boolean;
 }
 
-defineProps<Props>();
+withDefaults(defineProps<Props>(), {
+    disableTypewriter: false,
+});
 </script>
 
 <template>
@@ -43,7 +47,12 @@ defineProps<Props>();
             "
         >
             <p class="whitespace-pre-wrap break-words text-sm leading-relaxed">
-                {{ content }}
+                <TypewriterText
+                    v-if="role === 'assistant' && !disableTypewriter"
+                    :text="content"
+                    :speed="30"
+                />
+                <span v-else>{{ content }}</span>
             </p>
             <div
                 class="mt-2 flex items-center gap-2 text-xs"

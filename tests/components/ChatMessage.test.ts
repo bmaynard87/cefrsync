@@ -1,8 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import ChatMessage from '@/components/Chat/ChatMessage.vue';
 
 describe('ChatMessage', () => {
+    beforeEach(() => {
+        vi.useFakeTimers();
+    });
+
     it('renders user message with correct styling', () => {
         const wrapper = mount(ChatMessage, {
             props: {
@@ -24,6 +28,7 @@ describe('ChatMessage', () => {
                 content: 'I am doing well, thank you!',
                 role: 'assistant',
                 timestamp: '2:31 PM',
+                disableTypewriter: true,
             },
         });
 
@@ -52,6 +57,7 @@ describe('ChatMessage', () => {
                 role: 'assistant',
                 timestamp: '2:30 PM',
                 isAnalyzing: true,
+                disableTypewriter: true,
             },
         });
 
@@ -66,6 +72,7 @@ describe('ChatMessage', () => {
                 role: 'assistant',
                 timestamp: '2:30 PM',
                 isAnalyzing: false,
+                disableTypewriter: true,
             },
         });
 
@@ -92,6 +99,7 @@ describe('ChatMessage', () => {
                 content: 'Assistant message',
                 role: 'assistant',
                 timestamp: '2:30 PM',
+                disableTypewriter: true,
             },
         });
 
@@ -118,10 +126,63 @@ describe('ChatMessage', () => {
                 content: 'Test',
                 role: 'assistant',
                 timestamp: '2:30 PM',
+                disableTypewriter: true,
             },
         });
 
         const avatar = wrapper.find('[data-test="message-avatar"]');
         expect(avatar.text()).toContain('AI');
+    });
+
+    it('applies typewriter effect to assistant messages', async () => {
+        const wrapper = mount(ChatMessage, {
+            props: {
+                content: 'Hello!',
+                role: 'assistant',
+                timestamp: '2:30 PM',
+            },
+        });
+
+        const messageContent = wrapper.find('[data-test="message-content"]');
+        
+        // Initially empty or just starting
+        expect(messageContent.text()).not.toBe('Hello!');
+        
+        // Advance timers to complete typing
+        await vi.advanceTimersByTimeAsync(30 * 6 + 10); // 30ms per char * 6 chars + buffer
+        
+        // Should now show full text
+        expect(messageContent.text()).toContain('Hello!');
+    });
+
+    it('does not apply typewriter effect to user messages', () => {
+        const wrapper = mount(ChatMessage, {
+            props: {
+                content: 'User message',
+                role: 'user',
+                timestamp: '2:30 PM',
+            },
+        });
+
+        const messageContent = wrapper.find('[data-test="message-content"]');
+        
+        // User messages show immediately
+        expect(messageContent.text()).toContain('User message');
+    });
+
+    it('can disable typewriter effect', () => {
+        const wrapper = mount(ChatMessage, {
+            props: {
+                content: 'Instant message',
+                role: 'assistant',
+                timestamp: '2:30 PM',
+                disableTypewriter: true,
+            },
+        });
+
+        const messageContent = wrapper.find('[data-test="message-content"]');
+        
+        // Should show immediately when disabled
+        expect(messageContent.text()).toContain('Instant message');
     });
 });

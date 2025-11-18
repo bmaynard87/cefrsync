@@ -68,6 +68,7 @@ const props = defineProps<Props>();
 const chats = ref<ChatHistory[]>(props.chatHistory);
 const activeChat = ref<number | null>(chats.value[0]?.id || null);
 const messages = ref<Message[]>([]);
+const newestMessageId = ref<number | null>(null); // Track the newest message for typewriter effect
 const inputMessage = ref('');
 const isTyping = ref(false);
 const isServiceDown = ref(!props.isServiceAvailable);
@@ -133,6 +134,7 @@ const loadMessages = async (chatId: number) => {
         const response = await fetch(route('language-chat.messages', { chatSession: chatId }));
         const data = await response.json();
         messages.value = data.messages;
+        newestMessageId.value = null; // Reset when loading existing messages
         await scrollToBottom();
     } catch (error) {
         console.error('Error loading messages:', error);
@@ -206,10 +208,12 @@ const sendMessage = async () => {
         }
 
         // Add AI response
-        messages.value.push({
+        const aiMessage = {
             ...data.ai_response,
             sender_type: 'assistant' as const,
-        });
+        };
+        messages.value.push(aiMessage);
+        newestMessageId.value = aiMessage.id; // Track newest message for typewriter
 
         isTyping.value = false;
         await scrollToBottom();
@@ -449,6 +453,7 @@ onMounted(() => {
                                 :role="message.sender_type"
                                 :timestamp="new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })"
                                 :is-analyzing="message.isAnalyzing"
+                                :disable-typewriter="message.sender_type !== 'assistant' || message.id !== newestMessageId"
                             />
                         </template>
 
