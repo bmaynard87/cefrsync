@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import Spinner from '@/components/ui/spinner/Spinner.vue';
@@ -27,6 +27,24 @@ const isOpen = ref(false);
 let pollInterval: number | null = null;
 
 const isAuthenticated = computed(() => !!page.props.auth?.user);
+
+// Pulsing animation for unread count changes
+const isPulsing = ref(false);
+let pulseTimeout: ReturnType<typeof setTimeout> | null = null;
+const hasInitiallyLoaded = ref(false);
+
+watch(unreadCount, (newValue, oldValue) => {
+    // Only pulse if the count increased AND we've completed initial load
+    if (hasInitiallyLoaded.value && newValue > oldValue) {
+        isPulsing.value = true;
+        if (pulseTimeout) {
+            clearTimeout(pulseTimeout);
+        }
+        pulseTimeout = setTimeout(() => {
+            isPulsing.value = false;
+        }, 4000);
+    }
+});
 
 const fetchInsights = async (silent = false) => {
     // Don't fetch if user is not authenticated
@@ -144,7 +162,11 @@ const togglePanel = () => {
 onMounted(() => {
     // Only start polling if user is authenticated
     if (isAuthenticated.value) {
-        fetchInsights();
+        fetchInsights().finally(() => {
+            // Set flag after initial fetch completes (whether successful or not)
+            // This allows subsequent count changes to trigger pulse animation
+            hasInitiallyLoaded.value = true;
+        });
         // Poll for new insights every 30 seconds (silently to avoid flash)
         pollInterval = setInterval(() => fetchInsights(true), 30000) as unknown as number;
     }
@@ -155,6 +177,11 @@ onUnmounted(() => {
     if (pollInterval !== null) {
         clearInterval(pollInterval);
         pollInterval = null;
+    }
+
+    // Clean up pulse timeout
+    if (pulseTimeout) {
+        clearTimeout(pulseTimeout);
     }
 });
 </script>
@@ -169,9 +196,9 @@ onUnmounted(() => {
                     d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
                 </path>
             </svg>
-            <!-- TODO: translate-x-1/2 -translate-y-1/2 -->
             <span v-if="unreadCount > 0"
-                class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+                class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/5 -translate-y-1/5 bg-red-600 rounded-full transition-all origin-center"
+                :class="{ 'animate-pulse-subtle': isPulsing }">
                 {{ unreadCount }}
             </span>
         </button>

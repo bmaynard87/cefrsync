@@ -11,11 +11,6 @@ import TypingIndicator from '@/components/Chat/TypingIndicator.vue';
 import ServiceDownBanner from '@/components/Chat/ServiceDownBanner.vue';
 import ChatSettingsModal from '@/components/Chat/ChatSettingsModal.vue';
 
-// Use Ziggy's route() helper
-declare global {
-    function route(name: string, params?: any): string;
-}
-
 interface CorrectionData {
     error_type: 'offensive' | 'meaningless' | 'unnatural' | 'archaic' | 'dangerous';
     severity: 'critical' | 'high' | 'medium';
@@ -49,6 +44,8 @@ interface ChatHistory {
     id: number;
     title: string;
     last_message_at: string;
+    timestamp: string;
+    isActive: boolean;
     native_language: string;
     target_language: string;
 }
@@ -170,7 +167,7 @@ const loadMessages = async (chatId: number) => {
             ...msg,
             disableTypewriter: true,
         }));
-        
+
         // Update session-level settings from the loaded session
         if (data.session) {
             sessionNativeLanguage.value = data.session.native_language;
@@ -179,18 +176,62 @@ const loadMessages = async (chatId: number) => {
             sessionLocalizeCorrections.value = data.session.localize_corrections ?? true;
             sessionLocalizeInsights.value = data.session.localize_insights ?? true;
         }
-        
+
         await scrollToBottom();
     } catch (error) {
         console.error('Error loading messages:', error);
     }
 };
 
+const refreshSessionData = async (chatId: number) => {
+    try {
+        const response = await fetch(route('language-chat.messages', { chatSession: chatId }));
+        const data = await response.json();
+
+        // Only update session-level settings, don't touch messages
+        if (data.session) {
+            sessionNativeLanguage.value = data.session.native_language;
+            sessionTargetLanguage.value = data.session.target_language;
+            sessionProficiencyLevel.value = data.session.proficiency_level;
+            sessionLocalizeCorrections.value = data.session.localize_corrections ?? true;
+            sessionLocalizeInsights.value = data.session.localize_insights ?? true;
+        }
+        
+        return data.session?.proficiency_level;
+    } catch (error) {
+        console.error('Error refreshing session data:', error);
+        return null;
+    }
+};
+
+const pollForProficiencyUpdate = async (chatId: number, initialLevel: string | null) => {
+    let attempts = 0;
+    const maxAttempts = 12; // Poll for up to 60 seconds (12 * 5 seconds)
+    
+    const poll = async () => {
+        attempts++;
+        const newLevel = await refreshSessionData(chatId);
+        
+        // Check if proficiency changed from initial level
+        if (newLevel && newLevel !== initialLevel) {
+            return; // Success, stop polling
+        }
+        
+        // Continue polling if we haven't exceeded max attempts
+        if (attempts < maxAttempts) {
+            setTimeout(poll, 5000); // Poll every 5 seconds
+        }
+    };
+    
+    // Start polling after initial delay
+    setTimeout(poll, 5000); // First check after 5 seconds
+};
+
 const sendMessage = async () => {
     if (!inputMessage.value.trim()) {
         return;
     }
-    
+
     if (!activeChat.value) {
         await handleNewChat();
         // Wait a moment for the new chat to be created
@@ -221,7 +262,7 @@ const sendMessage = async () => {
 
     try {
         const url = route('language-chat.message', { chatSession: activeChat.value });
-        
+
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -232,7 +273,7 @@ const sendMessage = async () => {
         });
 
         const data = await response.json();
-        
+
         // Replace temp message with real one from server
         const userIndex = messages.value.findIndex(m => m.id === tempUserMessage.id);
         if (userIndex !== -1) {
@@ -272,11 +313,10 @@ const sendMessage = async () => {
 
         // Check if we should poll for proficiency updates (every 10 user messages)
         const userMessageCount = messages.value.filter(m => m.sender_type === 'user').length;
-        if (userMessageCount % 10 === 0 && autoUpdateProficiency.value) {
-            // Reload only userSettings prop after a delay (job needs time to process)
-            setTimeout(() => {
-                router.reload({ only: ['userSettings'] });
-            }, 20000); // 20 second delay
+        if (userMessageCount % 10 === 0 && autoUpdateProficiency.value && activeChat.value) {
+            // Start polling for proficiency update
+            const currentLevel = sessionProficiencyLevel.value;
+            pollForProficiencyUpdate(activeChat.value, currentLevel);
         }
     } catch (error) {
         console.error('Error sending message:', error);
@@ -287,18 +327,18 @@ const sendMessage = async () => {
 const handleNewChat = async () => {
     // Check if there's already an unused new chat
     const unusedNewChat = chats.value.find(chat => chat.title === 'New Conversation');
-    
+
     if (unusedNewChat) {
         // Just switch to the existing unused chat instead of creating a new one
         handleSelectChat(unusedNewChat.id);
         return;
     }
-    
+
     // Double-check we're not creating duplicate (safety check)
     if (hasUnusedNewChat.value) {
         return;
     }
-    
+
     try {
         const response = await fetch(route('language-chat.create'), {
             method: 'POST',
@@ -314,12 +354,14 @@ const handleNewChat = async () => {
         });
 
         const newSession = await response.json();
-        
+
         // Add new session to chat list
         chats.value.unshift({
             id: newSession.id,
             title: 'New Conversation',
             last_message_at: newSession.created_at,
+            timestamp: newSession.created_at,
+            isActive: true,
             native_language: newSession.native_language,
             target_language: newSession.target_language,
         });
@@ -416,79 +458,89 @@ onMounted(() => {
 </script>
 
 <template>
+
     <Head :title="pageTitle" />
     <AppShell>
         <div data-test="main-container" class="flex h-dvh w-full overflow-hidden bg-gray-50">
-            <ChatSidebar 
-                :chats="chats" 
-                :active-chat="activeChat"
-                :has-unused-new-chat="hasUnusedNewChat"
-                :is-open="isSidebarOpen"
-                @new-chat="handleNewChat" 
-                @select-chat="handleSelectChat"
-                @delete-chat="handleDeleteChat"
-                @update-title="handleUpdateTitle"
-                @close="closeSidebar"
-            />
+            <ChatSidebar :chats="chats" :active-chat="activeChat" :has-unused-new-chat="hasUnusedNewChat"
+                :is-open="isSidebarOpen" @new-chat="handleNewChat" @select-chat="handleSelectChat"
+                @delete-chat="handleDeleteChat" @update-title="handleUpdateTitle" @close="closeSidebar" />
 
             <div data-test="chat-area" class="flex min-w-0 flex-1 flex-col">
-                <ChatHeader
-                    :native-language="displayNativeLanguage"
-                    :target-language="displayTargetLanguage"
+                <ChatHeader :native-language="displayNativeLanguage" :target-language="displayTargetLanguage"
                     :proficiency-level="sessionProficiencyLevel || proficiencyLevel"
-                    :proficiency-label="proficiencyLabel"
-                    :auto-update-proficiency="autoUpdateProficiency"
-                    @settings="handleSettings"
-                    @toggle-sidebar="toggleSidebar"
-                />
+                    :proficiency-label="proficiencyLabel" :auto-update-proficiency="autoUpdateProficiency"
+                    @settings="handleSettings" @toggle-sidebar="toggleSidebar" />
 
                 <div ref="chatContainer" data-test="chat-container" class="flex-1 overflow-y-auto px-4 py-4 sm:py-6">
                     <!-- Empty State -->
                     <div v-if="!activeChat && chats.length === 0" class="flex h-full items-center justify-center">
                         <div class="w-full max-w-2xl text-center px-2">
-                            <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 sm:mb-6 sm:h-20 sm:w-20">
-                                <svg class="h-8 w-8 text-blue-600 sm:h-10 sm:w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            <div
+                                class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 sm:mb-6 sm:h-20 sm:w-20">
+                                <svg class="h-8 w-8 text-blue-600 sm:h-10 sm:w-10" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                                    </path>
                                 </svg>
                             </div>
-                            <h2 class="mb-2 text-xl font-semibold text-gray-900 sm:text-2xl">Start Your Language Journey</h2>
-                            <p class="mb-6 text-sm text-gray-600 sm:mb-8 sm:text-base">Practice {{ targetLanguage }} with AI-powered conversations tailored to your level</p>
-                            <button
-                                @click="handleNewChat"
-                                class="mb-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 sm:mb-6 sm:px-6 sm:py-3 sm:text-base"
-                            >
-                                <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            <h2 class="mb-2 text-xl font-semibold text-gray-900 sm:text-2xl">Start Your Language Journey
+                            </h2>
+                            <p class="mb-6 text-sm text-gray-600 sm:mb-8 sm:text-base">Practice {{ targetLanguage }}
+                                with AI-powered conversations tailored to your level</p>
+                            <button @click="handleNewChat"
+                                class="mb-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 sm:mb-6 sm:px-6 sm:py-3 sm:text-base">
+                                <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
                                 </svg>
                                 Start New Conversation
                             </button>
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
                                 <div class="rounded-lg border border-gray-200 bg-white p-3 sm:p-4">
-                                    <div class="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-green-100 mx-auto sm:h-10 sm:w-10">
-                                        <svg class="h-4 w-4 text-green-600 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    <div
+                                        class="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-green-100 mx-auto sm:h-10 sm:w-10">
+                                        <svg class="h-4 w-4 text-green-600 sm:h-5 sm:w-5" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                     </div>
-                                    <h3 class="mb-1 text-sm font-medium text-gray-900 text-center sm:text-base">Adaptive Learning</h3>
-                                    <p class="text-xs text-gray-600 text-center sm:text-sm">AI adjusts to your {{ proficiencyLevel }} level</p>
+                                    <h3 class="mb-1 text-sm font-medium text-gray-900 text-center sm:text-base">Adaptive
+                                        Learning</h3>
+                                    <p class="text-xs text-gray-600 text-center sm:text-sm">AI adjusts to your {{
+                                        proficiencyLevel }} level</p>
                                 </div>
                                 <div class="rounded-lg border border-gray-200 bg-white p-3 sm:p-4">
-                                    <div class="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 mx-auto sm:h-10 sm:w-10">
-                                        <svg class="h-4 w-4 text-purple-600 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                                    <div
+                                        class="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 mx-auto sm:h-10 sm:w-10">
+                                        <svg class="h-4 w-4 text-purple-600 sm:h-5 sm:w-5" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z">
+                                            </path>
                                         </svg>
                                     </div>
-                                    <h3 class="mb-1 text-sm font-medium text-gray-900 text-center sm:text-base">Natural Conversation</h3>
-                                    <p class="text-xs text-gray-600 text-center sm:text-sm">Practice real-world dialogue</p>
+                                    <h3 class="mb-1 text-sm font-medium text-gray-900 text-center sm:text-base">Natural
+                                        Conversation</h3>
+                                    <p class="text-xs text-gray-600 text-center sm:text-sm">Practice real-world dialogue
+                                    </p>
                                 </div>
                                 <div class="rounded-lg border border-gray-200 bg-white p-3 sm:p-4">
-                                    <div class="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 mx-auto sm:h-10 sm:w-10">
-                                        <svg class="h-4 w-4 text-orange-600 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    <div
+                                        class="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 mx-auto sm:h-10 sm:w-10">
+                                        <svg class="h-4 w-4 text-orange-600 sm:h-5 sm:w-5" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                         </svg>
                                     </div>
-                                    <h3 class="mb-1 text-sm font-medium text-gray-900 text-center sm:text-base">Instant Feedback</h3>
-                                    <p class="text-xs text-gray-600 text-center sm:text-sm">Get corrections and suggestions</p>
+                                    <h3 class="mb-1 text-sm font-medium text-gray-900 text-center sm:text-base">Instant
+                                        Feedback</h3>
+                                    <p class="text-xs text-gray-600 text-center sm:text-sm">Get corrections and
+                                        suggestions</p>
                                 </div>
                             </div>
                         </div>
@@ -498,23 +550,15 @@ onMounted(() => {
                     <div v-else class="mx-auto max-w-3xl space-y-6">
                         <template v-for="message in messages" :key="message.id">
                             <!-- Correction Messages -->
-                            <CorrectionMessage
-                                v-if="message.message_type === 'correction' && message.correction_data"
-                                :content="message.content"
-                                :correction-data="message.correction_data"
-                                :timestamp="new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })"
-                            />
-                            
+                            <CorrectionMessage v-if="message.message_type === 'correction' && message.correction_data"
+                                :content="message.content" :correction-data="message.correction_data"
+                                :timestamp="new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })" />
+
                             <!-- Regular Chat Messages -->
-                            <ChatMessage
-                                v-else
-                                :content="message.content"
-                                :translation="message.translation"
+                            <ChatMessage v-else-if="message.sender_type !== 'system'" :content="message.content" :translation="message.translation"
                                 :role="message.sender_type"
                                 :timestamp="new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })"
-                                :is-analyzing="message.isAnalyzing"
-                                :disable-typewriter="message.disableTypewriter"
-                            />
+                                :is-analyzing="message.isAnalyzing" :disable-typewriter="message.disableTypewriter" />
                         </template>
 
                         <TypingIndicator v-if="isTyping" />
@@ -527,16 +571,11 @@ onMounted(() => {
         </div>
 
         <!-- Settings Modal -->
-        <ChatSettingsModal
-            v-if="activeChat"
-            v-model:open="isSettingsModalOpen"
-            :chat-session-id="activeChat"
+        <ChatSettingsModal v-if="activeChat" v-model:open="isSettingsModalOpen" :chat-session-id="activeChat"
             :native-language="sessionNativeLanguage || nativeLanguage"
             :target-language="sessionTargetLanguage || targetLanguage"
             :proficiency-level="sessionProficiencyLevel || proficiencyLevel"
-            :localize-corrections="sessionLocalizeCorrections"
-            :localize-insights="sessionLocalizeInsights"
-            @updated="handleSettingsUpdated"
-        />
+            :localize-corrections="sessionLocalizeCorrections" :localize-insights="sessionLocalizeInsights"
+            @updated="handleSettingsUpdated" />
     </AppShell>
 </template>

@@ -37,6 +37,9 @@ describe('InsightPanel notification badge pulsing animation', () => {
         const badge = wrapper.find('.bg-red-600');
         expect(badge.exists()).toBe(false);
 
+        // Simulate initial load completion to enable pulse animation
+        instance.hasInitiallyLoaded = true;
+
         // Simulate unread count increase
         instance.unreadCount = 2;
         await nextTick();
@@ -56,6 +59,9 @@ describe('InsightPanel notification badge pulsing animation', () => {
         });
 
         const instance = wrapper.vm as any;
+
+        // Simulate initial load completion to enable pulse animation
+        instance.hasInitiallyLoaded = true;
 
         // Set unread count
         instance.unreadCount = 2;
@@ -81,6 +87,9 @@ describe('InsightPanel notification badge pulsing animation', () => {
         });
 
         const instance = wrapper.vm as any;
+
+        // Simulate initial load completion to enable pulse animation
+        instance.hasInitiallyLoaded = true;
 
         // Set initial unread count
         instance.unreadCount = 2;
@@ -113,6 +122,9 @@ describe('InsightPanel notification badge pulsing animation', () => {
 
         const instance = wrapper.vm as any;
 
+        // Simulate initial load completion to enable pulse animation
+        instance.hasInitiallyLoaded = true;
+
         // First increase
         instance.unreadCount = 1;
         await nextTick();
@@ -143,6 +155,9 @@ describe('InsightPanel notification badge pulsing animation', () => {
         });
 
         const instance = wrapper.vm as any;
+
+        // Simulate initial load completion to enable pulse animation
+        instance.hasInitiallyLoaded = true;
 
         // First increase
         instance.unreadCount = 1;
@@ -186,6 +201,9 @@ describe('InsightPanel notification badge pulsing animation', () => {
         });
 
         const instance = wrapper.vm as any;
+
+        // Simulate initial load completion to enable pulse animation
+        instance.hasInitiallyLoaded = true;
 
         // Set unread count
         instance.unreadCount = 3;
