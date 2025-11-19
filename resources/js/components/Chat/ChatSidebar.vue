@@ -97,12 +97,12 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
     <!-- Sidebar -->
     <div 
         :class="[
-            'fixed lg:static inset-y-0 left-0 z-50 flex h-screen w-64 flex-col border-r border-gray-200 bg-white transform transition-transform duration-300 lg:translate-x-0',
+            'fixed lg:static inset-y-0 left-0 z-50 flex h-dvh lg:h-screen w-64 flex-col border-r border-gray-200 bg-white transform transition-transform duration-300 lg:translate-x-0',
             isOpen ? 'translate-x-0' : '-translate-x-full'
         ]"
     >
         <!-- Logo and Mobile Close -->
-        <div class="border-b border-gray-200 px-4 py-4">
+        <div class="flex-shrink-0 border-b border-gray-200 px-4 py-3">
             <div class="flex items-center justify-between">
                 <Link :href="route('language-chat.index')">
                     <AppLogo size="sm" />
@@ -118,7 +118,7 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
         </div>
         
         <!-- Sidebar Header -->
-        <div class="border-b border-gray-200 px-4 py-4">
+        <div class="flex-shrink-0 border-b border-gray-200 px-4 py-3">
             <button
                 data-test="new-chat-button"
                 @click="handleNewChat"
@@ -136,7 +136,7 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
         </div>
 
         <!-- Chat List -->
-        <div data-test="chat-list" class="flex-1 overflow-y-auto p-2">
+        <div data-test="chat-list" class="min-h-0 flex-1 overflow-y-auto p-2">
             <div class="space-y-1">
                 <div
                     v-for="chat in chats"
@@ -235,10 +235,10 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
         </div>
 
         <!-- Footer with Profile Link (Mobile) -->
-        <div class="border-t border-gray-200 p-3 lg:hidden">
+        <div class="flex-shrink-0 border-t border-gray-200 p-3 lg:hidden">
             <Link
                 :href="route('profile.edit')"
-                class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
             >
                 <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
