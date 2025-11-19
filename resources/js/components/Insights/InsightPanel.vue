@@ -24,6 +24,8 @@ const insights = ref<Insight[]>([]);
 const unreadCount = ref(0);
 const isLoading = ref(false);
 const isOpen = ref(false);
+const hasServiceError = ref(false);
+const serviceErrorMessage = ref('');
 let pollInterval: number | null = null;
 
 const isAuthenticated = computed(() => !!page.props.auth?.user);
@@ -58,6 +60,10 @@ const fetchInsights = async (silent = false) => {
     try {
         const { data } = await axios.get<InsightsData>('/insights');
 
+        // Clear any previous errors on successful fetch
+        hasServiceError.value = false;
+        serviceErrorMessage.value = '';
+
         // Only update if data has changed to prevent unnecessary re-renders
         if (JSON.stringify(insights.value) !== JSON.stringify(data.insights)) {
             insights.value = data.insights;
@@ -72,6 +78,14 @@ const fetchInsights = async (silent = false) => {
                 clearInterval(pollInterval);
                 pollInterval = null;
             }
+        } else if (axios.isAxiosError(error) && error.response?.status === 503) {
+            // Service unavailable - likely LangGPT API key issue
+            hasServiceError.value = true;
+            serviceErrorMessage.value = error.response?.data?.message || 'Insights service is temporarily unavailable';
+        } else if (axios.isAxiosError(error) && !error.response) {
+            // Network error - backend not reachable
+            hasServiceError.value = true;
+            serviceErrorMessage.value = 'Unable to connect to insights service. Please check if the backend is running.';
         } else {
             console.error('Error fetching insights:', error);
         }
@@ -134,6 +148,8 @@ const getInsightIcon = (type: string) => {
             return '📚';
         case 'proficiency_suggestion':
             return '🎯';
+        case 'system_error':
+            return '⚠️';
         default:
             return '💡';
     }
@@ -147,6 +163,8 @@ const getInsightColor = (type: string) => {
             return 'bg-green-50 border-green-200';
         case 'proficiency_suggestion':
             return 'bg-purple-50 border-purple-200';
+        case 'system_error':
+            return 'bg-orange-50 border-orange-200';
         default:
             return 'bg-gray-50 border-gray-200';
     }
@@ -223,6 +241,13 @@ onUnmounted(() => {
                     <div v-if="isLoading" class="p-8 text-center text-gray-500">
                         <Spinner class="h-8 w-8 mx-auto mb-2" />
                         Loading insights...
+                    </div>
+
+                    <div v-else-if="hasServiceError" class="p-8 text-center">
+                        <div class="text-4xl mb-3">⚠️</div>
+                        <p class="font-medium text-gray-900 mb-2">Insights Service Issue</p>
+                        <p class="text-sm text-gray-600 mb-4">{{ serviceErrorMessage }}</p>
+                        <p class="text-xs text-gray-500">The system administrator has been notified. Your conversations are still being saved.</p>
                     </div>
 
                     <div v-else-if="insights.length === 0" class="p-8 text-center text-gray-500">

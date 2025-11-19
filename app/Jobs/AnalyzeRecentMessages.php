@@ -98,6 +98,22 @@ class AnalyzeRecentMessages implements ShouldQueue
                     'response' => $response,
                 ]);
 
+                // Check if this is an API key authentication error
+                if (isset($response['status']) && $response['status'] === 401) {
+                    // Create a system insight to notify the user
+                    LanguageInsight::create([
+                        'user_id' => $user->id,
+                        'chat_session_id' => $this->chatSession->id,
+                        'insight_type' => 'system_error',
+                        'title' => 'Insights Service Configuration Issue',
+                        'message' => 'We\'re experiencing a temporary issue with the insights analysis service. Your conversations are being saved, and insights will be generated once the issue is resolved.',
+                        'data' => [
+                            'error_type' => 'api_authentication',
+                            'status_code' => 401,
+                        ],
+                    ]);
+                }
+
                 return;
             }
 
