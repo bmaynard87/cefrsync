@@ -78,8 +78,8 @@ const chatInputRef = ref<{ focus: () => void } | null>(null);
 const sessionNativeLanguage = ref<string | null>(null);
 const sessionTargetLanguage = ref<string | null>(null);
 const sessionProficiencyLevel = ref<string | null>(null);
-const sessionLocalizeCorrections = ref<boolean>(true);
-const sessionLocalizeInsights = ref<boolean>(true);
+const sessionLocalizeCorrections = ref<boolean>(false);
+const sessionLocalizeInsights = ref<boolean>(false);
 
 // Use user settings from props as defaults
 const nativeLanguage = ref(props.userSettings.native_language);
@@ -173,8 +173,8 @@ const loadMessages = async (chatId: number) => {
             sessionNativeLanguage.value = data.session.native_language;
             sessionTargetLanguage.value = data.session.target_language;
             sessionProficiencyLevel.value = data.session.proficiency_level;
-            sessionLocalizeCorrections.value = data.session.localize_corrections ?? true;
-            sessionLocalizeInsights.value = data.session.localize_insights ?? true;
+            sessionLocalizeCorrections.value = data.session.localize_corrections ?? false;
+            sessionLocalizeInsights.value = data.session.localize_insights ?? false;
         }
 
         await scrollToBottom();
@@ -193,8 +193,8 @@ const refreshSessionData = async (chatId: number) => {
             sessionNativeLanguage.value = data.session.native_language;
             sessionTargetLanguage.value = data.session.target_language;
             sessionProficiencyLevel.value = data.session.proficiency_level;
-            sessionLocalizeCorrections.value = data.session.localize_corrections ?? true;
-            sessionLocalizeInsights.value = data.session.localize_insights ?? true;
+            sessionLocalizeCorrections.value = data.session.localize_corrections ?? false;
+            sessionLocalizeInsights.value = data.session.localize_insights ?? false;
         }
         
         return data.session?.proficiency_level;

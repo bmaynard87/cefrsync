@@ -26,8 +26,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    localizeCorrections: true,
-    localizeInsights: true,
+    localizeCorrections: false,
+    localizeInsights: false,
 });
 
 const emit = defineEmits<{
@@ -101,10 +101,7 @@ const handleSave = () => {
 </script>
 
 <template>
-    <Dialog
-        :open="open"
-        @update:open="emit('update:open', $event)"
-    >
+    <Dialog :open="open" @update:open="emit('update:open', $event)">
         <DialogContent class="sm:max-w-[500px]">
             <DialogHeader>
                 <DialogTitle>Chat Session Settings</DialogTitle>
@@ -116,47 +113,26 @@ const handleSave = () => {
 
             <div class="grid gap-6 py-4">
                 <!-- Native Language -->
-                <LanguageSelect
-                    id="native-language"
-                    label="Native Language"
-                    v-model="nativeLanguage"
-                    :options="languages"
-                    :exclude-value="targetLanguage"
-                    placeholder="Select your native language"
-                    :error="errors.native_language"
-                />
+                <LanguageSelect id="native-language" label="Native Language" v-model="nativeLanguage"
+                    :options="languages" :exclude-value="targetLanguage" placeholder="Select your native language"
+                    :error="errors.native_language" />
 
                 <!-- Target Language -->
-                <LanguageSelect
-                    id="target-language"
-                    label="Target Language"
-                    v-model="targetLanguage"
-                    :options="languages"
-                    :exclude-value="nativeLanguage"
-                    placeholder="Select language you're learning"
-                    :error="errors.target_language"
-                />
+                <LanguageSelect id="target-language" label="Target Language" v-model="targetLanguage"
+                    :options="languages" :exclude-value="nativeLanguage" placeholder="Select language you're learning"
+                    :error="errors.target_language" />
 
                 <!-- Proficiency Level -->
                 <div class="grid gap-2">
                     <Label for="proficiency-level">Proficiency Level</Label>
-                    <select
-                        id="proficiency-level"
-                        v-model="proficiencyLevel"
-                        class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white focus:outline-none focus:ring-2 focus:ring-gray-950 focus:ring-offset-2"
-                    >
-                        <option
-                            v-for="level in proficiencyLevels"
-                            :key="level.value"
-                            :value="level.value"
-                        >
+                    <select id="proficiency-level" v-model="proficiencyLevel"
+                        class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white focus:outline-none focus:ring-2 focus:ring-gray-950 focus:ring-offset-2">
+                        <!-- TODO: Add default option-->
+                        <option v-for="level in proficiencyLevels" :key="level.value" :value="level.value">
                             {{ level.label }} - {{ level.description }}
                         </option>
                     </select>
-                    <p
-                        v-if="errors.proficiency_level"
-                        class="text-sm text-red-600"
-                    >
+                    <p v-if="errors.proficiency_level" class="text-sm text-red-600">
                         {{ errors.proficiency_level }}
                     </p>
                 </div>
@@ -168,59 +144,38 @@ const handleSave = () => {
                     <!-- Localize Corrections -->
                     <div class="flex items-center justify-between">
                         <div class="space-y-0.5">
-                            <Label
-                                for="localize-corrections"
-                                class="font-normal"
-                            >
+                            <Label for="localize-corrections" class="font-normal">
                                 Localize Corrections
                             </Label>
                             <p class="text-xs text-gray-500">
                                 Receive error corrections in your native language
                             </p>
                         </div>
-                        <input
-                            id="localize-corrections"
-                            type="checkbox"
-                            v-model="localizeCorrections"
-                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
-                        />
+                        <input id="localize-corrections" type="checkbox" v-model="localizeCorrections"
+                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500" />
                     </div>
 
                     <!-- Localize Insights -->
                     <div class="flex items-center justify-between">
                         <div class="space-y-0.5">
-                            <Label
-                                for="localize-insights"
-                                class="font-normal"
-                            >
+                            <Label for="localize-insights" class="font-normal">
                                 Localize Insights
                             </Label>
                             <p class="text-xs text-gray-500">
                                 Receive learning insights in your native language
                             </p>
                         </div>
-                        <input
-                            id="localize-insights"
-                            type="checkbox"
-                            v-model="localizeInsights"
-                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
-                        />
+                        <input id="localize-insights" type="checkbox" v-model="localizeInsights"
+                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500" />
                     </div>
                 </div>
             </div>
 
             <DialogFooter>
-                <Button
-                    variant="outline"
-                    @click="handleClose"
-                    :disabled="isSaving"
-                >
+                <Button variant="outline" @click="handleClose" :disabled="isSaving">
                     Cancel
                 </Button>
-                <Button
-                    @click="handleSave"
-                    :disabled="isSaving"
-                >
+                <Button @click="handleSave" :disabled="isSaving">
                     {{ isSaving ? 'Saving...' : 'Save Changes' }}
                 </Button>
             </DialogFooter>
