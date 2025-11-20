@@ -2,6 +2,7 @@
 import { ref, watch, onMounted, computed } from 'vue';
 import SendIcon from '@/components/Icons/SendIcon.vue';
 import AiDisclaimer from '@/components/Chat/AiDisclaimer.vue';
+import { useIsMobile } from '@/composables/useIsMobile';
 
 interface Props {
     modelValue: string;
@@ -16,6 +17,7 @@ const emit = defineEmits<{
 }>();
 
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
+const { isMobile } = useIsMobile();
 
 // Responsive placeholder text
 const placeholderText = computed(() => {
@@ -51,22 +53,26 @@ const isSendDisabled = () => {
 
 // Watch for when typing finishes (disabled becomes false) and refocus
 watch(() => props.disabled, (newDisabled, oldDisabled) => {
-    if (oldDisabled && !newDisabled) {
-        // Just finished typing, refocus
+    if (oldDisabled && !newDisabled && !isMobile.value) {
+        // Just finished typing, refocus (desktop only)
         setTimeout(() => {
             textareaRef.value?.focus();
         }, 100);
     }
 });
 
-// Auto-focus on mount
+// Auto-focus on mount (desktop only)
 onMounted(() => {
-    textareaRef.value?.focus();
+    if (!isMobile.value) {
+        textareaRef.value?.focus();
+    }
 });
 
-// Expose focus method to parent
+// Expose focus method to parent (respects mobile setting)
 const focus = () => {
-    textareaRef.value?.focus();
+    if (!isMobile.value) {
+        textareaRef.value?.focus();
+    }
 };
 
 defineExpose({

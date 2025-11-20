@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { Plus, Check, X, Pencil, Trash2 } from 'lucide-vue-next';
 import AppLogo from '@/components/AppLogo.vue';
+import { useIsMobile } from '@/composables/useIsMobile';
 
 interface Chat {
     id: number;
@@ -32,6 +33,8 @@ const emit = defineEmits<{
 
 const editingChatId = ref<number | null>(null);
 const editingTitle = ref('');
+const editInputRef = ref<HTMLInputElement | null>(null);
+const { isMobile } = useIsMobile();
 
 const handleNewChat = () => {
     // Don't emit if there's already an unused new chat
@@ -55,10 +58,16 @@ const handleDeleteChat = (event: Event, chatId: number) => {
     }
 };
 
-const startEditing = (event: Event, chat: Chat) => {
+const startEditing = async (event: Event, chat: Chat) => {
     event.stopPropagation();
     editingChatId.value = chat.id;
     editingTitle.value = chat.title;
+    
+    // Focus on desktop only
+    if (!isMobile.value) {
+        await nextTick();
+        editInputRef.value?.focus();
+    }
 };
 
 const saveTitle = (event: Event, chatId: number) => {
@@ -172,11 +181,11 @@ const handleKeydown = (event: KeyboardEvent, chatId: number) => {
                         <!-- Editing Mode -->
                         <div v-if="editingChatId === chat.id" class="flex items-center gap-1" @click.stop>
                             <input
+                                ref="editInputRef"
                                 v-model="editingTitle"
                                 @keydown="(e) => handleKeydown(e, chat.id)"
                                 type="text"
                                 class="flex-1 rounded border border-blue-500 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                autofocus
                             />
                             <button
                                 @click="(e) => saveTitle(e, chat.id)"
