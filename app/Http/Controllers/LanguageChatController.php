@@ -403,14 +403,15 @@ class LanguageChatController extends Controller
         $validated = $request->validate([
             'native_language' => 'required|string|max:255',
             'target_language' => 'required|string|max:255',
-            'proficiency_level' => 'required|string|in:A1,A2,B1,B2,C1,C2',
+            'proficiency_level' => 'nullable|string|in:A1,A2,B1,B2,C1,C2,auto',
             'localize_corrections' => 'sometimes|boolean',
             'localize_insights' => 'sometimes|boolean',
         ]);
 
         // Convert language names/keys to IDs
         $updateData = [
-            'proficiency_level' => $validated['proficiency_level'],
+            // If 'auto' is selected, set proficiency_level to null to use user's level
+            'proficiency_level' => ($validated['proficiency_level'] === 'auto') ? null : $validated['proficiency_level'],
         ];
 
         if (isset($validated['localize_corrections'])) {

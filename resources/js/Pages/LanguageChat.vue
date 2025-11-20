@@ -120,6 +120,12 @@ const displayTargetLanguage = computed(() => {
 
 const proficiencyLabel = computed(() => {
     const level = sessionProficiencyLevel.value || proficiencyLevel.value || '';
+    
+    // If no level is set (null), it means auto mode
+    if (!level) {
+        return 'Auto';
+    }
+    
     const levels: Record<string, string> = {
         'A1': 'Beginner',
         'A2': 'Elementary',

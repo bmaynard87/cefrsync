@@ -37,7 +37,7 @@ const emit = defineEmits<{
 
 const nativeLanguage = ref(props.nativeLanguage);
 const targetLanguage = ref(props.targetLanguage);
-const proficiencyLevel = ref(props.proficiencyLevel || 'A1');
+const proficiencyLevel = ref(props.proficiencyLevel || 'auto');
 const localizeCorrections = ref(props.localizeCorrections);
 const localizeInsights = ref(props.localizeInsights);
 const isSaving = ref(false);
@@ -50,7 +50,7 @@ watch(() => props.open, (isOpen) => {
     if (isOpen) {
         nativeLanguage.value = props.nativeLanguage;
         targetLanguage.value = props.targetLanguage;
-        proficiencyLevel.value = props.proficiencyLevel || 'A1';
+        proficiencyLevel.value = props.proficiencyLevel || 'auto';
         localizeCorrections.value = props.localizeCorrections;
         localizeInsights.value = props.localizeInsights;
         errors.value = {};
@@ -58,6 +58,7 @@ watch(() => props.open, (isOpen) => {
 });
 
 const proficiencyLevels = [
+    { value: 'auto', label: 'Auto', description: 'Automatically adjust based on your performance' },
     { value: 'A1', label: 'A1 - Beginner', description: 'Can understand and use familiar everyday expressions' },
     { value: 'A2', label: 'A2 - Elementary', description: 'Can communicate in simple routine tasks' },
     { value: 'B1', label: 'B1 - Intermediate', description: 'Can deal with most situations while traveling' },
